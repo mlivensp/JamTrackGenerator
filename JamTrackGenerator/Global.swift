@@ -8,3 +8,4 @@
 import Foundation
 
 typealias Velocity = UInt8
+typealias Octave = UInt8

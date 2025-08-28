@@ -9,6 +9,7 @@ import Foundation
 
  @Observable class JamTrackSpecification {
      var bpm: UInt8 = 80
+     var key: String = "C"
     // key signature
     // time signature
     // tempo

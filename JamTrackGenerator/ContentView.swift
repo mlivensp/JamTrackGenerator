@@ -19,16 +19,27 @@ struct ContentView: View {
             Button("Do It") {
                 export = true
             }
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+            VStack {
+                Form {
+                    TextField("BPM", value: $specification.bpm, formatter: NumberFormatter())
+                        .padding()
+                    Picker("Key", selection: $specification.key) {
+                        ForEach(Array(Key.keys.keys), id: \.self) { key in
+                            Text(key).tag(key)
+                        }
                     }
                 }
-                .onDelete(perform: deleteItems)
             }
+//            List {
+//                ForEach(items) { item in
+//                    NavigationLink {
+//                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
+//                    } label: {
+//                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+//                    }
+//                }
+//                .onDelete(perform: deleteItems)
+//            }
 #if os(macOS)
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
 #endif
@@ -65,6 +76,7 @@ struct ContentView: View {
         var document = MidiDocument(pulsesPerQuarterNote: Constants.pulsesPerQuarterNote)
         document.buildMetaTrack(specification: specification)
         document.buildDrumTrack(specification: specification)
+        document.buildBassTrack(specification: specification)
         return document
     }
 

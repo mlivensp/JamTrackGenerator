@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ScaleDegree: Int {
+enum ScaleDegree: UInt8 {
     case root = 0
     case minor2nd = 1
     case second = 2

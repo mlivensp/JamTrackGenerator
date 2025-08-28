@@ -65,17 +65,29 @@ struct MidiDocument: FileDocument {
             track.addEvent(delay: delay, channel: 9, command: event.command, note: event.part.rawValue, velocity: event.velocity)
             lastPulse = event.onPulse
         }
-//        var count = 0
-//        repeat {
-//            track.noteOn(delay: 0, channel: 9, note: 36, velocity: 100)
-//            track.noteOff(delay: NoteDuration.quarter.value, channel: 9, note: 36, velocity: 64)
-////            track.add(0x00) // delta time from last event
-////            track.add([0x99, 0x24, 0x64]) // note on, channel 9, bass drum 2, velocity 100
-////            track.add(NoteDuration.quarter.value.midiVLQ)
-////            track.add([0x89, 0x24, 0x40]) // note off chanel 9, bass drum 2, release velocity
-//            count += 1
-//        } while count < 8
         tracks.append(track)
+    }
+    
+    mutating func buildBassTrack(specification: JamTrackSpecification) {
+        let bassPattern = BassPattern.init(key: Key(specification.key))
+        let channel = UInt8(1)
+        var track = MidiTrack()
+        
+        var events: [NoteEvent] = []
+        for descriptor in bassPattern.pattern0 {
+            events.append(.init(note: descriptor.note, command: 0x90, onPulse: descriptor.on, velocity: descriptor.onVelocity))
+            events.append(.init(note: descriptor.note, command: 0x80, onPulse: descriptor.off, velocity: descriptor.offVelocity))
+        }
+        
+        events.sort { ($0.onPulse, $0.command) < ($1.onPulse, $1.command) }
+        var lastPulse: UInt16 = 0
+        for event in events {
+            let delay = event.onPulse - lastPulse
+            track.addEvent(delay: delay, channel: channel, command: event.command, note: event.note.midiValue, velocity: event.velocity)
+            lastPulse = event.onPulse
+        }
+        tracks.append(track)
+
     }
     
     public struct Payload {

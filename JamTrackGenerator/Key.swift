@@ -15,7 +15,7 @@ struct Key {
     }
     
     subscript (index: ScaleDegree) -> String {
-        return notes[index.rawValue]
+        return notes[Int(index.rawValue)]
     }
     
     var root: String {
