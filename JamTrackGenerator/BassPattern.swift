@@ -18,7 +18,7 @@ struct BassPattern {
         var result: [HarmonicEvent] = []
         for (degree, octave, duration) in pattern {
             let note = Note(pitch: key[degree], octave: octave)
-            result.append(HarmonicEvent(notes: [note], duration: duration.value))
+            result.append(HarmonicEvent(notes: [(note, 100)], duration: duration.value))
         }
         
         return result

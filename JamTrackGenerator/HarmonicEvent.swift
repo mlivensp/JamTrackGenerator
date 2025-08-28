@@ -8,6 +8,20 @@
 import Foundation
 
 struct HarmonicEvent: Equatable {
-    let notes: [Note]
+    static func == (lhs: HarmonicEvent, rhs: HarmonicEvent) -> Bool {
+        guard lhs.notes.count == rhs.notes.count else {
+            return false
+        }
+        
+        for (i, note) in lhs.notes.enumerated() {
+            if note != rhs.notes[i] {
+                return false
+            }
+        }
+        
+        return true
+    }
+    
+    let notes: [(Note, Velocity)]
     let duration: UInt16
 }

@@ -7,15 +7,16 @@
 
 import Foundation
 
-enum DrumPart {
-    case kick
-    case snare
-    case hiHats
-    case ride
-    case crash
-    case tom1
-    case tom2
-    case tom3
-    case tom4
-    case stick
+enum DrumPart: UInt8 {
+    case kick = 36
+    case snare = 38
+    case crash = 49
+    
+    case hiHats = 39
+    case ride = 40
+    case tom1 = 42
+    case tom2 = 43
+    case tom3 = 44
+    case tom4 = 45
+    case stick = 46
 }
