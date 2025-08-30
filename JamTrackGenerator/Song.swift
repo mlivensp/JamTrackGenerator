@@ -12,9 +12,14 @@ struct Song {
     var channel: UInt8 = 0
     
     mutating func buildTracks(specification: JamTrackSpecification) {
-        tracks.append(buildDrumTrack(specification: specification))
-        tracks.append(buildBassTrack(specification: specification))
+        if specification.includeDrumTrack {
+            tracks.append(buildDrumTrack(specification: specification))
+        }
         
+        if specification.includeBassTrack {
+            tracks.append(buildBassTrack(specification: specification))
+
+        }
     }
     
     mutating func buildDrumTrack(specification: JamTrackSpecification) -> Track {

@@ -18,18 +18,28 @@ struct ContentView: View {
 
     var body: some View {
         NavigationSplitView {
-            
+            Text("Jam Tracks")
         }
         detail: {
             VStack {
                 Form {
+                    // TODO: need to specify
+                    // song structure: intro, chorus, etc
+                    // for each song part, for each instrument, which pattern to use
                     Picker("Key", selection: $specification.key) {
                         ForEach(Array(Key.keys.keys), id: \.self) { key in
                             Text(key).tag(key)
                         }
                     }
+                    Picker("Feel", selection: $specification.feel) {
+                        ForEach(Feel.allCases) { feel in
+                            Text(feel.description).tag(feel)
+                        }
+                    }
                     TextField("BPM", value: $specification.bpm, formatter: NumberFormatter())
                         .padding()
+                    Toggle("Include Drum Track", isOn: $specification.includeDrumTrack)
+                    Toggle("Include Bass Track", isOn: $specification.includeBassTrack)
                     TextField("Number of Choruses", value: $specification.numberOfChoruses, formatter: NumberFormatter())
                     HStack {
                         HStack {

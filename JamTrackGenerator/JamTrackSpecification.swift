@@ -10,8 +10,9 @@ import Foundation
  @Observable class JamTrackSpecification {
      var includeDrumTrack: Bool = true
      var includeBassTrack: Bool = true
-     var bpm: UInt8 = 80
-     var key: String = "C"
+     var feel: Feel = .shuffle
+     var bpm: UInt8 = 105
+     var key: String = "A"
      var numberOfChoruses: Int = 3
     // key signature
     // time signature
