@@ -8,33 +8,33 @@
 import Foundation
 
 struct NoteDuration: Equatable {
-    let value: UInt16
+    let value: UInt32
     
-    init(_ value: UInt16) {
+    init(_ value: UInt32) {
         self.value = value
     }
     
     static var whole: NoteDuration {
-        NoteDuration(Constants.pulsesPerQuarterNote * 4)
+        NoteDuration(Global.pulsesPerQuarterNote * 4)
     }
     
     static var half: NoteDuration {
-        NoteDuration(Constants.pulsesPerQuarterNote * 2)
+        NoteDuration(Global.pulsesPerQuarterNote * 2)
     }
     
     static var quarter: NoteDuration {
-        NoteDuration(Constants.pulsesPerQuarterNote)
+        NoteDuration(Global.pulsesPerQuarterNote)
     }
     
     static var eighth: NoteDuration {
-        NoteDuration(Constants.pulsesPerQuarterNote / 2)
+        NoteDuration(Global.pulsesPerQuarterNote / 2)
     }
     
     static var eighthTripletSwing: NoteDuration {
-        NoteDuration(Constants.pulsesPerQuarterNote / 3 * 2)
+        NoteDuration(Global.pulsesPerQuarterNote / 3 * 2)
     }
     
     static var eighthTriplet: NoteDuration {
-        NoteDuration(Constants.pulsesPerQuarterNote / 3)
+        NoteDuration(Global.pulsesPerQuarterNote / 3)
     }
 }

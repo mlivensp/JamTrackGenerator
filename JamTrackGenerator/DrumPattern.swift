@@ -7,10 +7,13 @@
 
 import Foundation
 
+
 struct DrumPattern {
-    static var pattern0: [DrumDescriptor] {
+    static let pattern05: Pattern = Pattern(chorus: pattern05Chorus())
+    
+    static func pattern05Chorus() -> [DrumDescriptor] {
         var events: [DrumDescriptor] = []
-        var pulseAtMeasureStart: UInt16 = 0
+        var pulseAtMeasureStart: UInt32 = 0
         var counter = 0
         // bars 1-4
         events.append(contentsOf: createPattern0Measure(pulseAtMeasureStart: pulseAtMeasureStart))
@@ -55,7 +58,7 @@ struct DrumPattern {
         return events
     }
     
-    fileprivate static func createPattern0Measure(pulseAtMeasureStart: UInt16) -> [DrumDescriptor] {
+    fileprivate static func createPattern0Measure(pulseAtMeasureStart: UInt32) -> [DrumDescriptor] {
         var events: [DrumDescriptor] = []
         var currentPulse = pulseAtMeasureStart
         var counter = 0

@@ -13,23 +13,54 @@ struct ContentView: View {
     @Query private var items: [Item]
     @State private var specification = JamTrackSpecification()
     @State private var export = false
+    @State private var player: MIDIPlayer?
+    @State private var errorMessage: String?
 
     var body: some View {
         NavigationSplitView {
-            Button("Do It") {
-                export = true
-            }
+            
+        }
+        detail: {
             VStack {
                 Form {
-                    TextField("BPM", value: $specification.bpm, formatter: NumberFormatter())
-                        .padding()
                     Picker("Key", selection: $specification.key) {
                         ForEach(Array(Key.keys.keys), id: \.self) { key in
                             Text(key).tag(key)
                         }
                     }
+                    TextField("BPM", value: $specification.bpm, formatter: NumberFormatter())
+                        .padding()
+                    TextField("Number of Choruses", value: $specification.numberOfChoruses, formatter: NumberFormatter())
+                    HStack {
+                        HStack {
+                            Button("Play") {
+                                playMidi()
+                            }
+                        }
+                        Spacer()
+                        HStack {
+                            Button("Export Midi") {
+                                export = true
+                            }
+                        }
+                    }
+                    .padding()
+                }
+                
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
                 }
             }
+        }
+//        }
+//        NavigationSplitView {
+//            Button("Do It") {
+//                export = true
+//            }
+//        }.navigationTitle(Text("Jam Track Generator"))
+//            }
 //            List {
 //                ForEach(items) { item in
 //                    NavigationLink {
@@ -55,6 +86,13 @@ struct ContentView: View {
                     }
                 }
             }
+            .onAppear {
+                do {
+                    player = try MIDIPlayer()
+                } catch {
+                    errorMessage = "Failed to initialize player: \(error.localizedDescription)"
+                }
+            }
             .fileExporter(
                 isPresented: $export,
                 document: buildDocument(specification: specification),
@@ -67,16 +105,38 @@ struct ContentView: View {
                         print("Failed to save file: \(error.localizedDescription)")
                     }
             }
-        } detail: {
-            Text("Select an item")
+    }
+    
+    private func playMidi() {
+        var song = Song()
+        song.buildTracks(specification: specification)
+        var document = MidiDocument(specification: specification, song: song)
+        document.encodeMidi()
+        let data = document.encodeMidiToData()
+        guard let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return
+        }
+        
+        let midiURL = documentsURL.appendingPathComponent("test.midi")
+        do {
+            try data.write(to: midiURL)
+        } catch {
+            print("Failed to write data to \(midiURL): \(error)")
+        }
+
+        do {
+//                    let midiURL = URL(string: "https://petersmidi.com/Am_I_Blue_AB.mid")! // Replace with a valid MIDI URL
+            try player?.playMIDIFile(from: midiURL)
+        } catch {
+            errorMessage = "Failed to play MIDI file: \(error.localizedDescription)"
         }
     }
     
     private func buildDocument(specification: JamTrackSpecification) -> MidiDocument {
-        var document = MidiDocument(pulsesPerQuarterNote: Constants.pulsesPerQuarterNote)
-        document.buildMetaTrack(specification: specification)
-        document.buildDrumTrack(specification: specification)
-        document.buildBassTrack(specification: specification)
+        var song = Song()
+        song.buildTracks(specification: specification)
+        var document = MidiDocument(specification: specification, song: song)
+        document.encodeMidi()
         return document
     }
 

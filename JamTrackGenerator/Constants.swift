@@ -8,6 +8,5 @@
 import Foundation
 
 struct Constants {
-    static let pulsesPerQuarterNote: UInt16 = 480
 }
 

@@ -11,7 +11,7 @@ struct MidiHeader{
     private let tag = "MThd"
     private let headerLength: UInt32 = 6
     private let format = UInt16(1)
-    let pulsesPerQuarterNote: UInt16
+    let pulsesPerQuarterNote: UInt32
     
     func encodeToData(trackCount: UInt16) -> Data{
         var data = Data()
@@ -19,7 +19,7 @@ struct MidiHeader{
         data.append(contentsOf: headerLength.bigEndianBytes)
         data.append(contentsOf: format.bigEndianBytes)
         data.append(contentsOf: trackCount.bigEndianBytes)
-        data.append(contentsOf: pulsesPerQuarterNote.bigEndianBytes)
+        data.append(contentsOf: UInt16(pulsesPerQuarterNote).bigEndianBytes)
         return data
     }
 }

@@ -26,7 +26,7 @@ struct BassPattern {
     
     var pattern0: [NoteDescriptor] {
         var events: [NoteDescriptor] = []
-        var pulseAtMeasureStart: UInt16 = 0
+        var pulseAtMeasureStart: UInt32 = 0
         
         // bar 1
         var pitches: [(ScaleDegree, Octave)] = [ (.root, 2), (.third, 3), (.fourth, 3), (.sixth, 3), (.fifth, 3)]
@@ -104,10 +104,10 @@ struct BassPattern {
         
     }
     
-    fileprivate func createFourthBeatSwingTripletsEvents(pitches: [(ScaleDegree, Octave)], startPulse: UInt16) -> [NoteDescriptor] {
+    fileprivate func createFourthBeatSwingTripletsEvents(pitches: [(ScaleDegree, Octave)], startPulse: UInt32) -> [NoteDescriptor] {
         var events: [NoteDescriptor] = []
         var event: NoteDescriptor
-        var nextPulse: UInt16 = startPulse
+        var nextPulse: UInt32 = startPulse
         for (i, (degree, octave)) in pitches.enumerated() {
             let duration = i == 4 ? NoteDuration.eighthTriplet : i == 3 ? NoteDuration.eighthTripletSwing : NoteDuration.quarter
             (event, nextPulse) = addEvent(degree: degree, octave: octave, onPulse: nextPulse, duration: duration)
@@ -117,10 +117,10 @@ struct BassPattern {
 
     }
     
-    fileprivate func createQuarterNoteMeasureEvents(pitches: [(ScaleDegree, Octave)], startPulse: UInt16) -> [NoteDescriptor] {
+    fileprivate func createQuarterNoteMeasureEvents(pitches: [(ScaleDegree, Octave)], startPulse: UInt32) -> [NoteDescriptor] {
         var events: [NoteDescriptor] = []
         var event: NoteDescriptor
-        var nextPulse: UInt16 = startPulse
+        var nextPulse: UInt32 = startPulse
         for (degree, octave) in pitches {
             (event, nextPulse) = addEvent(degree: degree, octave: octave, onPulse: nextPulse, duration: .quarter)
             events.append(event)
@@ -128,13 +128,13 @@ struct BassPattern {
         return events
     }
     
-    fileprivate func addEvent(degree: ScaleDegree, octave: Octave, onPulse: UInt16, duration: NoteDuration) -> (NoteDescriptor, UInt16) {
+    fileprivate func addEvent(degree: ScaleDegree, octave: Octave, onPulse: UInt32, duration: NoteDuration) -> (NoteDescriptor, UInt32) {
         let offPulse = onPulse + duration.value
         let event = NoteDescriptor(note: .init(degree: key[degree], octave: octave), on: onPulse, off: offPulse)
         return (event, offPulse)
     }
     
-    static let bassPattern1: [(ScaleDegree, Octave, NoteDuration)] = [
+//    static let bassPattern1: [(ScaleDegree, Octave, NoteDuration)] = [
 //        (.root, 1, .quarter), (.third, 2, .quarter), (.fourth, 2, .quarter), (.sixth, 2, .eighthTripletSwing), (.fifth, 2, .eighthTriplet),
 //        (.root, 1, .quarter), (.third, 2, .quarter), (.fifth, 2, .quarter), (.fourth, 2, .quarter),
 //        (.root, 1, .quarter), (.third, 2, .quarter), (.fourth, 2, .quarter), (.sixth, 2, .eighthTripletSwing), (.fifth, 2, .eighthTriplet),
@@ -145,7 +145,7 @@ struct BassPattern {
 //        (.root, 1, .quarter), (.third, 2, .quarter), (.fourth, 2, .quarter), (.flat5th, 2, .quarter),
 //        (.fifth, 2, .quarter), (.seventh, 2, .quarter), (.fifth, 2, .quarter), (.flat5th, 2, .quarter),
 //        (.fourth, 2, .quarter), (.sixth, 2, .quarter), (.minor7th, 2, .quarter), (.seventh, 2, .quarter),
-        (.root, 1, .quarter), (.third, 2, .quarter), (.fourth, 2, .quarter), (.fifth, 2, .quarter),
-        (.fifth, 2, .quarter), (.sixth, 2, .quarter), (.minor7th, 2, .quarter), (.seventh, 2, .quarter)
-    ]
+//        (.root, 1, .quarter), (.third, 2, .quarter), (.fourth, 2, .quarter), (.fifth, 2, .quarter),
+//        (.fifth, 2, .quarter), (.sixth, 2, .quarter), (.minor7th, 2, .quarter), (.seventh, 2, .quarter)
+//    ]
 }

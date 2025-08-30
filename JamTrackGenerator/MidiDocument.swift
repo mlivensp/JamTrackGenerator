@@ -36,58 +36,65 @@ extension FixedWidthInteger where Self: UnsignedInteger {
 struct MidiDocument: FileDocument {
     static var readableContentTypes: [UTType] { [.midi] }
     
+    let specification: JamTrackSpecification
+    let song: Song
     var header: MidiHeader
     var tracks: [MidiTrack] = []
     
-    mutating func buildMetaTrack(specification: JamTrackSpecification) {
-        var track = MidiTrack()
-        track.addTimeSignature(numerator: 4, denominator: 4)
-        track.addTempo(bpm: specification.bpm)
-        tracks.append(track)
+    init(specification: JamTrackSpecification, song: Song) {
+        self.specification = specification
+        self.song = song
+        self.header = .init(pulsesPerQuarterNote: Global.pulsesPerQuarterNote)
+        self.tracks = []
     }
     
-    mutating func buildDrumTrack(specification: JamTrackSpecification) {
-        var track = MidiTrack()
-        // convert drum event to on/off thangs
-        // sort by pulse number
-        // iterate
-        
-        var events: [DrumEvent] = []
-        for descriptor in DrumPattern.pattern0 {
-            events.append(.init(part: descriptor.part, command: 0x90, onPulse: descriptor.on, velocity: descriptor.onVelocity))
-            events.append(.init(part: descriptor.part, command: 0x80, onPulse: descriptor.off, velocity: descriptor.offVelocity))
-        }
-        
-        events.sort { ($0.onPulse, $0.command) < ($1.onPulse, $1.command) }
-        var lastPulse: UInt16 = 0
-        for event in events {
-            let delay = event.onPulse - lastPulse
-            track.addEvent(delay: delay, channel: 9, command: event.command, note: event.part.rawValue, velocity: event.velocity)
-            lastPulse = event.onPulse
-        }
-        tracks.append(track)
+    init(configuration: ReadConfiguration) throws {
+        throw CocoaError(.fileNoSuchFile)
     }
     
-    mutating func buildBassTrack(specification: JamTrackSpecification) {
-        let bassPattern = BassPattern.init(key: Key(specification.key))
-        let channel = UInt8(1)
-        var track = MidiTrack()
-        
-        var events: [NoteEvent] = []
-        for descriptor in bassPattern.pattern0 {
-            events.append(.init(note: descriptor.note, command: 0x90, onPulse: descriptor.on, velocity: descriptor.onVelocity))
-            events.append(.init(note: descriptor.note, command: 0x80, onPulse: descriptor.off, velocity: descriptor.offVelocity))
-        }
-        
-        events.sort { ($0.onPulse, $0.command) < ($1.onPulse, $1.command) }
-        var lastPulse: UInt16 = 0
-        for event in events {
-            let delay = event.onPulse - lastPulse
-            track.addEvent(delay: delay, channel: channel, command: event.command, note: event.note.midiValue, velocity: event.velocity)
-            lastPulse = event.onPulse
-        }
-        tracks.append(track)
 
+    fileprivate func buildMidiEvents(_ instrumentTrack: Track) -> [MidiEvent] {
+        var events: [MidiEvent] = []
+        for descriptor in instrumentTrack.events {
+            events.append(.init(value: descriptor.midiValue, command: 0x90, pulse: descriptor.offsetOn, velocity: descriptor.onVelocity))
+            events.append(.init(value: descriptor.midiValue, command: 0x80, pulse: descriptor.offsetOff, velocity: descriptor.offVelocity))
+        }
+        
+        return events
+    }
+    
+    fileprivate func buildMidiTrack(_ events: [MidiEvent], _ instrumentTrack: Track) -> MidiTrack {
+        var lastPulse: UInt32 = 0
+        var track = MidiTrack()
+        if let program = instrumentTrack.program {
+            track.add([0x00, 0xc1, program.rawValue])
+        }
+        
+        for event in events {
+            let delay = event.pulse - lastPulse
+            track.addEvent(delay: delay, channel: instrumentTrack.channel, command: event.command, note: event.value, velocity: event.velocity)
+            lastPulse = event.pulse
+        }
+        
+        track.endTrack()
+        return track
+    }
+    
+    mutating func encodeMidi() {
+        buildMetaTrack()
+        for instrumentTrack in song.tracks {
+            var events = buildMidiEvents(instrumentTrack)
+            events.sort { ($0.pulse, $0.command) < ($1.pulse, $1.command) }
+            tracks.append(buildMidiTrack(events, instrumentTrack))
+        }
+    }
+    
+    mutating func buildMetaTrack() {
+        var track = MidiTrack()
+        track.addTimeSignature(beat: 4, beatType: 4)
+        track.addTempo(bpm: specification.bpm)
+        track.endTrack()
+        tracks.append(track)
     }
     
     public struct Payload {
@@ -109,18 +116,14 @@ struct MidiDocument: FileDocument {
         }
     }
     
-    init(pulsesPerQuarterNote: UInt16) {
-        header = .init(pulsesPerQuarterNote: pulsesPerQuarterNote)
-        tracks = []
-    }
-    
-    init(configuration: ReadConfiguration) throws {
-        throw CocoaError(.fileNoSuchFile)
+    func encodeMidiToData() -> Data {
+        let payload = Payload(header: header, tracks: tracks)
+        return payload.encodeToData()
     }
     
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        let payload = Payload(header: header, tracks: tracks)
-        let data = payload.encodeToData()
+//        let payload = Payload(header: header, tracks: tracks)
+        let data = encodeMidiToData()
         return FileWrapper(regularFileWithContents: data)
     }
     

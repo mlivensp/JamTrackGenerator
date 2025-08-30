@@ -23,5 +23,6 @@ struct HarmonicEvent: Equatable {
     }
     
     let notes: [(Note, Velocity)]
-    let duration: UInt16
+    // TODO: shouldn't there be a type or type alias for duration??
+    let duration: UInt32
 }
