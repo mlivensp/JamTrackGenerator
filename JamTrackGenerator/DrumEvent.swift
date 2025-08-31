@@ -8,7 +8,7 @@
 import Foundation
 
 struct DrumEvent {
-    let part: DrumPart
+    let part: MidiDrumNote
     let command: UInt8
     let onPulse: UInt16
     let velocity: Velocity

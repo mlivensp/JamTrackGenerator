@@ -13,7 +13,8 @@ import Foundation
      var feel: Feel = .shuffle
      var bpm: UInt8 = 105
      var key: String = "A"
-     var numberOfChoruses: Int = 3
+     var numberOfChoruses: Int = 1
+     var includeCountIn = true
 }
 
 extension JamTrackSpecification {

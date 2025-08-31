@@ -17,7 +17,7 @@ struct DrumPattern {
         var counter = 0
         // bars 1-4
         events.append(contentsOf: createPattern0Measure(pulseAtMeasureStart: pulseAtMeasureStart))
-        events.append(.init(part: .crash, on: pulseAtMeasureStart, off: pulseAtMeasureStart + NoteDuration.whole.value))
+        events.append(.init(part: .crashCymbal1, on: pulseAtMeasureStart, off: pulseAtMeasureStart + NoteDuration.whole.value))
         pulseAtMeasureStart += NoteDuration.whole.value
         
         repeat {
@@ -28,7 +28,7 @@ struct DrumPattern {
         
         // bars 5-6
         events.append(contentsOf: createPattern0Measure(pulseAtMeasureStart: pulseAtMeasureStart))
-        events.append(.init(part: .crash, on: pulseAtMeasureStart, off: pulseAtMeasureStart + NoteDuration.whole.value))
+        events.append(.init(part: .crashCymbal1, on: pulseAtMeasureStart, off: pulseAtMeasureStart + NoteDuration.whole.value))
         pulseAtMeasureStart += NoteDuration.whole.value
         events.append(contentsOf: createPattern0Measure(pulseAtMeasureStart: pulseAtMeasureStart))
         pulseAtMeasureStart += NoteDuration.whole.value
@@ -36,21 +36,21 @@ struct DrumPattern {
         
         // bars 7-8
         events.append(contentsOf: createPattern0Measure(pulseAtMeasureStart: pulseAtMeasureStart))
-        events.append(.init(part: .crash, on: pulseAtMeasureStart, off: pulseAtMeasureStart + NoteDuration.whole.value))
+        events.append(.init(part: .crashCymbal1, on: pulseAtMeasureStart, off: pulseAtMeasureStart + NoteDuration.whole.value))
         pulseAtMeasureStart += NoteDuration.whole.value
         events.append(contentsOf: createPattern0Measure(pulseAtMeasureStart: pulseAtMeasureStart))
         pulseAtMeasureStart += NoteDuration.whole.value
         
         // bars 9-10
         events.append(contentsOf: createPattern0Measure(pulseAtMeasureStart: pulseAtMeasureStart))
-        events.append(.init(part: .crash, on: pulseAtMeasureStart, off: pulseAtMeasureStart + NoteDuration.whole.value))
+        events.append(.init(part: .crashCymbal1, on: pulseAtMeasureStart, off: pulseAtMeasureStart + NoteDuration.whole.value))
         pulseAtMeasureStart += NoteDuration.whole.value
         events.append(contentsOf: createPattern0Measure(pulseAtMeasureStart: pulseAtMeasureStart))
         pulseAtMeasureStart += NoteDuration.whole.value
         
         // bars 11-12
         events.append(contentsOf: createPattern0Measure(pulseAtMeasureStart: pulseAtMeasureStart))
-        events.append(.init(part: .crash, on: pulseAtMeasureStart, off: pulseAtMeasureStart + NoteDuration.whole.value))
+        events.append(.init(part: .crashCymbal1, on: pulseAtMeasureStart, off: pulseAtMeasureStart + NoteDuration.whole.value))
         pulseAtMeasureStart += NoteDuration.whole.value
         events.append(contentsOf: createPattern0Measure(pulseAtMeasureStart: pulseAtMeasureStart))
         pulseAtMeasureStart += NoteDuration.whole.value
@@ -63,10 +63,10 @@ struct DrumPattern {
         var currentPulse = pulseAtMeasureStart
         var counter = 0
         repeat {
-            events.append(.init(part: .kick, on: currentPulse, off: currentPulse + NoteDuration.quarter.value))
+            events.append(.init(part: .acousticBassDrum, on: currentPulse, off: currentPulse + NoteDuration.quarter.value))
             currentPulse += NoteDuration.quarter.value
-            events.append(.init(part: .kick, on: currentPulse, off: currentPulse + NoteDuration.quarter.value))
-            events.append(.init(part: .snare, on: currentPulse, off: currentPulse + NoteDuration.quarter.value))
+            events.append(.init(part: .acousticBassDrum, on: currentPulse, off: currentPulse + NoteDuration.quarter.value))
+            events.append(.init(part: .acousticSnare, on: currentPulse, off: currentPulse + NoteDuration.quarter.value))
             currentPulse += NoteDuration.quarter.value
             counter += 1
         } while counter < 2

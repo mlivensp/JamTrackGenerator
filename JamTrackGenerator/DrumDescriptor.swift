@@ -8,13 +8,13 @@
 import Foundation
 
 struct DrumDescriptor: EventDescriptor {
-    let part: DrumPart
+    let part: MidiDrumNote
     let on: UInt32
     let off: UInt32
     let onVelocity: Velocity
     let offVelocity: Velocity
     
-    init(part: DrumPart, on: UInt32, off: UInt32, onVelocity: Velocity = 100, offVelocity: Velocity = 64) {
+    init(part: MidiDrumNote, on: UInt32, off: UInt32, onVelocity: Velocity = 100, offVelocity: Velocity = 64) {
         self.part = part
         self.on = on
         self.off = off

@@ -27,6 +27,7 @@ struct JamTrackDetailView: View {
                     }
                     TextField("BPM", value: $viewModel.specification.bpm, formatter: NumberFormatter())
                         .padding()
+                    Toggle("Include Count In", isOn: $viewModel.specification.includeCountIn)
                     Toggle("Include Drum Track", isOn: $viewModel.specification.includeDrumTrack)
                     Toggle("Include Bass Track", isOn: $viewModel.specification.includeBassTrack)
                     TextField("Number of Choruses", value: $viewModel.specification.numberOfChoruses, formatter: NumberFormatter())
