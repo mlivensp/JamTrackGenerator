@@ -14,8 +14,15 @@ import Foundation
      var bpm: UInt8 = 105
      var key: String = "A"
      var numberOfChoruses: Int = 3
-    // key signature
-    // time signature
-    // tempo
-    // template
+}
+
+extension JamTrackSpecification {
+    func encodeToMidi() -> Data {
+        var song = Song()
+        song.buildTracks(specification: self)
+        var document = MidiDocument(specification: self, song: song)
+        document.encodeMidi()
+        let midiData = document.encodeMidiToData()
+        return Data(midiData)
+    }
 }

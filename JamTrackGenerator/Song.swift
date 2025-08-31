@@ -24,7 +24,7 @@ struct Song {
     
     mutating func buildDrumTrack(specification: JamTrackSpecification) -> Track {
         var descriptors: [EventDescriptor] = []
-        var pattern = DrumPattern.pattern05
+        let pattern = DrumPattern.pattern05
         let maxPulse = pattern.chorus.last?.off ?? 0
         var currentOffset = UInt32(0)
         for _ in 0..<specification.numberOfChoruses {
@@ -61,7 +61,7 @@ struct Song {
         return Track(channel: channel, program: .electricBassFinger, events: descriptors)
     }
     
-    mutating func nextChannel() -> UInt8 {
+    mutating private func nextChannel() -> UInt8 {
         channel += 1
         
         if channel == 9 {
