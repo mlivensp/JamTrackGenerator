@@ -23,7 +23,8 @@ struct Song {
     
     mutating func buildDrumTrack(specification: JamTrackSpecification) -> Track {
         var descriptors: [EventDescriptor] = []
-        let pattern = DrumPattern.pattern05
+        let drumPattern = DrumPattern(specification: specification)
+        let pattern = drumPattern.pattern05
         let maxPulse = pattern.chorus.last?.off ?? 0
         var currentOffset = UInt32(0)
         
@@ -60,7 +61,7 @@ struct Song {
         currentPulse = offPulse
         offPulse = currentPulse + NoteDuration.quarter.value
         currentPulse = offPulse
-        for i in 0..<4 {
+        for _ in 0..<4 {
             offPulse = currentPulse + NoteDuration.quarter.value
             descriptors.append(DrumDescriptor(part: .sideStick, on: currentPulse, off: offPulse))
             currentPulse = offPulse

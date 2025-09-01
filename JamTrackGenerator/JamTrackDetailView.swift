@@ -25,12 +25,26 @@ struct JamTrackDetailView: View {
                             Text(feel.description).tag(feel)
                         }
                     }
-                    TextField("BPM", value: $viewModel.specification.bpm, formatter: NumberFormatter())
-                        .padding()
+                    
+                    HStack {
+                        Text("BPM")
+                        Spacer()
+                        TextField("BPM", value: $viewModel.specification.bpm, formatter: NumberFormatter())
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 60)
+                    }
+                    
                     Toggle("Include Count In", isOn: $viewModel.specification.includeCountIn)
+
                     Toggle("Include Drum Track", isOn: $viewModel.specification.includeDrumTrack)
                     Toggle("Include Bass Track", isOn: $viewModel.specification.includeBassTrack)
-                    TextField("Number of Choruses", value: $viewModel.specification.numberOfChoruses, formatter: NumberFormatter())
+                    HStack {
+                        Text("Number Of Choruses")
+                        Spacer()
+                        TextField("Number of Choruses", value: $viewModel.specification.numberOfChoruses, formatter: NumberFormatter())
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 60)
+                    }
                 }
             }
             .toolbar {
