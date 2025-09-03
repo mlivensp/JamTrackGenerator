@@ -1,13 +1,29 @@
 import AVFoundation
 
-class MIDIPlayer {
-    private let audioEngine = AVAudioEngine()
-    private let sampler = AVAudioUnitSampler()
-    private var midiPlayer: AVMIDIPlayer?
-    private var midiData: Data? // Store MIDI data for looping
-    private var soundFontURL: URL? // Store sound font URL for looping
-    private var isLooping: Bool = false // Track looping state
+/// Playback state for the score
+enum PlaybackState {
+    case stopped
+    case playing
+    case paused
+}
+
+@Observable class MIDIPlayer {
+    @ObservationIgnored private let audioEngine = AVAudioEngine()
+    @ObservationIgnored private let sampler = AVAudioUnitSampler()
+    var midiPlayer: AVMIDIPlayer?
+    @ObservationIgnored private var midiData: Data? // Store MIDI data for looping
+    @ObservationIgnored private var soundFontURL: URL? // Store sound font URL for looping
+    var isLooping: Bool = false // Track looping state
     
+    var playbackState: PlaybackState = .stopped
+    @ObservationIgnored private var playbackTimer: Timer?
+    private var startTime: Date?
+    private var pausedTime: TimeInterval = 0
+    var currentPosition: TimeInterval = 0
+    var totalDuration: TimeInterval = 0
+    var currentTempo: Double = 120.0 // BPM
+    var volume: Float = 0.8
+
     init() throws {
         #if os(iOS)
         // Configure audio session for iOS
@@ -54,6 +70,20 @@ class MIDIPlayer {
         }
     }
     
+    deinit {
+        // Synchronously stop timer and audio
+        playbackTimer?.invalidate()
+        playbackTimer = nil
+        
+        // Stop audio engine synchronously
+        audioEngine.stop()
+        
+        // Clean up MIDI resources
+//        if midiClient != 0 {
+//            MIDIClientDispose(midiClient)
+//        }
+    }
+
     func playNote() {
         print("Playing single note: MIDI 60")
         sampler.startNote(60, withVelocity: 100, onChannel: 0)
@@ -85,18 +115,27 @@ class MIDIPlayer {
         
         do {
             midiPlayer = try AVMIDIPlayer(data: midiData, soundBankURL: soundFontURL)
+            if let midiPlayer = midiPlayer {
+                totalDuration = midiPlayer.duration
+            }
             midiPlayer?.prepareToPlay()
             midiPlayer?.play { [weak self] in
                 print("MIDI playback completed.")
-                if let self = self, self.isLooping {
-                    // Restart playback if looping is enabled
-                    do {
-                        try self.restartMIDIFile()
-                    } catch {
-                        print("Failed to restart MIDI file for looping: \(error)")
+                if let self = self {
+                    self.playbackState = .stopped
+                    
+                    if self.isLooping {
+                        // Restart playback if looping is enabled
+                        do {
+                            try self.restartMIDIFile()
+                        } catch {
+                            print("Failed to restart MIDI file for looping: \(error)")
+                        }
                     }
                 }
             }
+            playbackState = .playing
+//            startPlaybackTimer()
             print("MIDI file playback started.")
         } catch {
             throw NSError(domain: "Failed to play MIDI file: \(error.localizedDescription)", code: -4, userInfo: nil)
@@ -112,15 +151,21 @@ class MIDIPlayer {
         midiPlayer?.prepareToPlay()
         midiPlayer?.play { [weak self] in
             print("MIDI playback completed.")
-            if let self = self, self.isLooping {
-                // Continue looping
-                do {
-                    try self.restartMIDIFile()
-                } catch {
-                    print("Failed to restart MIDI file for looping: \(error)")
+            if let self {
+                playbackState = .stopped
+                
+                if self.isLooping {
+                    // Continue looping
+                    do {
+                        try self.restartMIDIFile()
+                    } catch {
+                        print("Failed to restart MIDI file for looping: \(error)")
+                    }
                 }
             }
         }
+        playbackState = .playing
+        startPlaybackTimer()
         print("MIDI file playback restarted for looping.")
     }
     
@@ -130,6 +175,8 @@ class MIDIPlayer {
             return
         }
         midiPlayer.stop() // AVMIDIPlayer has no explicit pause, so we stop and retain position
+        stopPlaybackTimer()
+        playbackState = .paused
         print("MIDI file playback paused at position: \(midiPlayer.currentPosition) seconds.")
     }
     
@@ -150,6 +197,8 @@ class MIDIPlayer {
                 }
             }
         }
+        playbackState = .playing
+        startPlaybackTimer()
         print("MIDI file playback resumed from position: \(midiPlayer.currentPosition) seconds.")
     }
     
@@ -157,12 +206,51 @@ class MIDIPlayer {
         midiPlayer?.stop()
         midiPlayer = nil
         midiData = nil // Clear stored data
+        stopPlaybackTimer()
         isLooping = false // Reset looping state
         print("MIDI file playback stopped.")
     }
     
+    private func startPlaybackTimer() {
+        playbackTimer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.updatePlayback()
+            }
+        }
+    }
+    
+    private func stopPlaybackTimer() {
+        playbackTimer?.invalidate()
+        playbackTimer = nil
+    }
+
     func setLooping(_ enabled: Bool) {
         isLooping = enabled
         print("Looping \(enabled ? "enabled" : "disabled").")
+    }
+    
+    private func updatePlayback() {
+//        guard let startTime = startTime else { return }
+        guard let midiPlayer else { return }
+        currentPosition = midiPlayer.currentPosition
+        print("Current position: \(currentPosition)")
+//        // Check if we've reached the end
+//        if currentTime >= totalDuration {
+//            if isLooping {
+//                stop()
+//                play()
+//                return
+//            } else {
+//                stop()
+//                return
+//            }
+//        }
+//        
+//        // Process MIDI events that should happen now
+//        while noteIndex < sortedNotes.count && sortedNotes[noteIndex].timestamp <= currentTime {
+//            let event = sortedNotes[noteIndex]
+//            processMIDIEvent(event)
+//            noteIndex += 1
+//        }
     }
 }

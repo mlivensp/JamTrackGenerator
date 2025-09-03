@@ -9,21 +9,57 @@ import Foundation
 
 extension JamTrackDetailView {
     @Observable class ViewModel {
-        var specification = JamTrackSpecification()
+        var specification: JamTrackSpecification
         var isPlaying = false
         var isPaused = false
         var export = false
         var errorMessage: String?
 
 
-        private var midiPlayer: MIDIPlayer?
+        var midiPlayer: MIDIPlayer?
+
+        
+        var sections: [Section] = []
+        var selectedSection: Section? = nil
+        var selectedSongSection: SongSection? = nil
+        
+        var parts: [Part] = []
+        var selectedPart: Part? = nil
+        var selectedMidiInstrument: MidiInstrument? = nil
 
         init() {
             do {
+                // TODO: move this closer to where it is needed
                 midiPlayer = try MIDIPlayer()
             } catch {
                 errorMessage = "Failed to initialize player: \(error.localizedDescription)"
             }
+            
+            specification = JamTrackSpecification()
+            specification.sections.append(Section(section: .chorus))
+            sections = specification.sections
+            selectedSongSection = .intro
+            
+            parts.append(Part(instrument: .electricBassFinger))
+        }
+        
+        func addSection(section: SongSection) {
+            specification.sections.append(Section(section: section))
+            sections = specification.sections
+        }
+        
+        func deleteSection(section: Section) {
+            if let sectionIndex = specification.sections.firstIndex(of: section) {
+                specification.sections.remove(at: sectionIndex)
+            }
+        }
+        
+        func addPart(part: MidiInstrument) {
+            
+        }
+        
+        func deletePart(part: Part) {
+            
         }
         
         func play() {

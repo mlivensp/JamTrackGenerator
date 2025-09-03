@@ -15,6 +15,7 @@ import Foundation
      var key: String = "A"
      var numberOfChoruses: Int = 1
      var includeCountIn = true
+     var sections: [Section] = []
 }
 
 extension JamTrackSpecification {

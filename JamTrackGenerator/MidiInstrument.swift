@@ -5,7 +5,8 @@
 //  Created by Michael Livenspargar on 8/29/25.
 //
 
-enum MidiInstrument: UInt8, CaseIterable {
+enum MidiInstrument: UInt8, Identifiable, CaseIterable {
+    var id: Self { self }
     // Piano
     case acousticGrandPiano = 0
     case brightAcousticPiano = 1
@@ -165,6 +166,10 @@ enum MidiInstrument: UInt8, CaseIterable {
     case helicopter = 125
     case applause = 126
     case gunshot = 127
+    
+    var description: String {
+        "\(self)".camelCaseToCapitalizedWords()
+    }
 }
 
 enum MidiInstrumentFamily: String, CaseIterable {

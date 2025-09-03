@@ -8,11 +8,12 @@
 import Foundation
 
 enum Feel: CaseIterable, Identifiable, CustomStringConvertible {
+    
+    var id: Self { self }
+    
     case straight
     case shuffle
     case slow
-    
-    var id: Self { self }
     
     var description: String {
         switch self {
