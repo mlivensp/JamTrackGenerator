@@ -40,7 +40,9 @@ extension JamTrackDetailView {
             sections = specification.sections
             selectedSongSection = .intro
             
-            parts.append(Part(instrument: .electricBassFinger))
+            specification.parts.append(Part(instrument: .drums))
+            specification.parts.append(Part(instrument: .electricBassFinger))
+            parts = specification.parts
         }
         
         func addSection(section: SongSection) {
@@ -55,7 +57,9 @@ extension JamTrackDetailView {
         }
         
         func addPart(part: MidiInstrument) {
-            
+            let part = Part(instrument: part)
+            specification.parts.append(part)
+            parts = specification.parts
         }
         
         func deletePart(part: Part) {

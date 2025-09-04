@@ -167,6 +167,9 @@ enum MidiInstrument: UInt8, Identifiable, CaseIterable {
     case applause = 126
     case gunshot = 127
     
+    // not a midi value but needed for this purpose
+    case drums = 240
+    
     var description: String {
         "\(self)".camelCaseToCapitalizedWords()
     }
@@ -253,7 +256,7 @@ extension MidiInstrument {
             return .ethnic
 
         case .tinkleBell, .agogo, .steelDrums, .woodblock,
-             .taikoDrum, .melodicTom, .synthDrum, .reverseCymbal:
+                .taikoDrum, .melodicTom, .synthDrum, .reverseCymbal, .drums:
             return .percussive
 
         case .guitarFretNoise, .breathNoise, .seashore, .birdTweet,

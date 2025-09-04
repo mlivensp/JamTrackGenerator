@@ -69,22 +69,6 @@ struct JamTrackDetailView: View {
                 Toggle("Include Count In", isOn: $viewModel.specification.includeCountIn)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-//                Toggle("Include Drum Track", isOn: $viewModel.specification.includeDrumTrack)
-//                    .padding(.horizontal, 8)
-//                    .padding(.vertical, 4)
-//                Toggle("Include Bass Track", isOn: $viewModel.specification.includeBassTrack)
-//                    .padding(.horizontal, 8)
-//                    .padding(.vertical, 4)
-//                HStack(spacing: 0) {
-//                    Text("Number Of Choruses")
-//                    Spacer()
-//                    TextField("Number of Choruses", value: $viewModel.specification.numberOfChoruses, formatter: NumberFormatter())
-//                        .multilineTextAlignment(.trailing)
-//                        .frame(width: 60)
-//                }
-//                .padding(.horizontal, 8)
-//                .padding(.vertical, 4)
-
             }
             .background(.green)
             .padding()
@@ -137,21 +121,16 @@ struct JamTrackDetailView: View {
         VStack(spacing: 0) {
             SwiftUI.Section(header: Text("Parts")) {
                 HStack {
-                    VStack {
-                        Toggle("Include Drum Track", isOn: $viewModel.specification.includeDrumTrack)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                        List(selection: $viewModel.selectedPart) {
-                            ForEach(viewModel.parts) { part in
-                                NavigationLink {
-                                    EditPartView(part: Binding(
-                                        get: { part },
-                                        set: { _ in return }
-                                    ))
-                                }
-                                label: {
-                                    Text(part.description)
-                                }
+                    List(selection: $viewModel.selectedPart) {
+                        ForEach(viewModel.parts) { part in
+                            NavigationLink {
+                                EditPartView(part: Binding(
+                                    get: { part },
+                                    set: { _ in return }
+                                ))
+                            }
+                            label: {
+                                Text(part.description)
                             }
                         }
                     }
@@ -173,17 +152,10 @@ struct JamTrackDetailView: View {
                 }
             }
             .border(.red)
-            
-            SwiftUI.Section(header: Text("Parts")) {
-                Text("Blue")
-                    .border(.red)
-                    .background(.blue)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-
+    
     private var playbackControls: some View {
         VStack(spacing: 16) {
             HStack(spacing: 20) {
@@ -266,32 +238,6 @@ struct JamTrackDetailView: View {
         let seconds = Int(time) % 60
         return String(format: "%d:%02d", minutes, seconds)
     }
-    
-    //    private var playbackControls: some View {
-    //        HStack(spacing: 20) {
-    //            Button {
-    //                viewModel.play()
-    //            } label: {
-    //                Label("Play", systemImage: "play.fill")
-    //            }
-    //            .disabled(viewModel.isPlaying && !viewModel.isPaused)
-    //
-    //            Button {
-    //                viewModel.pause()
-    //            } label: {
-    //                Label("Pause", systemImage: "pause.fill")
-    //            }
-    //            .disabled(!viewModel.isPlaying || viewModel.isPaused)
-    //
-    //            Button {
-    //                viewModel.stop()
-    //            } label: {
-    //                Label("Stop", systemImage: "stop.fill")
-    //            }
-    //            .disabled(!viewModel.isPlaying)
-    //        }
-    //        .padding()
-    //    }
 }
 
 #Preview {
