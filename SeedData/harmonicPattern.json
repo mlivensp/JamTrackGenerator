@@ -1,0 +1,72 @@
+[
+  {
+      "name": "Walking Bass",
+      "style": "12 Bar Blues",
+      "songSection": "Chorus",
+      "notes": [
+          { "scaleDegree": "Root", "octave": 2, "timestampOn": 0, "timestampOff": 480 },
+          { "scaleDegree": "3rd", "octave": 2, "timestampOn": 480, "timestampOff": 960 },
+          { "scaleDegree": "4th", "octave": 2, "timestampOn": 960, "timestampOff":  1440 },
+          { "scaleDegree": "6th", "octave": 2, "timestampOn": 1440, "timestampOff":  1760 },
+          { "scaleDegree": "5th", "octave": 2, "timestampOn": 1760, "timestampOff":  1920 },
+          
+          { "scaleDegree": "Root", "octave": 2, "timestampOn": 1920, "timestampOff": 2400 },
+          { "scaleDegree": "3rd", "octave": 2, "timestampOn": 2400, "timestampOff": 2880 },
+          { "scaleDegree": "5th", "octave": 2, "timestampOn": 2880, "timestampOff":  3360 },
+          { "scaleDegree": "4th", "octave": 2, "timestampOn": 3360, "timestampOff":  3840 },
+
+          { "scaleDegree": "Root", "octave": 2, "timestampOn": 3840, "timestampOff": 4320 },
+          { "scaleDegree": "3rd", "octave": 2, "timestampOn": 4320, "timestampOff": 4800 },
+          { "scaleDegree": "4th", "octave": 2, "timestampOn": 4800, "timestampOff":  5280 },
+          { "scaleDegree": "6th", "octave": 2, "timestampOn": 5280, "timestampOff":  5600 },
+          { "scaleDegree": "5th", "octave": 2, "timestampOn": 5600, "timestampOff":  5760 },
+          
+          { "scaleDegree": "Root", "octave": 2, "timestampOn": 5760, "timestampOff": 6240 },
+          { "scaleDegree": "5th", "octave": 2, "timestampOn": 6240, "timestampOff": 6720 },
+          { "scaleDegree": "6th", "octave": 2, "timestampOn": 6720, "timestampOff":  7200 },
+          { "scaleDegree": "3rd", "octave": 2, "timestampOn": 7200, "timestampOff":  7680 },
+
+          { "scaleDegree": "4th", "octave": 2, "timestampOn": 7680, "timestampOff": 8160 },
+          { "scaleDegree": "6th", "octave": 2, "timestampOn": 8160, "timestampOff": 8640 },
+          { "scaleDegree": "Root", "octave": 2, "timestampOn": 8640, "timestampOff":  9120 },
+          { "scaleDegree": "2nd", "octave": 2, "timestampOn": 9120, "timestampOff":  9440 },
+          { "scaleDegree": "Root", "octave": 2, "timestampOn": 9440, "timestampOff":  9600 },
+          
+          { "scaleDegree": "4th", "octave": 2, "timestampOn": 9600, "timestampOff": 10080 },
+          { "scaleDegree": "6th", "octave": 2, "timestampOn": 10080, "timestampOff": 10560 },
+          { "scaleDegree": "Flat 7th", "octave": 2, "timestampOn": 10560, "timestampOff":  11040 },
+          { "scaleDegree": "7th", "octave": 2, "timestampOn": 11040, "timestampOff":  11520 },
+
+          { "scaleDegree": "Root", "octave": 2, "timestampOn": 11520, "timestampOff": 12000 },
+          { "scaleDegree": "3rd", "octave": 2, "timestampOn": 12000, "timestampOff": 12480 },
+          { "scaleDegree": "4th", "octave": 2, "timestampOn": 12480, "timestampOff":  12960 },
+          { "scaleDegree": "6th", "octave": 2, "timestampOn": 12960, "timestampOff":  13280 },
+          { "scaleDegree": "5th", "octave": 2, "timestampOn": 13280, "timestampOff":  13440 },
+          
+          { "scaleDegree": "Root", "octave": 2, "timestampOn": 13440, "timestampOff": 13920 },
+          { "scaleDegree": "3rd", "octave": 2, "timestampOn": 13920, "timestampOff": 14400 },
+          { "scaleDegree": "4th", "octave": 2, "timestampOn": 14400, "timestampOff":  14880 },
+          { "scaleDegree": "Flat 5th", "octave": 2, "timestampOn": 14880, "timestampOff":  15360 },
+          
+          { "scaleDegree": "5th", "octave": 2, "timestampOn": 15360, "timestampOff": 15840 },
+          { "scaleDegree": "7th", "octave": 2, "timestampOn": 15840, "timestampOff": 16320 },
+          { "scaleDegree": "5th", "octave": 2, "timestampOn": 16320, "timestampOff":  16800 },
+          { "scaleDegree": "Flat 5th", "octave": 2, "timestampOn": 16800, "timestampOff":  17280 },
+          
+          { "scaleDegree": "4th", "octave": 2, "timestampOn": 17280, "timestampOff": 17760 },
+          { "scaleDegree": "6th", "octave": 2, "timestampOn": 17760, "timestampOff": 18240 },
+          { "scaleDegree": "Flat 7th", "octave": 2, "timestampOn": 18240, "timestampOff":  18720 },
+          { "scaleDegree": "7th", "octave": 2, "timestampOn": 18720, "timestampOff":  19200 },
+          
+          { "scaleDegree": "Root", "octave": 2, "timestampOn": 19200, "timestampOff": 19680 },
+          { "scaleDegree": "3rd", "octave": 2, "timestampOn": 19680, "timestampOff": 20160 },
+          { "scaleDegree": "4th", "octave": 2, "timestampOn": 20160, "timestampOff":  20640 },
+          { "scaleDegree": "5th", "octave": 2, "timestampOn": 20640, "timestampOff":  21120 },
+          
+          { "scaleDegree": "5th", "octave": 2, "timestampOn": 21120, "timestampOff": 21600 },
+          { "scaleDegree": "6th", "octave": 2, "timestampOn": 21600, "timestampOff": 22080 },
+          { "scaleDegree": "Flat 7th", "octave": 2, "timestampOn": 22080, "timestampOff":  22560 },
+          { "scaleDegree": "7th", "octave": 2, "timestampOn": 22560, "timestampOff":  23040 }
+     ]
+  }
+]

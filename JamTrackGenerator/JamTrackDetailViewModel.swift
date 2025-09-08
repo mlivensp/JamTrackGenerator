@@ -9,7 +9,7 @@ import Foundation
 
 extension JamTrackDetailView {
     @Observable class ViewModel {
-        var specification: JamTrackSpecification
+        var definition: Definition
         var isPlaying = false
         var isPaused = false
         var export = false
@@ -19,15 +19,16 @@ extension JamTrackDetailView {
         var midiPlayer: MIDIPlayer?
 
         
-        var sections: [Section] = []
+//        var sections: [Section] = []
         var selectedSection: Section? = nil
         var selectedSongSection: SongSection? = nil
         
         var parts: [Part] = []
         var selectedPart: Part? = nil
-        var selectedMidiInstrument: MidiInstrument? = nil
+        var selectedMidiInstrument: Instrument? = nil
 
-        init() {
+        init(definition: Definition) {
+            self.definition = definition
             do {
                 // TODO: move this closer to where it is needed
                 midiPlayer = try MIDIPlayer()
@@ -35,39 +36,42 @@ extension JamTrackDetailView {
                 errorMessage = "Failed to initialize player: \(error.localizedDescription)"
             }
             
-            specification = JamTrackSpecification()
-            specification.sections.append(Section(section: .chorus))
-            sections = specification.sections
-            selectedSongSection = .intro
-            
-            specification.parts.append(Part(instrument: .drums))
-            specification.parts.append(Part(instrument: .electricBassFinger))
-            parts = specification.parts
+//            specification = JamTrackSpecification()
+//            specification.sections.append(Section(section: .chorus))
+//            sections = specification.sections
+//            selectedSongSection = .intro
+//            
+//            specification.parts.append(Part(instrument: .drums))
+//            specification.parts.append(Part(instrument: .electricBassFinger))
+//            parts = specification.parts
         }
         
-        func addSection(section: SongSection) {
-            specification.sections.append(Section(section: section))
-            sections = specification.sections
+        func addSection(songSection: SongSection) {
+            let order = definition.sections.map { $0.order }.max() ?? 0
+            definition.sections.append(Section(definition: definition, songSection: songSection, order: order + 1))
+//            sections = definition.sections
         }
         
         func deleteSection(section: Section) {
-            if let sectionIndex = specification.sections.firstIndex(of: section) {
-                specification.sections.remove(at: sectionIndex)
+            if let sectionIndex = definition.sections.firstIndex(of: section) {
+                definition.sections.remove(at: sectionIndex)
             }
         }
         
-        func addPart(part: MidiInstrument) {
-            let part = Part(instrument: part)
-            specification.parts.append(part)
-            parts = specification.parts
+        func addPart(instrument: Instrument) {
+            let part = Part(instrument: instrument)
+            definition.parts.append(part)
+            parts = definition.parts
         }
         
         func deletePart(part: Part) {
-            
+            if let partIndex = definition.parts.firstIndex(of: part) {
+                definition.parts.remove(at: partIndex)
+            }
         }
         
         func play() {
-            let data = specification.encodeToMidi()
+            let data = definition.encodeToMidi()
             guard let url = saveToDocuments(data: data) else {
                 errorMessage = "Failed to save MIDI file"
                 return
@@ -101,8 +105,8 @@ extension JamTrackDetailView {
 
         func buildDocument() -> MidiDocument {
             var song = Song()
-            song.buildTracks(specification: specification)
-            var document = MidiDocument(specification: specification, song: song)
+            song.buildTracks(definition: definition)
+            var document = MidiDocument(definition: definition, song: song)
             document.encodeMidi()
             return document
         }

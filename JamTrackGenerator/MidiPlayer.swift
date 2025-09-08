@@ -84,14 +84,14 @@ enum PlaybackState {
 //        }
     }
 
-    func playNote() {
-        print("Playing single note: MIDI 60")
-        sampler.startNote(60, withVelocity: 100, onChannel: 0)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            self.sampler.stopNote(60, onChannel: 0)
-            print("Stopped single note.")
-        }
-    }
+//    func playNote() {
+//        print("Playing single note: MIDI 60")
+//        sampler.startNote(60, withVelocity: 100, onChannel: 0)
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+//            self.sampler.stopNote(60, onChannel: 0)
+//            print("Stopped single note.")
+//        }
+//    }
     
     func playMIDIFile(from url: URL, loop: Bool = false) throws {
         print("Attempting to play MIDI file from: \(url)")

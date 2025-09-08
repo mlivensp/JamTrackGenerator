@@ -15,7 +15,7 @@ struct EditPartView: View {
             HStack {
                 Text("Part")
                 Spacer()
-                Text(part.instrument.description)
+                Text(part.instrument.name)
             }
          }
         .navigationTitle("Edit Part")
@@ -34,7 +34,7 @@ struct EditPartView: View {
     }
 }
 
-#Preview {
-    @Previewable @State var part = Part(instrument: .accordion)
-    EditPartView(part: $part)
-}
+//#Preview {
+//    @Previewable @State var part = Part(instrument: .accordion)
+//    EditPartView(part: $part)
+//}

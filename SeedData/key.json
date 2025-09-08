@@ -1,0 +1,146 @@
+[
+  {
+    "key": "C Major",
+    "notes": [
+      { "note": "C", "scaleDegreeName": "Root" },
+      { "note": "D", "scaleDegreeName": "2nd" },
+      { "note": "E", "scaleDegreeName": "3rd" },
+      { "note": "F", "scaleDegreeName": "4th" },
+      { "note": "G", "scaleDegreeName": "5th" },
+      { "note": "A", "scaleDegreeName": "6th" },
+      { "note": "B", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "G Major",
+    "notes": [
+      { "note": "G", "scaleDegreeName": "Root" },
+      { "note": "A", "scaleDegreeName": "2nd" },
+      { "note": "B", "scaleDegreeName": "3rd" },
+      { "note": "C", "scaleDegreeName": "4th" },
+      { "note": "D", "scaleDegreeName": "5th" },
+      { "note": "E", "scaleDegreeName": "6th" },
+      { "note": "F♯", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "D Major",
+    "notes": [
+      { "note": "D", "scaleDegreeName": "Root" },
+      { "note": "E", "scaleDegreeName": "2nd" },
+      { "note": "F♯", "scaleDegreeName": "3rd" },
+      { "note": "G", "scaleDegreeName": "4th" },
+      { "note": "A", "scaleDegreeName": "5th" },
+      { "note": "B", "scaleDegreeName": "6th" },
+      { "note": "C♯", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "A Major",
+    "notes": [
+      { "note": "A", "scaleDegreeName": "Root" },
+      { "note": "B", "scaleDegreeName": "2nd" },
+      { "note": "C♯", "scaleDegreeName": "3rd" },
+      { "note": "D", "scaleDegreeName": "4th" },
+      { "note": "E", "scaleDegreeName": "5th" },
+      { "note": "F♯", "scaleDegreeName": "6th" },
+      { "note": "G♯", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "E Major",
+    "notes": [
+      { "note": "E", "scaleDegreeName": "Root" },
+      { "note": "F♯", "scaleDegreeName": "2nd" },
+      { "note": "G♯", "scaleDegreeName": "3rd" },
+      { "note": "A", "scaleDegreeName": "4th" },
+      { "note": "B", "scaleDegreeName": "5th" },
+      { "note": "C♯", "scaleDegreeName": "6th" },
+      { "note": "D♯", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "B Major",
+    "notes": [
+      { "note": "B", "scaleDegreeName": "Root" },
+      { "note": "C♯", "scaleDegreeName": "2nd" },
+      { "note": "D♯", "scaleDegreeName": "3rd" },
+      { "note": "E", "scaleDegreeName": "4th" },
+      { "note": "F♯", "scaleDegreeName": "5th" },
+      { "note": "G♯", "scaleDegreeName": "6th" },
+      { "note": "A♯", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "F♯ Major",
+    "notes": [
+      { "note": "F♯", "scaleDegreeName": "Root" },
+      { "note": "G♯", "scaleDegreeName": "2nd" },
+      { "note": "A♯", "scaleDegreeName": "3rd" },
+      { "note": "B", "scaleDegreeName": "4th" },
+      { "note": "C♯", "scaleDegreeName": "5th" },
+      { "note": "D♯", "scaleDegreeName": "6th" },
+      { "note": "E♯", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "C♯ Major",
+    "notes": [
+      { "note": "C♯", "scaleDegreeName": "Root" },
+      { "note": "D♯", "scaleDegreeName": "2nd" },
+      { "note": "E♯", "scaleDegreeName": "3rd" },
+      { "note": "F♯", "scaleDegreeName": "4th" },
+      { "note": "G♯", "scaleDegreeName": "5th" },
+      { "note": "A♯", "scaleDegreeName": "6th" },
+      { "note": "B♯", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "F Major",
+    "notes": [
+      { "note": "F", "scaleDegreeName": "Root" },
+      { "note": "G", "scaleDegreeName": "2nd" },
+      { "note": "A", "scaleDegreeName": "3rd" },
+      { "note": "B♭", "scaleDegreeName": "4th" },
+      { "note": "C", "scaleDegreeName": "5th" },
+      { "note": "D", "scaleDegreeName": "6th" },
+      { "note": "E", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "B♭ Major",
+    "notes": [
+      { "note": "B♭", "scaleDegreeName": "Root" },
+      { "note": "C", "scaleDegreeName": "2nd" },
+      { "note": "D", "scaleDegreeName": "3rd" },
+      { "note": "E♭", "scaleDegreeName": "4th" },
+      { "note": "F", "scaleDegreeName": "5th" },
+      { "note": "G", "scaleDegreeName": "6th" },
+      { "note": "A", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "E♭ Major",
+    "notes": [
+      { "note": "E♭", "scaleDegreeName": "Root" },
+      { "note": "F", "scaleDegreeName": "2nd" },
+      { "note": "G", "scaleDegreeName": "3rd" },
+      { "note": "A♭", "scaleDegreeName": "4th" },
+      { "note": "B♭", "scaleDegreeName": "5th" },
+      { "note": "C", "scaleDegreeName": "6th" },
+      { "note": "D", "scaleDegreeName": "7th" }
+    ]
+  },
+  {
+    "key": "A♭ Major",
+    "notes": [
+      { "note": "A♭", "scaleDegreeName": "Root" },
+      { "note": "B♭", "scaleDegreeName": "2nd" },
+      { "note": "C", "scaleDegreeName": "3rd" },
+      { "note": "D♭", "scaleDegreeName": "4th" },
+      { "note": "E♭", "scaleDegreeName": "5th" },
+      { "note": "F", "scaleDegreeName": "6th" },
+      { "note": "G", "scaleDegreeName": "7th" }
+    ]
+  }
+]

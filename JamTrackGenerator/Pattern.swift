@@ -7,12 +7,12 @@
 
 import Foundation
 
-struct Pattern {
-    var intro: [EventDescriptor] = []
-    var verse: [EventDescriptor] = []
-    var chorus: [EventDescriptor] = []
-    var bridge: [EventDescriptor] = []
-    var `break`: [EventDescriptor] = []
-    var outro: [EventDescriptor] = []
-    var end: [EventDescriptor] = []
-}
+//struct Pattern {
+//    var intro: [EventDescriptor] = []
+//    var verse: [EventDescriptor] = []
+//    var chorus: [EventDescriptor] = []
+//    var bridge: [EventDescriptor] = []
+//    var `break`: [EventDescriptor] = []
+//    var outro: [EventDescriptor] = []
+//    var end: [EventDescriptor] = []
+//}

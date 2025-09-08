@@ -11,9 +11,32 @@ typealias Pulse = UInt32
 typealias Velocity = UInt8
 typealias Octave = UInt8
 
+typealias Style = SchemaV1.Style
+typealias Note = SchemaV1.Note
+typealias Key = SchemaV1.Key
+typealias NoteInKey = SchemaV1.NoteInKey
+typealias ScaleDegree = SchemaV1.ScaleDegree
+typealias Feel = SchemaV1.Feel
+typealias SongSection = SchemaV1.SongSection
+typealias Section = SchemaV1.Section
+typealias HarmonicPattern = SchemaV1.HarmonicPattern
+typealias HarmonicNoteInPattern = SchemaV1.HarmonicNoteInPattern
+typealias InstrumentFamily = SchemaV1.InstrumentFamily
+typealias Instrument = SchemaV1.Instrument
+typealias Part = SchemaV1.Part
+typealias Definition = SchemaV1.Definition
+typealias SectionPartPattern = SchemaV1.SectionPartPattern
+typealias DrumNote = SchemaV1.DrumNote
+typealias DrumNoteInPattern = SchemaV1.DrumNoteInPattern
+typealias DrumPattern = SchemaV1.DrumPattern
+
+
+let currentSchema = SchemaV1.self
+
 struct Global {
     static let pulsesPerQuarterNote: UInt32 = 480
 }
+
 
 extension String {
     func camelCaseToCapitalizedWords() -> String {

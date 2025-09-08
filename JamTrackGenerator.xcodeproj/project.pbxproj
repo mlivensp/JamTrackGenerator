@@ -30,6 +30,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		DD6571AB2E6B960B00CDDCC8 /* SeedData */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SeedData;
+			sourceTree = "<group>";
+		};
 		DD9941732E5394A0001AB0E7 /* JamTrackGenerator */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = JamTrackGenerator;
@@ -75,6 +80,7 @@
 		DD9941682E5394A0001AB0E7 = {
 			isa = PBXGroup;
 			children = (
+				DD6571AB2E6B960B00CDDCC8 /* SeedData */,
 				DD9941732E5394A0001AB0E7 /* JamTrackGenerator */,
 				DD9941842E5394A1001AB0E7 /* JamTrackGeneratorTests */,
 				DD99418E2E5394A1001AB0E7 /* JamTrackGeneratorUITests */,
@@ -108,6 +114,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				DD6571AB2E6B960B00CDDCC8 /* SeedData */,
 				DD9941732E5394A0001AB0E7 /* JamTrackGenerator */,
 			);
 			name = JamTrackGenerator;
@@ -418,6 +425,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 2.5;
@@ -457,6 +465,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 2.5;

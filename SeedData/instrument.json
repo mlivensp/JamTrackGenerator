@@ -1,0 +1,112 @@
+[
+  {
+    "name": "Acoustic Grand Piano",
+    "programNumber": 1,
+    "family": "Piano"
+  },
+  {
+    "name": "Bright Acoustic Piano",
+    "programNumber": 2,
+    "family": "Piano"
+  },
+  {
+    "name": "Electric Grand Piano",
+    "programNumber": 3,
+    "family": "Piano"
+  },
+  {
+    "name": "Honky-tonk Piano",
+    "programNumber": 4,
+    "family": "Piano"
+  },
+  {
+    "name": "Celesta",
+    "programNumber": 9,
+    "family": "Chromatic Percussion"
+  },
+  {
+    "name": "Drawbar Organ",
+    "programNumber": 17,
+    "family": "Organ"
+  },
+  {
+    "name": "Accordion",
+    "programNumber": 22,
+    "family": "Organ"
+  },
+  {
+    "name": "Acoustic Guitar (nylon)",
+    "programNumber": 25,
+    "family": "Guitar"
+  },
+  {
+    "name": "Electric Guitar (jazz)",
+    "programNumber": 27,
+    "family": "Guitar"
+  },
+  {
+    "name": "Electric Bass (finger)",
+    "programNumber": 34,
+    "family": "Bass"
+  },
+  {
+    "name": "Violin",
+    "programNumber": 41,
+    "family": "Strings"
+  },
+  {
+    "name": "String Ensemble 1",
+    "programNumber": 49,
+    "family": "Ensemble"
+  },
+  {
+    "name": "Trumpet",
+    "programNumber": 57,
+    "family": "Brass"
+  },
+  {
+    "name": "Alto Sax",
+    "programNumber": 66,
+    "family": "Reed"
+  },
+  {
+    "name": "Flute",
+    "programNumber": 74,
+    "family": "Pipe"
+  },
+  {
+    "name": "Lead 1 (square)",
+    "programNumber": 81,
+    "family": "Synth Lead"
+  },
+  {
+    "name": "Pad 1 (new age)",
+    "programNumber": 89,
+    "family": "Synth Pad"
+  },
+  {
+    "name": "FX 1 (rain)",
+    "programNumber": 97,
+    "family": "Synth Effects"
+  },
+  {
+    "name": "Sitar",
+    "programNumber": 105,
+    "family": "Ethnic"
+  },
+  {
+    "name": "Tinkle Bell",
+    "programNumber": 113,
+    "family": "Percussive"
+  },
+  {
+    "name": "Gunshot",
+    "programNumber": 128,
+    "family": "Sound Effects"
+  },
+  {
+      "name": "Drums",
+      "programNumber": 255,
+      "family": "Percussive"
+  }
+]

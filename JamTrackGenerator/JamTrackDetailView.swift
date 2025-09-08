@@ -5,11 +5,23 @@
 //  Created by Michael Livenspargar on 8/30/25.
 //
 
+import SwiftData
 import SwiftUI
 
 struct JamTrackDetailView: View {
-    @State private var viewModel: ViewModel = .init()
+    @Bindable var definition: Definition
+    @State private var viewModel: ViewModel
     @State private var export = false
+    
+    @Query var keys: [Key]
+    @Query var feels: [Feel]
+    @Query var instruments: [Instrument]
+    @Query var songSections: [SongSection]
+    
+    init(definition: Definition) {
+        self.definition = definition
+        self._viewModel = .init(wrappedValue: .init(definition: definition))
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -37,25 +49,25 @@ struct JamTrackDetailView: View {
             VStack(spacing: 0) {
                 
                 LabeledContent {
-                    Picker("Key", selection: $viewModel.specification.key) {
-                        ForEach(Array(Key.keys.keys), id: \.self) { key in
-                            Text(key).tag(key)
+                    Picker("Key", selection: $viewModel.definition.key) {
+                        ForEach(keys) { key in
+                            Text(key.name).tag(key)
                         }
                     }
                 }
                 label: { Text("Key") }
                 
                 LabeledContent {
-                    Picker("Feel", selection: $viewModel.specification.feel) {
-                        ForEach(Feel.allCases) { feel in
-                            Text(feel.description).tag(feel)
+                    Picker("Feel", selection: $viewModel.definition.feel) {
+                        ForEach(feels, id: \.self) { feel in
+                            Text(feel.name).tag(feel)
                         }
                     }
                 }
                 label: { Text("Feel") }
                 
                 LabeledContent {
-                    TextField("BPM", value: $viewModel.specification.bpm, formatter: NumberFormatter())
+                    TextField("BPM", value: $viewModel.definition.bpm, formatter: NumberFormatter())
                         .multilineTextAlignment(.trailing)
                         .frame(width: 60)
                 }
@@ -66,7 +78,7 @@ struct JamTrackDetailView: View {
             .padding()
             
             VStack(spacing: 0) {
-                Toggle("Include Count In", isOn: $viewModel.specification.includeCountIn)
+                Toggle("Include Count In", isOn: $viewModel.definition.includeCountIn)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
             }
@@ -83,7 +95,7 @@ struct JamTrackDetailView: View {
             SwiftUI.Section(header: Text("Song Sections")) {
                 HStack {
                     List(selection: $viewModel.selectedSection) {
-                        ForEach(viewModel.sections) { section in
+                        ForEach(definition.sections, id: \.self) { section in
                             NavigationLink {
                                 EditSectionView(section: Binding(
                                     get: { section },
@@ -91,15 +103,15 @@ struct JamTrackDetailView: View {
                                 ))
                             }
                             label: {
-                                Text(section.description)
+                                Text(section.songSection?.name ?? "Unknown")
                             }
                         }
                     }
                     
                     VStack {
                         Picker("", selection: $viewModel.selectedSongSection) {
-                            ForEach(SongSection.allCases) { section in
-                                Text(section.description).tag(section)
+                            ForEach(songSections) { section in
+                                Text(section.name).tag(section)
                             }
                         }
                         .pickerStyle(InlinePickerStyle())
@@ -107,7 +119,7 @@ struct JamTrackDetailView: View {
                         .border(.red)
                         
                         Button("Add Section") {
-                            viewModel.addSection(section: viewModel.selectedSongSection!)
+                            viewModel.addSection(songSection: viewModel.selectedSongSection!)
                         }
                     }
                 }
@@ -130,15 +142,15 @@ struct JamTrackDetailView: View {
                                 ))
                             }
                             label: {
-                                Text(part.description)
+                                Text(part.instrument.name)
                             }
                         }
                     }
                     
                     VStack {
                         Picker("", selection: $viewModel.selectedMidiInstrument) {
-                            ForEach(MidiInstrument.allCases) { midiInstrument in
-                                Text(midiInstrument.description).tag(midiInstrument)
+                            ForEach(instruments) { instrument in
+                                Text(instrument.name).tag(instrument)
                             }
                         }
                         .pickerStyle(InlinePickerStyle())
@@ -146,7 +158,9 @@ struct JamTrackDetailView: View {
                         .border(.red)
                         
                         Button("Add Part") {
-                            viewModel.addPart(part: viewModel.selectedMidiInstrument!)
+                            if let selectedMidiInstrument = viewModel.selectedMidiInstrument {
+                                viewModel.addPart(instrument: selectedMidiInstrument)
+                            }
                         }
                     }
                 }
@@ -240,6 +254,6 @@ struct JamTrackDetailView: View {
     }
 }
 
-#Preview {
-    JamTrackDetailView()
-}
+//#Preview {
+//    JamTrackDetailView()
+//}

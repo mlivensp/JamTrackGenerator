@@ -1,0 +1,72 @@
+[
+    {
+      "name": "Basic Beat",
+      "style": "12 Bar Blues",
+      "songSection": "Chorus",
+      "notes": [
+        { "drumNote": "Bass Drum 1", "timestampOn": 0, "timestampOff": 480 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 480, "timestampOff": 960 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 960, "timestampOff": 1440 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 1440, "timestampOff": 1920 },
+        
+        { "drumNote": "Bass Drum 1", "timestampOn": 1920, "timestampOff": 2400 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 2400, "timestampOff": 2880 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 2880, "timestampOff": 3360 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 3360, "timestampOff": 3840 },
+        
+        { "drumNote": "Bass Drum 1", "timestampOn": 3840, "timestampOff": 4320 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 4320, "timestampOff": 4800 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 4800, "timestampOff": 5280 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 5280, "timestampOff": 5760 },
+        
+        { "drumNote": "Bass Drum 1", "timestampOn": 5760, "timestampOff": 6240 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 6240, "timestampOff": 6720 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 6720, "timestampOff": 7200 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 7200, "timestampOff": 7680 },
+        
+        { "drumNote": "Crash Cymbal 1", "timestampOn": 7680, "timestampOff": 9600 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 7680, "timestampOff": 8160 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 8160, "timestampOff": 8640 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 8640, "timestampOff": 9120 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 9120, "timestampOff": 9600 },
+        
+        { "drumNote": "Bass Drum 1", "timestampOn": 9600, "timestampOff": 10080 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 10080, "timestampOff": 10560 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 10560, "timestampOff": 11040 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 11040, "timestampOff": 11520 },
+        
+        { "drumNote": "Crash Cymbal 1", "timestampOn": 11520, "timestampOff": 13440 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 11520, "timestampOff": 12000 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 12000, "timestampOff": 12480 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 12480, "timestampOff": 12960 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 12960, "timestampOff": 13440 },
+        
+        { "drumNote": "Bass Drum 1", "timestampOn": 13440, "timestampOff": 13920 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 13920, "timestampOff": 14400 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 14400, "timestampOff": 14880 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 14880, "timestampOff": 15360 },
+        
+        { "drumNote": "Crash Cymbal 1", "timestampOn": 15360, "timestampOff": 17280 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 15360, "timestampOff": 15840 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 15840, "timestampOff": 16320 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 16320, "timestampOff": 16800 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 16800, "timestampOff": 17280 },
+        
+        { "drumNote": "Crash Cymbal 1", "timestampOn": 17280, "timestampOff": 19200 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 17280, "timestampOff": 17760 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 17760, "timestampOff": 18240 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 18240, "timestampOff": 18720 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 18720, "timestampOff": 19200 },
+        
+        { "drumNote": "Bass Drum 1", "timestampOn": 19200, "timestampOff": 19680 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 19680, "timestampOff": 20160 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 20160, "timestampOff": 20640 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 20640, "timestampOff": 21120 },
+        
+        { "drumNote": "Bass Drum 1", "timestampOn": 21120, "timestampOff": 21600 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 21600, "timestampOff": 22080 },
+        { "drumNote": "Bass Drum 1", "timestampOn": 22080, "timestampOff": 22560 },
+        { "drumNote": "Acoustic Snare", "timestampOn": 22560, "timestampOff": 23040 }
+      ]
+    }
+]

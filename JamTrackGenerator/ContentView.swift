@@ -10,8 +10,11 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-    @State private var specification = JamTrackSpecification()
+    @Query var definitions: [Definition]
+    @State private var selectedDefinition: Definition?
+    
+//    @Query private var items: [Item]
+//    @State private var specification = JamTrackSpecification()
     @State private var errorMessage: String?
 
     var body: some View {
@@ -43,18 +46,30 @@ struct ContentView: View {
     private var splitView: some View {
         NavigationSplitView {
             List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: .dateTime)")
-                    } label: {
-                        Text(item.timestamp, format: .dateTime)
+                Text("Item 1")
+                //                ForEach(items) { item in
+                //                    NavigationLink {
+                //                        Text("Item at \(item.timestamp, format: .dateTime)")
+                //                    } label: {
+                //                        Text(item.timestamp, format: .dateTime)
+                //                    }
+                //                }
+                //                .onDelete(perform: deleteItems)
+            }
+        } content: {
+            List {
+                ForEach(definitions) { definition in
+                    NavigationLink(value: definition) {
+                        Text(definition.name)
                     }
                 }
-                .onDelete(perform: deleteItems)
             }
         } detail: {
-            JamTrackDetailView()
+            if let selectedDefinition {
+                JamTrackDetailView(definition: selectedDefinition)
+            }
         }
+        .navigationDestination(for: Definition.self, destination: JamTrackDetailView.init)
 #if os(macOS)
         .navigationSplitViewColumnWidth(min: 180, ideal: 200)
 #endif
@@ -62,28 +77,30 @@ struct ContentView: View {
 
     private var stackView: some View {
         NavigationStack {
-            JamTrackDetailView()
-            .navigationTitle("Jam Track Generator")
+            if let selectedDefinition {
+                JamTrackDetailView(definition: selectedDefinition)
+                    .navigationTitle("Jam Track Generator")
+            }
         }
     }
 
     private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
+//        withAnimation {
+//            let newItem = Item(timestamp: Date())
+//            modelContext.insert(newItem)
+//        }
     }
 
     private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
-        }
+//        withAnimation {
+//            for index in offsets {
+//                modelContext.delete(items[index])
+//            }
+//        }
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: Definition.self, inMemory: true)
 }

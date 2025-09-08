@@ -15,7 +15,7 @@ struct EditSectionView: View {
             HStack {
                 Text("Section")
                 Spacer()
-                Text(section.section.description)
+                Text(section.songSection?.name ?? "Unknown")
             }
          }
         .navigationTitle("Edit Section")
