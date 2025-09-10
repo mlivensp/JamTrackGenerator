@@ -11,10 +11,10 @@ import SwiftData
 @MainActor
 struct SeedImporter {
     func importSeedData(container: ModelContainer) {
-        if let resourcePath = Bundle.main.resourcePath {
-            let contents = try? FileManager.default.contentsOfDirectory(atPath: resourcePath)
-            print("Bundle contents: \(contents ?? [])")
-        }
+//        if let resourcePath = Bundle.main.resourcePath {
+//            let contents = try? FileManager.default.contentsOfDirectory(atPath: resourcePath)
+//            print("Bundle contents: \(contents ?? [])")
+//        }
 
         let context = container.mainContext
         let styleMap = importStyleData(context: context)
@@ -30,6 +30,8 @@ struct SeedImporter {
         let drumNoteMap = importDrumNoteData(context: context)
         importDrumPatternData(context: context, styleMap: styleMap, drumNoteMap: drumNoteMap)
         importHarmonicPatternData(context: context, styleMap: styleMap, scaleDegreeMap: scaleDegreeMap)
+        
+        checkResult(context: context)
     }
     
     func importStyleData(context: ModelContext) -> [String: Style] {
@@ -169,9 +171,11 @@ struct SeedImporter {
             return
         }
         
+        var count = 0
         for seed in keySeeds {
             let key = Key(name: seed.key)
             context.insert(key)
+            count += 1
             
             for noteInKeySeed in seed.notes {
                 guard let note = noteMap[noteInKeySeed.note] else {
@@ -186,10 +190,18 @@ struct SeedImporter {
         
         do {
             try context.save()
+            print("counted \(count) inserts")
+            checkResult(context: context)
         } catch {
             fatalError("Failed to save keys: \(error.localizedDescription)")
         }
-    }
+        
+        do {
+            let keys = try context.fetch(FetchDescriptor<Key>())
+            print("Fetched \(keys.count) keys")
+        } catch {
+            print("Fetch failed: \(error)")
+        }    }
     
     func importSongSectionData(context: ModelContext) {
         guard let songSectionURL = Bundle.main.url(forResource: "songSection", withExtension: "json")
@@ -221,17 +233,37 @@ struct SeedImporter {
     }
     
     func importInstrumentData(context: ModelContext) {
-        guard let familyURL = Bundle.main.url(forResource: "instrumentFamilies", withExtension: "json"),
-              let instrumentURL = Bundle.main.url(forResource: "instrument", withExtension: "json"),
-              let familyData = try? Data(contentsOf: familyURL),
-              let instrumentData = try? Data(contentsOf: instrumentURL),
-              let familySeeds = try? JSONDecoder().decode([InstrumentFamilySeed].self, from: familyData),
-              let instrumentSeeds = try? JSONDecoder().decode([InstrumentSeed].self, from: instrumentData)
+        guard let familyURL = Bundle.main.url(forResource: "instrumentFamilies", withExtension: "json")
         else {
-            print("Failed to load JSON files")
+            print("Failed to load familyURL")
             return
         }
-
+        guard let instrumentURL = Bundle.main.url(forResource: "instrument", withExtension: "json")
+        else {
+            print("Failed to load instrument URL")
+            return
+        }
+        guard let familyData = try? Data(contentsOf: familyURL)
+        else {
+            print("Failed to load family data")
+            return
+        }
+        guard let instrumentData = try? Data(contentsOf: instrumentURL)
+        else {
+            print("Failed to load instrument data")
+            return
+        }
+        guard let familySeeds = try? JSONDecoder().decode([InstrumentFamilySeed].self, from: familyData)
+        else {
+            print("Failed to decode family data")
+            return
+        }
+        guard let instrumentSeeds = try? JSONDecoder().decode([InstrumentSeed].self, from: instrumentData)
+        else {
+            print("Failed to decode instrument data")
+            return
+        }
+        
         // Insert families
         var familyMap: [String: InstrumentFamily] = [:]
         for seed in familySeeds {
@@ -341,6 +373,17 @@ struct SeedImporter {
             try context.save()
         } catch {
             fatalError("Failed to save harmonicPatterns: \(error.localizedDescription)")
+        }
+    }
+    
+    func checkResult(context: ModelContext) {
+        let keysFetchDescriptor = FetchDescriptor<Key>()
+        
+        do {
+            let keys = try context.fetch(keysFetchDescriptor)
+            print("Found \(keys.count) keys")
+        } catch {
+            print("keys fetch failed: \(error.localizedDescription)")
         }
     }
 }

@@ -12,7 +12,7 @@ struct Track {
     let program: MidiInstrument?
     let events: [EventDescriptor]
     
-    init(channel: UInt8, program: MidiInstrument? = nil, events: [EventDescriptor]) {
+    init(channel: UInt8, program: MidiInstrument? = nil, events: [EventDescriptor] = []) {
         self.channel = channel
         self.program = program
         self.events = events

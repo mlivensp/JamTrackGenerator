@@ -43,7 +43,7 @@ struct MidiTrack{
         content.append(velocity)
     }
     
-    mutating func addEvent(delay: UInt32, channel: UInt8, command: UInt8, note: UInt8, velocity: Velocity) {
+    mutating func addEvent(delay: UInt, channel: UInt8, command: UInt8, note: UInt8, velocity: Velocity) {
         let channelAndCommand = command|channel
         content.append(contentsOf: delay.midiVLQ)
         content.append(channelAndCommand)

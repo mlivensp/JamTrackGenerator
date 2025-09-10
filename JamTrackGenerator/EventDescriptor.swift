@@ -9,23 +9,23 @@ import Foundation
 
 protocol EventDescriptor {
     var midiValue: UInt8 { get }
-    var on: UInt32 { get }
-    var off: UInt32 { get }
+    var on: UInt { get }
+    var off: UInt { get }
     var onVelocity: UInt8 { get }
     var offVelocity: UInt8 { get }
     
-    var onOffOffset: UInt32 { get set }
+    var onOffOffset: UInt { get set }
     
 //    var offsetOn: UInt16 { get }
 //    var offsetOff: UInt16 { get }
 }
 
 extension EventDescriptor {
-    var offsetOn: UInt32 {
+    var offsetOn: UInt {
         on + onOffOffset
     }
     
-    var offsetOff: UInt32 {
+    var offsetOff: UInt {
         off + onOffOffset
     }
 }

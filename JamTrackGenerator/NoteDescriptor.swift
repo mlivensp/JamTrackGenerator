@@ -10,12 +10,12 @@ import Foundation
 struct NoteDescriptor: EventDescriptor {
     let noteInKey: NoteInKey
     let octave: UInt8
-    let on: UInt32
-    let off: UInt32
+    let on: UInt
+    let off: UInt
     let onVelocity: Velocity
     let offVelocity: Velocity
     
-    init(note: NoteInKey, octave: UInt8, on: UInt32, off: UInt32, onVelocity: Velocity = 100, offVelocity: Velocity = 64) {
+    init(note: NoteInKey, octave: UInt8, on: UInt, off: UInt, onVelocity: Velocity = 100, offVelocity: Velocity = 64) {
         self.noteInKey = note
         self.octave = octave
         self.on = on
@@ -25,7 +25,7 @@ struct NoteDescriptor: EventDescriptor {
         self.onOffOffset = 0
     }
     
-    var onOffOffset: UInt32
+    var onOffOffset: UInt
     
     var midiValue: UInt8 {
         guard let note = noteInKey.note else { return 0}

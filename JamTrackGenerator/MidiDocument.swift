@@ -33,17 +33,20 @@ extension FixedWidthInteger where Self: UnsignedInteger {
         return bytes
     }
 }
+
 struct MidiDocument: FileDocument {
     static var readableContentTypes: [UTType] { [.midi] }
     
-    let definition: Definition
+//    let definition: Definition
     let song: Song
+    let bpm: UInt8
     var header: MidiHeader
     var tracks: [MidiTrack] = []
     
-    init(definition: Definition, song: Song) {
-        self.definition = definition
+    init(song: Song, bpm: UInt8) {
+//        self.definition = definition
         self.song = song
+        self.bpm = bpm
         self.header = .init(pulsesPerQuarterNote: Global.pulsesPerQuarterNote)
         self.tracks = []
     }
@@ -64,7 +67,7 @@ struct MidiDocument: FileDocument {
     }
     
     fileprivate func buildMidiTrack(_ events: [MidiEvent], _ instrumentTrack: Track) -> MidiTrack {
-        var lastPulse: UInt32 = 0
+        var lastPulse: UInt = 0
         var track = MidiTrack()
         if let program = instrumentTrack.program {
             track.add([0x00, 0xc1, program.rawValue])
@@ -92,7 +95,7 @@ struct MidiDocument: FileDocument {
     mutating func buildMetaTrack() {
         var track = MidiTrack()
         track.addTimeSignature(beat: 4, beatType: 4)
-        track.addTempo(bpm: definition.bpm)
+//        track.addTempo(bpm: definition.bpm)
         track.endTrack()
         tracks.append(track)
     }

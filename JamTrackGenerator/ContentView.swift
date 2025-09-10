@@ -11,10 +11,9 @@ import SwiftData
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query var definitions: [Definition]
+    @Query var keys: [Key]
+    @Query var instruments: [Instrument]
     @State private var selectedDefinition: Definition?
-    
-//    @Query private var items: [Item]
-//    @State private var specification = JamTrackSpecification()
     @State private var errorMessage: String?
 
     var body: some View {
@@ -29,32 +28,26 @@ struct ContentView: View {
             splitView
 #endif
         }
-        .toolbar {
-            ToolbarItem {
-                Button(action: addItem) {
-                    Label("Add Item", systemImage: "plus")
-                }
-            }
-#if os(iOS)
-            ToolbarItem(placement: .navigationBarTrailing) {
-                EditButton()
-            }
-#endif
-        }
+//        .toolbar {
+//            ToolbarItem {
+//                Button(action: addItem) {
+//                    Label("Add Item", systemImage: "plus")
+//                }
+//            }
+//#if os(iOS)
+//            ToolbarItem(placement: .navigationBarTrailing) {
+//                EditButton()
+//            }
+//#endif
+//        }
     }
 
     private var splitView: some View {
         NavigationSplitView {
             List {
-                Text("Item 1")
-                //                ForEach(items) { item in
-                //                    NavigationLink {
-                //                        Text("Item at \(item.timestamp, format: .dateTime)")
-                //                    } label: {
-                //                        Text(item.timestamp, format: .dateTime)
-                //                    }
-                //                }
-                //                .onDelete(perform: deleteItems)
+                ForEach(instruments.sorted(by: { $0.name < $1.name} )) { instrument in
+                    Text(instrument.name)
+                }
             }
         } content: {
             List {
@@ -63,13 +56,20 @@ struct ContentView: View {
                         Text(definition.name)
                     }
                 }
+                .onDelete(perform: deleteDefinitions)
+            }
+            .toolbar {
+                ToolbarItem {
+                    Button(action: addDefinition) {
+                        Label("Add", systemImage: "plus")
+                    }
+                }
             }
         } detail: {
             if let selectedDefinition {
                 JamTrackDetailView(definition: selectedDefinition)
             }
         }
-        .navigationDestination(for: Definition.self, destination: JamTrackDetailView.init)
 #if os(macOS)
         .navigationSplitViewColumnWidth(min: 180, ideal: 200)
 #endif
@@ -84,19 +84,25 @@ struct ContentView: View {
         }
     }
 
-    private func addItem() {
-//        withAnimation {
-//            let newItem = Item(timestamp: Date())
-//            modelContext.insert(newItem)
-//        }
+    private func addDefinition() {
+        withAnimation {
+            let newDefinition = Definition.newDefinition(modelContext: modelContext)
+            modelContext.insert(newDefinition)
+            selectedDefinition = newDefinition
+            do {
+                try modelContext.save()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        }
     }
 
-    private func deleteItems(offsets: IndexSet) {
-//        withAnimation {
-//            for index in offsets {
-//                modelContext.delete(items[index])
-//            }
-//        }
+    private func deleteDefinitions(offsets: IndexSet) {
+        withAnimation {
+            for index in offsets {
+                modelContext.delete(definitions[index])
+            }
+        }
     }
 }
 

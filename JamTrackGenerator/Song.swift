@@ -6,12 +6,43 @@
 //
 
 import Foundation
+import SwiftData
 
 struct Song {
     var tracks: [Track] = []
     var channel: UInt8 = 0
+    let modelContext: ModelContext
+    
+    init(modelContext: ModelContext) {
+        self.modelContext = modelContext
+    }
     
     mutating func buildTracks(definition: Definition) {
+        // need to move through each song section, in order
+        // build each track out for that section
+        // need to store partial tracks in progress
+        // each part needs a unique id
+        var currentPulse: UInt = 0
+        for section in definition.sections.sorted(by: { $0.order < $1.order } ) {
+            for sectionPart in section.sectionParts {
+                guard let instrument = sectionPart.part?.instrument else {
+                    fatalError((#file as NSString).lastPathComponent + "#" + #function + ": no instrument for part")
+                }
+                
+                let events: [EventDescriptor]
+                if instrument.name == "Drum" {
+                    events = buildDrumEvents(patternName: sectionPart.patternName, currentPulse: currentPulse)
+                } else {
+                    events = buildHarmonicEvents(patternName: sectionPart.patternName, currentPulse: currentPulse)
+                }
+                
+                currentPulse = events.map( { $0.offsetOff } ).max() ?? currentPulse
+                print("section #\(section.order) part #\(sectionPart.part?.instrument.name ?? "unknown") pattern: \(sectionPart.patternName)")
+            }
+        }
+        
+//        var trackMap = [ObjectIdentifier: Any]()
+//        trackMap[definition.parts[0].id] = definition.parts[0]
 //        if definition.includeDrumTrack {
 //            tracks.append(buildDrumTrack(definition: definition))
 //        }
@@ -19,6 +50,14 @@ struct Song {
 //        if definition.includeBassTrack {
 //            tracks.append(buildBassTrack(definition: definition))
 //        }
+    }
+    
+    func buildDrumEvents(patternName: String, currentPulse: UInt) -> [EventDescriptor] {
+        []
+    }
+    
+    func buildHarmonicEvents(patternName: String, currentPulse: UInt) -> [EventDescriptor] {
+        []
     }
     
 //    mutating func buildDrumTrack(definition: Definition) -> Track {

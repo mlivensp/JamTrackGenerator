@@ -9,6 +9,7 @@ import SwiftData
 import SwiftUI
 
 struct JamTrackDetailView: View {
+    @Environment(\.modelContext) var modelContext
     @Bindable var definition: Definition
     @State private var viewModel: ViewModel
     @State private var export = false
@@ -29,9 +30,15 @@ struct JamTrackDetailView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .alignmentGuide(.top) { _ in 0 }
                 .padding()
-            ScrollView {
-                sections
-                parts
+//            Text("Number of sections: \(definition.sections.count)")
+//            Text("Number of parts: \(definition.parts.count)")
+            GeometryReader { geo in
+                ScrollView {
+                    sections
+                        .frame(height: geo.size.height / 2)
+                    parts
+                        .frame(height: geo.size.height / 2)
+                }
             }
             
             playbackControls
@@ -49,7 +56,7 @@ struct JamTrackDetailView: View {
             VStack(spacing: 0) {
                 
                 LabeledContent {
-                    Picker("Key", selection: $viewModel.definition.key) {
+                    Picker("Key", selection: $definition.key) {
                         ForEach(keys) { key in
                             Text(key.name).tag(key)
                         }
@@ -58,7 +65,7 @@ struct JamTrackDetailView: View {
                 label: { Text("Key") }
                 
                 LabeledContent {
-                    Picker("Feel", selection: $viewModel.definition.feel) {
+                    Picker("Feel", selection: $definition.feel) {
                         ForEach(feels, id: \.self) { feel in
                             Text(feel.name).tag(feel)
                         }
@@ -67,7 +74,7 @@ struct JamTrackDetailView: View {
                 label: { Text("Feel") }
                 
                 LabeledContent {
-                    TextField("BPM", value: $viewModel.definition.bpm, formatter: NumberFormatter())
+                    TextField("BPM", value: $definition.bpm, formatter: NumberFormatter())
                         .multilineTextAlignment(.trailing)
                         .frame(width: 60)
                 }
@@ -77,13 +84,13 @@ struct JamTrackDetailView: View {
             .background(.yellow)
             .padding()
             
-            VStack(spacing: 0) {
-                Toggle("Include Count In", isOn: $viewModel.definition.includeCountIn)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-            }
-            .background(.green)
-            .padding()
+//            VStack(spacing: 0) {
+//                Toggle("Include Count In", isOn: $viewModel.definition.includeCountIn)
+//                    .padding(.horizontal, 8)
+//                    .padding(.vertical, 4)
+//            }
+//            .background(.green)
+//            .padding()
             
         }
         .frame(maxHeight: .infinity, alignment: .top)
@@ -114,12 +121,12 @@ struct JamTrackDetailView: View {
                                 Text(section.name).tag(section)
                             }
                         }
-                        .pickerStyle(InlinePickerStyle())
+//                        .pickerStyle(InlinePickerStyle())
                         .frame(maxWidth: .infinity)
                         .border(.red)
                         
                         Button("Add Section") {
-                            viewModel.addSection(songSection: viewModel.selectedSongSection!)
+                            let _ = definition.addSection(songSection: viewModel.selectedSongSection!)
                         }
                     }
                 }
@@ -134,7 +141,7 @@ struct JamTrackDetailView: View {
             SwiftUI.Section(header: Text("Parts")) {
                 HStack {
                     List(selection: $viewModel.selectedPart) {
-                        ForEach(viewModel.parts) { part in
+                        ForEach(definition.parts) { part in
                             NavigationLink {
                                 EditPartView(part: Binding(
                                     get: { part },
@@ -153,13 +160,13 @@ struct JamTrackDetailView: View {
                                 Text(instrument.name).tag(instrument)
                             }
                         }
-                        .pickerStyle(InlinePickerStyle())
+//                        .pickerStyle()
                         .frame(maxWidth: .infinity)
                         .border(.red)
                         
                         Button("Add Part") {
                             if let selectedMidiInstrument = viewModel.selectedMidiInstrument {
-                                viewModel.addPart(instrument: selectedMidiInstrument)
+                                let _ = definition.addPart(instrument: selectedMidiInstrument)
                             }
                         }
                     }
@@ -241,7 +248,7 @@ struct JamTrackDetailView: View {
     private func togglePlayback() {
         switch viewModel.midiPlayer?.playbackState {
         case .stopped, .paused, .none:
-            viewModel.play()
+            viewModel.play(modelContext: modelContext)
         case .playing:
             viewModel.pause()
         }

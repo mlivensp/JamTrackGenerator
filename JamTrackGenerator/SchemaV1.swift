@@ -40,10 +40,12 @@ enum SchemaV1: VersionedSchema {
     @Model class Key {
         var name: String
         
+        @Relationship(deleteRule: .cascade, inverse: \Definition.key) var definitions: [Definition]
         @Relationship(deleteRule: .cascade, inverse: \NoteInKey.key) var notes: [NoteInKey]
         
-        init(name: String, notes: [NoteInKey] = []) {
+        init(name: String, definitions: [Definition] = [], notes: [NoteInKey] = []) {
             self.name = name
+            self.definitions = definitions
             self.notes = notes
         }
     }
@@ -89,13 +91,13 @@ enum SchemaV1: VersionedSchema {
         var songSection: SongSection?
         var order: UInt8
         
-        @Relationship(deleteRule: .cascade, inverse: \SectionPartPattern.section) var sectionPartPatterns: [SectionPartPattern]
+        @Relationship(deleteRule: .cascade, inverse: \SectionPart.section) var sectionParts: [SectionPart]
         
-        init(definition: Definition?, songSection: SongSection, order: UInt8, sectionPartPatterns: [SectionPartPattern] = []) {
+        init(definition: Definition?, songSection: SongSection, order: UInt8, sectionParts: [SectionPart] = []) {
             self.definition = definition
             self.songSection = songSection
             self.order = order
-            self.sectionPartPatterns = sectionPartPatterns
+            self.sectionParts = sectionParts
         }
     }
     
@@ -115,20 +117,26 @@ enum SchemaV1: VersionedSchema {
         var programNumber: UInt8
         var instrumentFamily: InstrumentFamily?
         
-        init(name: String, programNumber: UInt8, instrumentFamily: InstrumentFamily?) {
+        @Relationship(deleteRule: .cascade, inverse: \Part.instrument) var parts: [Part]
+        
+        init(name: String, programNumber: UInt8, instrumentFamily: InstrumentFamily?, parts: [Part] = []) {
             self.name = name
             self.programNumber = programNumber
             self.instrumentFamily = instrumentFamily
+            self.parts = parts
         }
     }
     
     @Model class Part {
-        var instrument: Instrument
         var definition: Definition?
+        var instrument: Instrument
         
-        init(instrument: Instrument, definition: Definition? = nil) {
+        @Relationship(deleteRule: .cascade, inverse: \SectionPart.part) var sectionParts: [SectionPart]
+        
+        init(definition: Definition, instrument: Instrument, sectionParts: [SectionPart] = []) {
             self.instrument = instrument
             self.definition = definition
+            self.sectionParts = sectionParts
         }
     }
 
@@ -143,7 +151,7 @@ enum SchemaV1: VersionedSchema {
         @Relationship(deleteRule: .cascade, inverse: \Section.definition) var sections: [Section]
         @Relationship(deleteRule: .cascade, inverse: \Part.definition) var parts: [Part]
         
-        init(name: String = "", style: Style, key: Key, feel: Feel, bpm: UInt8 = 120, includeCountIn: Bool = true, sections: [Section] = [], parts: [Part] = [], sectionPartPatterns: [SectionPartPattern] = []) {
+        init(name: String = "", style: Style? = nil, key: Key? = nil, feel: Feel? = nil, bpm: UInt8 = 120, includeCountIn: Bool = true, sections: [Section] = [], parts: [Part] = [], sectionPartPatterns: [SectionPart] = []) {
             self.name = name
             self.style = style
             self.key = key
@@ -226,7 +234,7 @@ enum SchemaV1: VersionedSchema {
         }
     }
     
-    @Model class SectionPartPattern {
+    @Model class SectionPart {
         var section: Section?
         var part: Part?
         var patternName: String

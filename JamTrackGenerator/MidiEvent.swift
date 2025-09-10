@@ -10,6 +10,6 @@ import Foundation
 struct MidiEvent {
     let value: UInt8
     let command: UInt8
-    let pulse: UInt32
+    let pulse: UInt
     let velocity: UInt8
 }

@@ -1,5 +1,18 @@
 [
     {
+       "name": "Count In",
+       "style": "12 Bar Blues",
+       "songSection": "Count In",
+       "notes": [
+           { "drumNote": "Side Stick", "timestampOn": 0, "timestampOff": 480 },
+           { "drumNote": "Side Stick", "timestampOn": 960, "timestampOff": 1440 },
+           { "drumNote": "Side Stick", "timestampOn": 2400, "timestampOff": 2880 },
+           { "drumNote": "Side Stick", "timestampOn": 2880, "timestampOff": 3360 },
+           { "drumNote": "Side Stick", "timestampOn": 3360, "timestampOff": 3840 },
+           { "drumNote": "Side Stick", "timestampOn": 3840, "timestampOff": 4320 }
+       ]
+    },
+    {
       "name": "Basic Beat",
       "style": "12 Bar Blues",
       "songSection": "Chorus",
