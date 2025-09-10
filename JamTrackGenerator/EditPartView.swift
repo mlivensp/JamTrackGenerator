@@ -15,7 +15,7 @@ struct EditPartView: View {
             HStack {
                 Text("Part")
                 Spacer()
-                Text(part.instrument.name)
+                Text(part.instrument?.name ?? "")
             }
          }
         .navigationTitle("Edit Part")

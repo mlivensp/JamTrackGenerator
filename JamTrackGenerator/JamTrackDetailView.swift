@@ -149,7 +149,7 @@ struct JamTrackDetailView: View {
                                 ))
                             }
                             label: {
-                                Text(part.instrument.name)
+                                Text(part.instrument?.name ?? "<< unknown >>")
                             }
                         }
                     }

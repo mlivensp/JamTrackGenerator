@@ -23,42 +23,52 @@ struct Song {
         // need to store partial tracks in progress
         // each part needs a unique id
         var currentPulse: UInt = 0
+        var drumPartId: ObjectIdentifier? = nil
+        var partMap: [ObjectIdentifier: [EventDescriptor]] = [:]
+        
         for section in definition.sections.sorted(by: { $0.order < $1.order } ) {
             for sectionPart in section.sectionParts {
-                guard let instrument = sectionPart.part?.instrument else {
+                guard let part = sectionPart.part else {
+                    fatalError("missing part in setionPart")
+                }
+                
+                guard let instrument = part.instrument else {
                     fatalError((#file as NSString).lastPathComponent + "#" + #function + ": no instrument for part")
                 }
                 
-                let events: [EventDescriptor]
-                if instrument.name == "Drum" {
-                    events = buildDrumEvents(patternName: sectionPart.patternName, currentPulse: currentPulse)
-                } else {
-                    events = buildHarmonicEvents(patternName: sectionPart.patternName, currentPulse: currentPulse)
+                var doIt = false
+                let eventBuilder: EventBuilder
+                do {
+                    if instrument.name == "Drums" {
+                        doIt = true
+                        drumPartId = part.id
+                        eventBuilder = try DrumEventBuilder(modelContext: modelContext, patternName: sectionPart.patternName)
+                    }
+                    else {
+                        eventBuilder = try HarmonicEventBuilder(modelContext: modelContext, patternName: sectionPart.patternName)
+                    }
+                } catch {
+                    fatalError(error.localizedDescription)
                 }
                 
-                currentPulse = events.map( { $0.offsetOff } ).max() ?? currentPulse
-                print("section #\(section.order) part #\(sectionPart.part?.instrument.name ?? "unknown") pattern: \(sectionPart.patternName)")
+                if doIt {
+                    let events = eventBuilder.buildEvents(startingPulse: currentPulse)
+                    
+                    partMap[part.id, default: []].append(contentsOf: events)
+                    currentPulse = events.map( { $0.offsetOff } ).max() ?? currentPulse
+                }
             }
         }
         
-//        var trackMap = [ObjectIdentifier: Any]()
-//        trackMap[definition.parts[0].id] = definition.parts[0]
-//        if definition.includeDrumTrack {
-//            tracks.append(buildDrumTrack(definition: definition))
-//        }
-//        
-//        if definition.includeBassTrack {
-//            tracks.append(buildBassTrack(definition: definition))
-//        }
+        tracks.append(Track(channel: UInt8(9), program: nil, events: partMap[drumPartId!] ?? []))
     }
     
-    func buildDrumEvents(patternName: String, currentPulse: UInt) -> [EventDescriptor] {
-        []
-    }
-    
-    func buildHarmonicEvents(patternName: String, currentPulse: UInt) -> [EventDescriptor] {
-        []
-    }
+//    func buildDrumEvents(modelContext: ModelContext, patternName: String, currentPulse: UInt) -> [EventDescriptor] {
+//    }
+//    
+//    func buildHarmonicEvents(modelContext: ModelContext, patternName: String, currentPulse: UInt) -> [EventDescriptor] {
+//        []
+//    }
     
 //    mutating func buildDrumTrack(definition: Definition) -> Track {
 //        var descriptors: [EventDescriptor] = []

@@ -129,7 +129,7 @@ enum SchemaV1: VersionedSchema {
     
     @Model class Part {
         var definition: Definition?
-        var instrument: Instrument
+        var instrument: Instrument?
         
         @Relationship(deleteRule: .cascade, inverse: \SectionPart.part) var sectionParts: [SectionPart]
         

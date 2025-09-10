@@ -7,14 +7,14 @@
 
 import Foundation
 
-protocol EventDescriptor {
-    var midiValue: UInt8 { get }
-    var on: UInt { get }
-    var off: UInt { get }
-    var onVelocity: UInt8 { get }
-    var offVelocity: UInt8 { get }
+struct EventDescriptor {
+    var midiValue: UInt8
+    var on: UInt
+    var off: UInt
+    var onVelocity: UInt8
+    var offVelocity: UInt8
     
-    var onOffOffset: UInt { get set }
+    var onOffOffset: UInt = 0
     
 //    var offsetOn: UInt16 { get }
 //    var offsetOff: UInt16 { get }
