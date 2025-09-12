@@ -64,7 +64,7 @@ struct ContentView: View {
                         Label("Add", systemImage: "plus")
                     }
                 }
-            }
+           }
         } detail: {
             if let selectedDefinition {
                 JamTrackDetailView(definition: selectedDefinition)

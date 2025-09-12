@@ -13,6 +13,7 @@ struct JamTrackDetailView: View {
     @Bindable var definition: Definition
     @State private var viewModel: ViewModel
     @State private var export = false
+    @State private var midiDocument: MidiDocument?
     
     @Query var keys: [Key]
     @Query var feels: [Feel]
@@ -26,6 +27,7 @@ struct JamTrackDetailView: View {
     
     var body: some View {
         VStack(spacing: 0) {
+            Text(modelContext.sqliteCommand)
             keyFeelTempo
                 .fixedSize(horizontal: false, vertical: true)
                 .alignmentGuide(.top) { _ in 0 }
@@ -42,11 +44,29 @@ struct JamTrackDetailView: View {
             }
             
             playbackControls
+            Button("Export File") {
+                midiDocument = buildMidiDocument()
+//                exportDocument = TextExportDocument(content: "Your export data here")
+                export = true
+            }
+            .padding()
             
             if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage)
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
+            }
+        }
+        .fileExporter(
+            isPresented: $export,
+            document: midiDocument,
+            contentType: .midi
+        ) { result in
+            switch result {
+            case .success(let url):
+                print("Exported to \(url)")
+            case .failure(let error):
+                viewModel.errorMessage = error.localizedDescription
             }
         }
     }
@@ -258,6 +278,10 @@ struct JamTrackDetailView: View {
         let minutes = Int(time) / 60
         let seconds = Int(time) % 60
         return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    private func buildMidiDocument() -> MidiDocument? {
+        return definition.createMidiDocument(modelContext: modelContext)
     }
 }
 

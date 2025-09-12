@@ -132,15 +132,23 @@ extension Definition {
                     definition.addSectionPart(section: section, part: part, patternName: countInPattern.name)
                 }
             }
+
+            let basicBeatPatterns = try modelContext.fetch(basicBeatFetchDescriptor)
             
-            if let basicBeatPattern = try modelContext.fetch(basicBeatFetchDescriptor).first {
+            if let basicBeatPattern = basicBeatPatterns.first(where: {
+                $0.style?.name == "12 Bar Blues" && $0.feel?.name == "Shuffle"
+            } ) {
                 if let section = sectionMap["Chorus"],
                    let part = partMap["Drums"] {
                     definition.addSectionPart(section: section, part: part, patternName: basicBeatPattern.name)
                 }
             }
             
-            if let walkingBassPattern = try modelContext.fetch(walkingBassFetchDescriptor).first {
+            let walkingBassPatterns = try modelContext.fetch(walkingBassFetchDescriptor)
+            
+            if let walkingBassPattern = walkingBassPatterns.first(where: {
+                $0.style?.name == "12 Bar Blues" && $0.feel?.name == "Shuffle"
+            }) {
                 if let section = sectionMap["Chorus"],
                    let part = partMap["Bass"] {
                     definition.addSectionPart(section: section, part: part, patternName: walkingBassPattern.name)
@@ -153,22 +161,17 @@ extension Definition {
         return definition
     }
     
-    var includeDrumTrack: Bool {
-        true
-//        let drumPart = sections.map { $0.sectionPartPatterns.map { $0.part }.first(where: { $0?.instrument.name == "Drums" } ) }.first
-//        return drumPart != nil
-    }
-    
-    var includeBassTrack: Bool {
-        true
-    }
-    
-
-    func encodeToMidi(modelContext: ModelContext) -> Data {
+    func createMidiDocument(modelContext: ModelContext) -> MidiDocument {
         var song = Song(modelContext: modelContext)
         song.buildTracks(definition: self)
         var document = MidiDocument(song: song, bpm: bpm)
         document.encodeMidi()
+        return document
+    }
+    
+
+    func encodeToMidi(modelContext: ModelContext) -> Data {
+        var document = createMidiDocument(modelContext: modelContext)
         let midiData = document.encodeMidiToData()
         return Data(midiData)
     }

@@ -18,7 +18,7 @@ struct SeedImporter {
 
         let context = container.mainContext
         let styleMap = importStyleData(context: context)
-        importFeelData(context: context)
+        let feelMap = importFeelData(context: context)
         
         let scaleDegreeMap = importScaleDegreeData(context: context)
         let noteMap = importNoteData(context: context)
@@ -28,8 +28,8 @@ struct SeedImporter {
         importInstrumentData(context: context)
         
         let drumNoteMap = importDrumNoteData(context: context)
-        importDrumPatternData(context: context, styleMap: styleMap, drumNoteMap: drumNoteMap)
-        importHarmonicPatternData(context: context, styleMap: styleMap, scaleDegreeMap: scaleDegreeMap)
+        importDrumPatternData(context: context, styleMap: styleMap, feelMap: feelMap, drumNoteMap: drumNoteMap)
+        importHarmonicPatternData(context: context, styleMap: styleMap, feelMap: feelMap, scaleDegreeMap: scaleDegreeMap)
         
         checkResult(context: context)
     }
@@ -68,26 +68,30 @@ struct SeedImporter {
         return styleMap
     }
     
-    func importFeelData(context: ModelContext) {
+    func importFeelData(context: ModelContext) -> [String: Feel] {
         guard let feelURL = Bundle.main.url(forResource: "feel", withExtension: "json")
         else {
             print("Failed to load feel JSON file")
-            return
-        }
-              guard let feelData = try? Data(contentsOf: feelURL)
-        else {
-            print("Failed to read feel JSON file")
-            return
-        }
-              guard let feelSeeds = try? JSONDecoder().decode([FeelSeed].self, from: feelData)
-        else {
-            print("Failed to decode feel JSON file")
-            return
+            return [:]
         }
         
+        guard let feelData = try? Data(contentsOf: feelURL)
+        else {
+            print("Failed to read feel JSON file")
+                  return [:]
+        }
+        
+        guard let feelSeeds = try? JSONDecoder().decode([FeelSeed].self, from: feelData)
+        else {
+            print("Failed to decode feel JSON file")
+            return [:]
+        }
+        
+        var feelMap: [String: Feel] = [:]
         for feelSeed in feelSeeds {
             let feel = Feel(name: feelSeed.name)
             context.insert(feel)
+            feelMap[feelSeed.name] = feel
         }
         
         do {
@@ -95,6 +99,8 @@ struct SeedImporter {
         } catch {
             fatalError("Failed to save feels: \(error.localizedDescription)")
         }
+        
+        return feelMap
     }
     
     func importNoteData(context: ModelContext) -> [String:Note] {
@@ -312,7 +318,7 @@ struct SeedImporter {
         return drumNoteMap
     }
     
-    func importDrumPatternData(context: ModelContext, styleMap: [String: Style], drumNoteMap: [String: DrumNote]) {
+    func importDrumPatternData(context: ModelContext, styleMap: [String: Style], feelMap: [String: Feel], drumNoteMap: [String: DrumNote]) {
         guard let drumPatternURL = Bundle.main.url(forResource: "drumPattern", withExtension: "json"),
               let drumPatternData = try? Data(contentsOf: drumPatternURL),
               let drumPatternSeeds = try? JSONDecoder().decode([DrumPatternSeed].self, from: drumPatternData)
@@ -323,7 +329,8 @@ struct SeedImporter {
         
         for drumPatternSeed in drumPatternSeeds {
             let style = styleMap[drumPatternSeed.style]
-            let drumPattern = DrumPattern(name: drumPatternSeed.name, style: style)
+            let feel = feelMap[drumPatternSeed.feel]
+            let drumPattern = DrumPattern(name: drumPatternSeed.name, style: style, feel: feel)
             context.insert(drumPattern)
             
             for drumNoteInPatternSeed in drumPatternSeed.notes {
@@ -342,7 +349,7 @@ struct SeedImporter {
         }
     }
     
-    func importHarmonicPatternData(context: ModelContext, styleMap: [String: Style], scaleDegreeMap: [String: ScaleDegree]) {
+    func importHarmonicPatternData(context: ModelContext, styleMap: [String: Style], feelMap: [String: Feel], scaleDegreeMap: [String: ScaleDegree]) {
         guard let patternURL = Bundle.main.url(forResource: "harmonicPattern", withExtension: "json"),
               let patternData = try? Data(contentsOf: patternURL),
               let patternSeeds = try? JSONDecoder().decode([HarmonicPatternSeed].self, from: patternData)
@@ -356,7 +363,11 @@ struct SeedImporter {
                 fatalError("Missing style \(patternSeed.style)")
             }
             
-            let pattern = HarmonicPattern(name: patternSeed.name, style: style)
+            guard let feel = feelMap[patternSeed.feel] else {
+                fatalError("Missing feel \(patternSeed.feel)")
+            }
+            
+            let pattern = HarmonicPattern(name: patternSeed.name, style: style, feel: feel)
             context.insert(pattern)
             
             for harmonicNoteInPatternSeed in patternSeed.notes {

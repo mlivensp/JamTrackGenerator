@@ -70,7 +70,7 @@ struct MidiDocument: FileDocument {
         var lastPulse: UInt = 0
         var track = MidiTrack()
         if let program = instrumentTrack.program {
-            track.add([0x00, 0xc1, program.rawValue])
+            track.add([0x00, 0xc1, program])
         }
         
         for event in events {

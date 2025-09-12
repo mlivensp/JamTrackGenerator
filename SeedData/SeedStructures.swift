@@ -65,6 +65,7 @@ struct HarmonicNoteInPatternSeed: Codable {
 struct HarmonicPatternSeed: Codable {
     var name: String
     var style: String
+    var feel: String
     var songSection: String
     var notes: [HarmonicNoteInPatternSeed]
 }
@@ -78,6 +79,7 @@ struct DrumNoteInPatternSeed: Codable {
 struct DrumPatternSeed: Codable {
     var name: String
     var style: String
+    var feel: String
     var songSection: String
     var notes: [DrumNoteInPatternSeed]
 }

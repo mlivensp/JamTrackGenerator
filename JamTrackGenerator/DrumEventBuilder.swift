@@ -11,17 +11,22 @@ import SwiftData
 struct DrumEventBuilder: EventBuilder {
     var pattern: DrumPattern
     
-    init(modelContext: ModelContext, patternName: String) throws {
-        let fetchDescriptor = FetchDescriptor<DrumPattern>(predicate: #Predicate { pattern in
+    init(modelContext: ModelContext, styleName: String, feelName: String, patternName: String) throws {
+         let fetchDescriptor = FetchDescriptor<DrumPattern>(predicate: #Predicate { pattern in
             pattern.name == patternName
         })
         
-        if let pattern = try modelContext.fetch(fetchDescriptor).first {
-            self.pattern = pattern
-        } else {
+        let patterns = try modelContext.fetch(fetchDescriptor)
+        
+        guard let pattern = patterns.first(where: {
+            ($0.style?.name == nil || $0.style?.name == styleName)
+            && ($0.feel?.name == nil || $0.feel?.name == feelName)
+        } ) else {
             // TODO: get a better error
-            throw NSError(domain: "JamTrackGenerator", code: 1, userInfo: nil)
+            throw NSError(domain: "JamTrackGenerator", code: 43, userInfo: nil)
         }
+        
+        self.pattern = pattern
     }
     
     func buildEvents(startingPulse: UInt) -> [EventDescriptor] {

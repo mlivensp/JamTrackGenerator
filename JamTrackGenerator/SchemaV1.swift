@@ -16,14 +16,34 @@ enum SchemaV1: VersionedSchema {
     
     @Model class Style {
         var name: String
-        @Relationship(deleteRule: .nullify, inverse: \Definition.style) var definitions: [Definition]
         
-        init(name: String, definitions: [Definition] = []) {
+        @Relationship(deleteRule: .cascade, inverse: \DrumPattern.style) var drumPatterns: [DrumPattern]
+        @Relationship(deleteRule: .cascade, inverse: \HarmonicPattern.style) var harmonicPatterns: [HarmonicPattern]
+        @Relationship(deleteRule: .cascade, inverse: \Definition.style) var definitions: [Definition]
+        
+        init(name: String, drumPatterns: [DrumPattern] = [], harmonicPatterns: [HarmonicPattern] = [], definitions: [Definition] = []) {
             self.name = name
+            self.drumPatterns = drumPatterns
+            self.harmonicPatterns = harmonicPatterns
             self.definitions = definitions
         }
     }
-    
+
+    @Model class Feel {
+        var name: String
+        
+        @Relationship(deleteRule: .nullify, inverse: \DrumPattern.feel) var drumPatterns: [DrumPattern]
+        @Relationship(deleteRule: .nullify, inverse: \HarmonicPattern.feel) var harmonicPatterns: [HarmonicPattern]
+        @Relationship(deleteRule: .nullify, inverse: \Definition.feel) var definitions: [Definition]
+        
+        init(name: String, drumPatterns: [DrumPattern] = [], harmonicPatterns: [HarmonicPattern] = [], definitions: [Definition] = []) {
+            self.name = name
+            self.drumPatterns = drumPatterns
+            self.harmonicPatterns = harmonicPatterns
+            self.definitions = definitions
+        }
+    }
+
     @Model class Note {
         var name: String
         var valueForMidiCalculation: UInt8
@@ -59,17 +79,6 @@ enum SchemaV1: VersionedSchema {
             self.key = key
             self.note = note
             self.scaleDegree = scaleDegree
-        }
-    }
-
-    @Model class Feel {
-        var name: String
-        
-        @Relationship(deleteRule: .nullify, inverse: \Definition.feel) var definitions: [Definition]
-        
-        init(name: String, definitions: [Definition] = []) {
-            self.name = name
-            self.definitions = definitions
         }
     }
     
@@ -195,12 +204,14 @@ enum SchemaV1: VersionedSchema {
     @Model class DrumPattern {
         var name: String
         var style: Style?
+        var feel: Feel?
         
         @Relationship(deleteRule: .cascade, inverse: \DrumNoteInPattern.pattern) var drumNotesInPattern: [DrumNoteInPattern]
         
-        init(name: String, style: Style?, drumNotesInPattern: [DrumNoteInPattern] = []) {
+        init(name: String, style: Style?, feel: Feel?, drumNotesInPattern: [DrumNoteInPattern] = []) {
             self.name = name
             self.style = style
+            self.feel = feel
             self.drumNotesInPattern = drumNotesInPattern
         }
     }
@@ -224,13 +235,23 @@ enum SchemaV1: VersionedSchema {
     @Model class HarmonicPattern {
         var name: String
         var style: Style?
+        var feel: Feel?
         
         @Relationship(deleteRule: .cascade, inverse: \HarmonicNoteInPattern.pattern) var harmonicNotesInPattern: [HarmonicNoteInPattern]
         
-        init(name: String, style: Style?, harmonicNotesInPattern: [HarmonicNoteInPattern] = []) {
+        init(name: String, style: Style?, feel: Feel?, harmonicNotesInPattern: [HarmonicNoteInPattern] = []) {
             self.name = name
             self.style = style
+            self.feel = feel
             self.harmonicNotesInPattern = harmonicNotesInPattern
+            
+            if let style {
+                style.harmonicPatterns.append(self)
+            }
+            
+            if let feel {
+                feel.harmonicPatterns.append(self)
+            }
         }
     }
     

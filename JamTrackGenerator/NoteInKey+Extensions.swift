@@ -12,11 +12,11 @@ extension NoteInKey {
         scaleDegree?.ordinal ?? 0
     }
     
-    subscript (scaleDegree: ScaleDegree) -> String {
-        guard let noteInKey = key?.notes.first(where: { $0.scaleDegree == scaleDegree } ) else {
-            fatalError("Missing note with scaleDegree \(scaleDegree.name) in key \(key?.name ?? "")")
-        }
-        
-        return noteInKey.note?.name ?? ""
-    }
+//    subscript (scaleDegree: ScaleDegree) -> String {
+//        guard let noteInKey = key?.notes.first(where: { $0.scaleDegree == scaleDegree } ) else {
+//            fatalError("Missing note with scaleDegree \(scaleDegree.name) in key \(key?.name ?? "")")
+//        }
+//        
+//        return noteInKey.note?.name ?? ""
+//    }
 }

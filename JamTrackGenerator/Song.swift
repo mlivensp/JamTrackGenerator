@@ -25,6 +25,7 @@ struct Song {
         var currentPulse: UInt = 0
         var drumPartId: ObjectIdentifier? = nil
         var partMap: [ObjectIdentifier: [EventDescriptor]] = [:]
+        var programMap: [ObjectIdentifier: UInt8] = [:]
         
         for section in definition.sections.sorted(by: { $0.order < $1.order } ) {
             for sectionPart in section.sectionParts {
@@ -36,31 +37,52 @@ struct Song {
                     fatalError((#file as NSString).lastPathComponent + "#" + #function + ": no instrument for part")
                 }
                 
-                var doIt = false
                 let eventBuilder: EventBuilder
                 do {
                     if instrument.name == "Drums" {
-                        doIt = true
                         drumPartId = part.id
-                        eventBuilder = try DrumEventBuilder(modelContext: modelContext, patternName: sectionPart.patternName)
+                        eventBuilder = try DrumEventBuilder(modelContext: modelContext, styleName: definition.style?.name ?? "", feelName: definition.feel?.name ?? "", patternName: sectionPart.patternName)
                     }
                     else {
-                        eventBuilder = try HarmonicEventBuilder(modelContext: modelContext, patternName: sectionPart.patternName)
+                        guard let key = definition.key else {
+                            fatalError("no key defined for song")
+                        }
+                        
+                        programMap[part.id] = instrument.programNumber
+                        eventBuilder = try HarmonicEventBuilder(modelContext: modelContext, songKey: key, patternName: sectionPart.patternName)
                     }
                 } catch {
                     fatalError(error.localizedDescription)
                 }
                 
-                if doIt {
-                    let events = eventBuilder.buildEvents(startingPulse: currentPulse)
-                    
-                    partMap[part.id, default: []].append(contentsOf: events)
-                    currentPulse = events.map( { $0.offsetOff } ).max() ?? currentPulse
-                }
+                let events = eventBuilder.buildEvents(startingPulse: currentPulse)
+                
+                partMap[part.id, default: []].append(contentsOf: events)
             }
+            let maxOff = partMap.values.flatMap { $0.map(\.offsetOff) }.max() ?? 0
+            currentPulse = maxOff
+            print("End of section maxOff: \(maxOff)")
         }
         
-        tracks.append(Track(channel: UInt8(9), program: nil, events: partMap[drumPartId!] ?? []))
+        for (partId, events) in partMap {
+            let channel: UInt8
+            let program: UInt8?
+            
+            if let drumPartId {
+                if partId == drumPartId {
+                    channel = UInt8(9)
+                    program = nil
+                } else {
+                    channel = nextChannel()
+                    program = programMap[partId]
+                }
+            } else {
+                channel = nextChannel()
+                program = programMap[partId]
+            }
+            
+            tracks.append(Track(channel: channel, program: program, events: events))
+        }
     }
     
 //    func buildDrumEvents(modelContext: ModelContext, patternName: String, currentPulse: UInt) -> [EventDescriptor] {
