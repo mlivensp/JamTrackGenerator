@@ -41,19 +41,8 @@ struct HarmonicEventBuilder: EventBuilder {
         var events: [EventDescriptor] = []
 
         for harmonicNoteInPattern in pattern.harmonicNotesInPattern.sorted(by: { $0.timestampOn < $1.timestampOn } ) {
-//            guard let noteInKey: NoteInKey = key.notesInKey.first(where: {
-//                $0.scaleDegree == harmonicNoteInPattern.scaleDegree
-//            }) else {
-//                fatalError((#file as NSString).lastPathComponent + ": " + #function + ": " + "Could not find note for \(harmonicNoteInPattern)")
-//            }
-//            
-//            guard let note = noteInKey.note else {
-//                fatalError((#file as NSString).lastPathComponent + ": " + #function + ": " + "Could not find note for \(noteInKey)")
-//            }
-            
             let pitechedNote = key.pitchedNote(distanceFromRoot: harmonicNoteInPattern.halfSteps, octave: pattern.baseOctave)
             let midiValue = pitechedNote.midiValue
-//            let midiValue = note.midiValue(octave: UInt8(pattern.baseOctave + harmonicNoteInPattern.octave))
             let onPulse = harmonicNoteInPattern.timestampOn + startingPulse
             let offPulse = harmonicNoteInPattern.timestampOff + startingPulse
             let onVelocity: UInt8 = 100

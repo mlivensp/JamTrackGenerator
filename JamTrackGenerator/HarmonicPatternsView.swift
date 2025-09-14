@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-struct InstrumentPatternsView: View {
+struct HarmonicPatternsView: View {
     var body: some View {
         Text("Instrument Patterns")
     }
 }
 
 #Preview {
-    InstrumentPatternsView()
+    HarmonicPatternsView()
 }

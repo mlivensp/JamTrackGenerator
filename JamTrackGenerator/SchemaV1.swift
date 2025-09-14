@@ -210,7 +210,7 @@ enum SchemaV1: VersionedSchema {
         
         @Relationship(deleteRule: .cascade, inverse: \DrumNoteInPattern.pattern) var drumNotesInPattern: [DrumNoteInPattern]
         
-        init(name: String, style: Style?, feel: Feel?, drumNotesInPattern: [DrumNoteInPattern] = []) {
+        init(name: String = "", style: Style? = nil, feel: Feel? = nil, drumNotesInPattern: [DrumNoteInPattern] = []) {
             self.name = name
             self.style = style
             self.feel = feel

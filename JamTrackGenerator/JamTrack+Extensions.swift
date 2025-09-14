@@ -46,8 +46,8 @@ extension JamTrack {
     }
     
     static func newJamTrack(modelContext: ModelContext) -> JamTrack {
-        let definition = JamTrack()
-        definition.name = "New Jam Track"
+        let jamTrack = JamTrack()
+        jamTrack.name = "New Jam Track"
         
         let styleFetchDescriptor = FetchDescriptor<Style>(predicate: #Predicate { style in
             style.name == "12 Bar Blues"
@@ -95,41 +95,41 @@ extension JamTrack {
         
         do {
             if let style = try modelContext.fetch(styleFetchDescriptor).first {
-                definition.style = style
+                jamTrack.style = style
             }
             
             if let key = try modelContext.fetch(keysFetchDescriptor).first {
-                definition.key = key
+                jamTrack.key = key
             }
             
             if let feel = try modelContext.fetch(feelFetchDescriptor).first {
-                definition.feel = feel
+                jamTrack.feel = feel
             }
             
             if let countInSongSection = try modelContext.fetch(songSectionCountInFetchDescriptor).first {
-                let section = definition.addSection(songSection: countInSongSection)
+                let section = jamTrack.addSection(songSection: countInSongSection)
                 sectionMap["Count In"] = section
             }
 
             if let chorusSongSection = try modelContext.fetch(songSectionChorusFetchDescriptor).first {
-                let section = definition.addSection(songSection: chorusSongSection)
+                let section = jamTrack.addSection(songSection: chorusSongSection)
                 sectionMap["Chorus"] = section
             }
             
             if let drums = try modelContext.fetch(drumsFetchDescriptor).first {
-                let part = definition.addPart(instrument: drums)
+                let part = jamTrack.addPart(instrument: drums)
                 partMap["Drums"] = part
             }
             
             if let bass = try modelContext.fetch(bassFetchDescriptor).first {
-                let part = definition.addPart(instrument: bass)
+                let part = jamTrack.addPart(instrument: bass)
                 partMap["Bass"] = part
             }
             
             if let countInPattern = try modelContext.fetch(countInFetchDescriptor).first {
                 if let section = sectionMap["Count In"],
                    let part = partMap["Drums"] {
-                    definition.addSectionPart(section: section, part: part, patternName: countInPattern.name)
+                    jamTrack.addSectionPart(section: section, part: part, patternName: countInPattern.name)
                 }
             }
 
@@ -140,7 +140,7 @@ extension JamTrack {
             } ) {
                 if let section = sectionMap["Chorus"],
                    let part = partMap["Drums"] {
-                    definition.addSectionPart(section: section, part: part, patternName: basicBeatPattern.name)
+                    jamTrack.addSectionPart(section: section, part: part, patternName: basicBeatPattern.name)
                 }
             }
             
@@ -151,14 +151,14 @@ extension JamTrack {
             }) {
                 if let section = sectionMap["Chorus"],
                    let part = partMap["Bass"] {
-                    definition.addSectionPart(section: section, part: part, patternName: walkingBassPattern.name)
+                    jamTrack.addSectionPart(section: section, part: part, patternName: walkingBassPattern.name)
                 }
             }
         } catch {
             fatalError("Fatal error fetching JamTrack defaults: \(error.localizedDescription)")
         }
 
-        return definition
+        return jamTrack
     }
     
     func createMidiDocument(modelContext: ModelContext) -> MidiDocument {

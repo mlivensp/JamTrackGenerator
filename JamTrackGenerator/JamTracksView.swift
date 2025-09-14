@@ -10,42 +10,50 @@ import SwiftData
 
 struct JamTracksView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query var jamTracks: [JamTrack]
+    @Query(sort: \JamTrack.name) var jamTracks: [JamTrack]
     @Binding var selectedJamTrack: JamTrack?
     
     var body: some View {
-        VStack {
-            List {
-                ForEach(jamTracks) { jamTrack in
-                    NavigationLink(value: jamTrack) {
-                        Text(jamTrack.name)
-                            .border(.blue, width: 1)
-                    }
+        List {
+            ForEach(jamTracks) { jamTrack in
+                NavigationLink(value: jamTrack) {
+                    Text(jamTrack.name)
+                        .border(.blue, width: 1)
                 }
-                .onDelete { indexSet in
-                    for index in indexSet {
-                        modelContext.delete(jamTracks[index])
-                    }
+                .onTapGesture { selectedJamTrack = jamTrack }
+            }
+            .onDelete { indexSet in
+                for index in indexSet {
+                    modelContext.delete(jamTracks[index])
+                }
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("Failed to delete JamTrack: \(error)")
                 }
             }
-            .navigationTitle("Jam Tracks")
-            .navigationDestination(for: JamTrack.self) { jamTrack in
-                JamTrackDetailView(jamTrack: jamTrack)
-            }
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button(action: addJamTrack) {
-                        Label("Add", systemImage: "plus")
-                    }
+        }
+        .navigationTitle("Jam Tracks")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: addJamTrack) {
+                    Label("Add", systemImage: "plus")
                 }
             }
         }
     }
     
     private func addJamTrack() {
-        let newJamTrack = JamTrack.newJamTrack(modelContext: modelContext)
-        modelContext.insert(newJamTrack)
-        selectedJamTrack = newJamTrack
+        withAnimation {
+            let newJamTrack = JamTrack.newJamTrack(modelContext: modelContext)
+            modelContext.insert(newJamTrack)
+            selectedJamTrack = newJamTrack
+            do {
+                try modelContext.save()
+            } catch {
+                print("Failed to save JamTrack: \(error)")
+            }
+        }
     }
 }
 //#Preview {

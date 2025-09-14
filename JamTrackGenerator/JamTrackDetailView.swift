@@ -27,13 +27,10 @@ struct JamTrackDetailView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Text(modelContext.sqliteCommand)
             keyFeelTempo
                 .fixedSize(horizontal: false, vertical: true)
                 .alignmentGuide(.top) { _ in 0 }
                 .padding()
-//            Text("Number of sections: \(jamTrack.sections.count)")
-//            Text("Number of parts: \(jamTrack.parts.count)")
             GeometryReader { geo in
                 ScrollView {
                     sections
@@ -44,17 +41,21 @@ struct JamTrackDetailView: View {
             }
             
             playbackControls
-            Button("Export File") {
-                midiDocument = buildMidiDocument()
-//                exportDocument = TextExportDocument(content: "Your export data here")
-                export = true
-            }
-            .padding()
             
             if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage)
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button(action: {
+                    midiDocument = buildMidiDocument()
+                    export = true
+                }) {
+                    Label("Export", systemImage: "square.and.arrow.up")
+                }
             }
         }
         .fileExporter(
@@ -74,7 +75,6 @@ struct JamTrackDetailView: View {
     private var keyFeelTempo: some View {
         HStack {
             VStack(spacing: 0) {
-                
                 LabeledContent {
                     Picker("Key", selection: $jamTrack.key) {
                         ForEach(keys) { key in
@@ -109,17 +109,7 @@ struct JamTrackDetailView: View {
                 label: { Text("BPM") }
                 
             }
-            .background(.yellow)
             .padding()
-            
-//            VStack(spacing: 0) {
-//                Toggle("Include Count In", isOn: $viewModel.jamTrack.includeCountIn)
-//                    .padding(.horizontal, 8)
-//                    .padding(.vertical, 4)
-//            }
-//            .background(.green)
-//            .padding()
-            
         }
         .frame(maxHeight: .infinity, alignment: .top)
         
@@ -130,7 +120,7 @@ struct JamTrackDetailView: View {
             SwiftUI.Section(header: Text("Song Sections")) {
                 HStack {
                     List(selection: $viewModel.selectedSection) {
-                        ForEach(jamTrack.sections, id: \.self) { section in
+                        ForEach(jamTrack.sections) { section in
                             NavigationLink {
                                 EditSectionView(section: Binding(
                                     get: { section },
@@ -144,22 +134,22 @@ struct JamTrackDetailView: View {
                     }
                     
                     VStack {
+                        Spacer()
                         Picker("", selection: $viewModel.selectedSongSection) {
                             ForEach(songSections) { section in
                                 Text(section.name).tag(section)
                             }
                         }
-//                        .pickerStyle(InlinePickerStyle())
                         .frame(maxWidth: .infinity)
-                        .border(.red)
                         
+                        Spacer()
                         Button("Add Section") {
                             let _ = jamTrack.addSection(songSection: viewModel.selectedSongSection!)
                         }
+                        .buttonStyle(.borderedProminent)
                     }
                 }
             }
-            .border(.red)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -183,24 +173,24 @@ struct JamTrackDetailView: View {
                     }
                     
                     VStack {
+                        Spacer()
                         Picker("", selection: $viewModel.selectedMidiInstrument) {
                             ForEach(instruments) { instrument in
                                 Text(instrument.name).tag(instrument)
                             }
                         }
-//                        .pickerStyle()
                         .frame(maxWidth: .infinity)
-                        .border(.red)
                         
+                        Spacer()
                         Button("Add Part") {
                             if let selectedMidiInstrument = viewModel.selectedMidiInstrument {
                                 let _ = jamTrack.addPart(instrument: selectedMidiInstrument)
                             }
                         }
+                        .buttonStyle(.borderedProminent)
                     }
                 }
             }
-            .border(.red)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -215,8 +205,8 @@ struct JamTrackDetailView: View {
                     Image(systemName: playButtonIcon)
                         .font(.title)
                         .frame(width: 50, height: 50)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
+//                        .background(Color.blue)
+                        .foregroundColor(.primary)
                         .clipShape(Circle())
                 }
                 
@@ -236,6 +226,7 @@ struct JamTrackDetailView: View {
                             .foregroundColor(viewModel.midiPlayer?.isLooping ?? false ? .blue : .gray)
                     }
                 }
+                .padding()
             }
             
             // Progress bar
@@ -260,7 +251,7 @@ struct JamTrackDetailView: View {
             //            }
             
         }
-        .border(.green)
+        .border(.primary, width: 1)
         .padding()
     }
     

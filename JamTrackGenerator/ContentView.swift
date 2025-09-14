@@ -55,13 +55,21 @@ struct ContentView: View {
                             selectedCategory = category
                         }
                         .foregroundColor(selectedCategory == category ? .accentColor : .primary)
+                        .background(selectedCategory == category ? Color.accentColor.opacity(0.1) : Color.clear)
                         .padding(.vertical, 4)
                 }
             }
             .navigationTitle("Categories")
 #endif
         } content: {
-            CategoryContentView(category: selectedCategory, selectedJamTrack: $selectedJamTrack)
+            CategoryContentView(
+                category: selectedCategory,
+                selectedJamTrack: $selectedJamTrack,
+                selectedStyle: $selectedStyle,
+                selectedFeel: $selectedFeel,
+                selectedDrumPattern: $selectedDrumPattern,
+                selectedHarmonicPattern: $selectedHarmonicPattern
+            )
         } detail: {
             Group {
                 if let jamTrack = selectedJamTrack {
@@ -88,41 +96,6 @@ struct ContentView: View {
         .navigationSplitViewColumnWidth(min: 180, ideal: 200)
     #endif
     }
-//    private var splitView: some View {
-//        NavigationSplitView {
-//            #if os(macOS)
-//            List(SidebarCategory.allCases, selection: $selectedCategory) { category in
-//                Text(category.rawValue).tag(category)
-//            }
-//            .navigationTitle("Categories")
-//            #else
-//            List(SidebarCategory.allCases) { category in
-//                NavigationLink(
-//                    value: category,
-//                    label: {
-//                        Text(category.rawValue)
-//                    }
-//                )
-//            }
-//            .navigationTitle("Categories")
-//            #endif
-//            // Sidebar
-//        } content: {
-//            // Content List based on selected category
-//                CategoryContentView(category: selectedCategory, selectedJamTrack: $selectedJamTrack)
-//        } detail: {
-//            Group {
-//                if let jamTrack = selectedJamTrack {
-//                    JamTrackDetailView(jamTrack: jamTrack)
-//                }else {
-//                    Text("Select an item")
-//                }
-//            }
-//        }
-//#if os(macOS)
-//        .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-//#endif
-//    }
 
     private var stackView: some View {
         NavigationStack {
@@ -133,8 +106,15 @@ struct ContentView: View {
             }
             .navigationTitle("Categories")
             .navigationDestination(for: SidebarCategory.self) { category in
-                    CategoryContentView(category: category, selectedJamTrack: $selectedJamTrack)
-            }
+                 CategoryContentView(
+                     category: category,
+                     selectedJamTrack: $selectedJamTrack,
+                     selectedStyle: $selectedStyle,
+                     selectedFeel: $selectedFeel,
+                     selectedDrumPattern: $selectedDrumPattern,
+                     selectedHarmonicPattern: $selectedHarmonicPattern
+                 )
+             }
         }
     }
 }
