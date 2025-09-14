@@ -12,7 +12,7 @@ typealias Velocity = UInt8
 typealias Octave = UInt8
 
 typealias Style = SchemaV1.Style
-typealias Note = SchemaV1.Note
+typealias RawNote = SchemaV1.RawNote
 typealias Key = SchemaV1.Key
 typealias NoteInKey = SchemaV1.NoteInKey
 typealias ScaleDegree = SchemaV1.ScaleDegree
@@ -24,7 +24,7 @@ typealias HarmonicNoteInPattern = SchemaV1.HarmonicNoteInPattern
 typealias InstrumentFamily = SchemaV1.InstrumentFamily
 typealias Instrument = SchemaV1.Instrument
 typealias Part = SchemaV1.Part
-typealias Definition = SchemaV1.Definition
+typealias JamTrack = SchemaV1.JamTrack
 typealias SectionPart = SchemaV1.SectionPart
 typealias DrumNote = SchemaV1.DrumNote
 typealias DrumNoteInPattern = SchemaV1.DrumNoteInPattern

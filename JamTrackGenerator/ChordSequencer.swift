@@ -17,9 +17,12 @@ struct ChordSequencer {
     }
     
     func calcChordProgression() -> [Measure] {
-        let oneChord = Chord(name: key.root.name + "7", duration: .whole)
-        let fourChord = Chord(name: key.fourth.name + "7", duration: .whole)
-        let fiveChord = Chord(name: key.fifth.name + "7", duration: .whole)
+        let oneRoot = key.pitchedNote(distanceFromRoot: 0)
+        let fourthRoot = key.pitchedNote(distanceFromRoot: 5)
+        let fifthRoot = key.pitchedNote(distanceFromRoot: 7)
+        let oneChord = Chord(name: oneRoot.rawNote.name + "7", duration: .whole)
+        let fourChord = Chord(name: fourthRoot.rawNote.name + "7", duration: .whole)
+        let fiveChord = Chord(name: fifthRoot.rawNote.name + "7", duration: .whole)
         let oneMeasure = Measure(thangs: [oneChord])
         let fourMeasure = Measure(thangs: [fourChord])
         let fiveMeasure = Measure(thangs: [fiveChord])

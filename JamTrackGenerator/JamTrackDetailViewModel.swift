@@ -10,12 +10,11 @@ import SwiftData
 
 extension JamTrackDetailView {
     @Observable class ViewModel {
-        var definition: Definition
+        var jamTrack: JamTrack
         var isPlaying = false
         var isPaused = false
         var export = false
         var errorMessage: String?
-
 
         var midiPlayer: MIDIPlayer?
 
@@ -28,8 +27,8 @@ extension JamTrackDetailView {
         var selectedPart: Part? = nil
         var selectedMidiInstrument: Instrument? = nil
 
-        init(definition: Definition) {
-            self.definition = definition
+        init(jamTrack: JamTrack) {
+            self.jamTrack = jamTrack
             do {
                 // TODO: move this closer to where it is needed
                 midiPlayer = try MIDIPlayer()
@@ -37,7 +36,7 @@ extension JamTrackDetailView {
                 errorMessage = "Failed to initialize player: \(error.localizedDescription)"
             }
             
-            selectedSongSection = definition.sections.first?.songSection
+            selectedSongSection = jamTrack.sections.first?.songSection
 //            specification = JamTrackSpecification()
 //            specification.sections.append(Section(section: .chorus))
 //            sections = specification.sections
@@ -49,36 +48,37 @@ extension JamTrackDetailView {
         }
 //        
 //        func addSection(songSection: SongSection) {
-//            let order = definition.sections.map { $0.order }.max() ?? 0
-//            definition.sections.append(Section(definition: definition, songSection: songSection, order: order + 1))
-////            sections = definition.sections
+//            let order = jamTrack.sections.map { $0.order }.max() ?? 0
+//            jamTrack.sections.append(Section(jamTrack: jamTrack, songSection: songSection, order: order + 1))
+////            sections = jamTrack.sections
 //        }
         
         func deleteSection(section: Section) {
-            if let sectionIndex = definition.sections.firstIndex(of: section) {
-                definition.sections.remove(at: sectionIndex)
+            if let sectionIndex = jamTrack.sections.firstIndex(of: section) {
+                jamTrack.sections.remove(at: sectionIndex)
             }
         }
 //        
 //        func addPart(instrument: Instrument) {
-//            let part = Part(definition: self,instrument: instrument)
-//            definition.parts.append(part)
-//            parts = definition.parts
+//            let part = Part(jamTrack: self,instrument: instrument)
+//            jamTrack.parts.append(part)
+//            parts = jamTrack.parts
 //        }
         
         func deletePart(part: Part) {
-            if let partIndex = definition.parts.firstIndex(of: part) {
-                definition.parts.remove(at: partIndex)
+            if let partIndex = jamTrack.parts.firstIndex(of: part) {
+                jamTrack.parts.remove(at: partIndex)
             }
         }
         
         func play(modelContext: ModelContext) {
-            let data = definition.encodeToMidi(modelContext: modelContext)
+            let data = jamTrack.encodeToMidi(modelContext: modelContext)
             guard let url = saveToDocuments(data: data) else {
                 errorMessage = "Failed to save MIDI file"
                 return
             }
 
+            print("playing at \(jamTrack.bpm) BPM")
             do {
                 if isPaused {
                     midiPlayer?.resumeMIDIFile()
@@ -107,8 +107,8 @@ extension JamTrackDetailView {
 
 //        func buildDocument() -> MidiDocument {
 //            var song = Song()
-//            song.buildTracks(definition: definition)
-//            var document = MidiDocument(song: song, bpm: definition.bpm)
+//            song.buildTracks(jamTrack: jamTrack)
+//            var document = MidiDocument(song: song, bpm: jamTrack.bpm)
 //            document.encodeMidi()
 //            return document
 //        }

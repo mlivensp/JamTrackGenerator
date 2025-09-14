@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DD74C8A22E752EF200B213C1 /* SwiftData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD74C8A12E752EF200B213C1 /* SwiftData.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		DD9941822E5394A1001AB0E7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		DD74C8A12E752EF200B213C1 /* SwiftData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftData.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk/System/Library/Frameworks/SwiftData.framework; sourceTree = DEVELOPER_DIR; };
 		DD9941712E5394A0001AB0E7 /* JamTrackGenerator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JamTrackGenerator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD9941812E5394A1001AB0E7 /* JamTrackGeneratorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JamTrackGeneratorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD99418B2E5394A1001AB0E7 /* JamTrackGeneratorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JamTrackGeneratorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -64,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD74C8A22E752EF200B213C1 /* SwiftData.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +83,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DD74C8A02E752EF200B213C1 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DD74C8A12E752EF200B213C1 /* SwiftData.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		DD9941682E5394A0001AB0E7 = {
 			isa = PBXGroup;
 			children = (
@@ -84,6 +98,7 @@
 				DD9941732E5394A0001AB0E7 /* JamTrackGenerator */,
 				DD9941842E5394A1001AB0E7 /* JamTrackGeneratorTests */,
 				DD99418E2E5394A1001AB0E7 /* JamTrackGeneratorUITests */,
+				DD74C8A02E752EF200B213C1 /* Frameworks */,
 				DD9941722E5394A0001AB0E7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -488,7 +503,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JamTrackGenerator.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JamTrackGenerator";
 				XROS_DEPLOYMENT_TARGET = 2.5;
@@ -511,7 +526,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/JamTrackGenerator.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/JamTrackGenerator";
 				XROS_DEPLOYMENT_TARGET = 2.5;

@@ -28,7 +28,7 @@ struct InstrumentFamilySeed: Codable {
 
 struct ScaleDegreeSeed: Codable {
     var name: String
-    var ordinal: Int
+    var ordinal: UInt8
 }
 
 struct ScaledNoteSeed: Codable {
@@ -56,8 +56,7 @@ struct StyleSeed: Codable {
 }
 
 struct HarmonicNoteInPatternSeed: Codable {
-    var scaleDegree: String
-    var octave: UInt8
+    var halfSteps: Int8
     var timestampOn: UInt
     var timestampOff: UInt
 }
@@ -66,6 +65,7 @@ struct HarmonicPatternSeed: Codable {
     var name: String
     var style: String
     var feel: String
+    var baseOctave: UInt8
     var songSection: String
     var notes: [HarmonicNoteInPatternSeed]
 }

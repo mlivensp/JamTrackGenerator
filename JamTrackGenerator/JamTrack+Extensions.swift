@@ -1,5 +1,5 @@
 //
-//  Definition+Extensions.swift
+//  JamTrack+Extensions.swift
 //  JamTrackGenerator
 //
 //  Created by Michael Livenspargar on 9/5/25.
@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-extension Definition {
+extension JamTrack {
     func addStyle(style: Style) {
         self.style = style
         style.definitions.append(self)
@@ -26,14 +26,14 @@ extension Definition {
     
     func addSection(songSection: SongSection) -> Section {
         let order = ( self.sections.map { $0.order }.max() ?? 0 ) + 1
-        let section = Section(definition: self, songSection: songSection, order: order)
+        let section = Section(jamTrack: self, songSection: songSection, order: order)
         sections.append(section)
         songSection.sections.append(section)
         return section
     }
     
     func addPart(instrument: Instrument) -> Part {
-        let part = Part(definition: self, instrument: instrument)
+        let part = Part(jamTrack: self, instrument: instrument)
         parts.append(part)
         instrument.parts.append(part)
         return part
@@ -45,8 +45,8 @@ extension Definition {
         part.sectionParts.append(sectionPart)
     }
     
-    static func newDefinition(modelContext: ModelContext) -> Definition {
-        let definition = Definition()
+    static func newJamTrack(modelContext: ModelContext) -> JamTrack {
+        let definition = JamTrack()
         definition.name = "New Jam Track"
         
         let styleFetchDescriptor = FetchDescriptor<Style>(predicate: #Predicate { style in
@@ -155,7 +155,7 @@ extension Definition {
                 }
             }
         } catch {
-            fatalError("Fatal error fetching Definition defaults: \(error.localizedDescription)")
+            fatalError("Fatal error fetching JamTrack defaults: \(error.localizedDescription)")
         }
 
         return definition
@@ -163,7 +163,7 @@ extension Definition {
     
     func createMidiDocument(modelContext: ModelContext) -> MidiDocument {
         var song = Song(modelContext: modelContext)
-        song.buildTracks(definition: self)
+        song.buildTracks(jamTrack: self)
         var document = MidiDocument(song: song, bpm: bpm)
         document.encodeMidi()
         return document
@@ -171,7 +171,7 @@ extension Definition {
     
 
     func encodeToMidi(modelContext: ModelContext) -> Data {
-        var document = createMidiDocument(modelContext: modelContext)
+        let document = createMidiDocument(modelContext: modelContext)
         let midiData = document.encodeMidiToData()
         return Data(midiData)
     }

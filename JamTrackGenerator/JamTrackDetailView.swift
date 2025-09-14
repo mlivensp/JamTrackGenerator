@@ -10,7 +10,7 @@ import SwiftUI
 
 struct JamTrackDetailView: View {
     @Environment(\.modelContext) var modelContext
-    @Bindable var definition: Definition
+    @Bindable var jamTrack: JamTrack
     @State private var viewModel: ViewModel
     @State private var export = false
     @State private var midiDocument: MidiDocument?
@@ -20,9 +20,9 @@ struct JamTrackDetailView: View {
     @Query var instruments: [Instrument]
     @Query var songSections: [SongSection]
     
-    init(definition: Definition) {
-        self.definition = definition
-        self._viewModel = .init(wrappedValue: .init(definition: definition))
+    init(jamTrack: JamTrack) {
+        self.jamTrack = jamTrack
+        self._viewModel = .init(wrappedValue: .init(jamTrack: jamTrack))
     }
     
     var body: some View {
@@ -32,8 +32,8 @@ struct JamTrackDetailView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .alignmentGuide(.top) { _ in 0 }
                 .padding()
-//            Text("Number of sections: \(definition.sections.count)")
-//            Text("Number of parts: \(definition.parts.count)")
+//            Text("Number of sections: \(jamTrack.sections.count)")
+//            Text("Number of parts: \(jamTrack.parts.count)")
             GeometryReader { geo in
                 ScrollView {
                     sections
@@ -76,7 +76,7 @@ struct JamTrackDetailView: View {
             VStack(spacing: 0) {
                 
                 LabeledContent {
-                    Picker("Key", selection: $definition.key) {
+                    Picker("Key", selection: $jamTrack.key) {
                         ForEach(keys) { key in
                             Text(key.name).tag(key)
                         }
@@ -85,7 +85,7 @@ struct JamTrackDetailView: View {
                 label: { Text("Key") }
                 
                 LabeledContent {
-                    Picker("Feel", selection: $definition.feel) {
+                    Picker("Feel", selection: $jamTrack.feel) {
                         ForEach(feels, id: \.self) { feel in
                             Text(feel.name).tag(feel)
                         }
@@ -94,7 +94,15 @@ struct JamTrackDetailView: View {
                 label: { Text("Feel") }
                 
                 LabeledContent {
-                    TextField("BPM", value: $definition.bpm, formatter: NumberFormatter())
+                    let formatter: NumberFormatter = {
+                        let f = NumberFormatter()
+                        f.numberStyle = .none
+                        f.minimum = 0
+                        f.maximum = 255
+                        f.allowsFloats = false
+                        return f
+                    }()
+                    TextField("BPM", value: $jamTrack.bpm, formatter: formatter)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 60)
                 }
@@ -105,7 +113,7 @@ struct JamTrackDetailView: View {
             .padding()
             
 //            VStack(spacing: 0) {
-//                Toggle("Include Count In", isOn: $viewModel.definition.includeCountIn)
+//                Toggle("Include Count In", isOn: $viewModel.jamTrack.includeCountIn)
 //                    .padding(.horizontal, 8)
 //                    .padding(.vertical, 4)
 //            }
@@ -122,7 +130,7 @@ struct JamTrackDetailView: View {
             SwiftUI.Section(header: Text("Song Sections")) {
                 HStack {
                     List(selection: $viewModel.selectedSection) {
-                        ForEach(definition.sections, id: \.self) { section in
+                        ForEach(jamTrack.sections, id: \.self) { section in
                             NavigationLink {
                                 EditSectionView(section: Binding(
                                     get: { section },
@@ -146,7 +154,7 @@ struct JamTrackDetailView: View {
                         .border(.red)
                         
                         Button("Add Section") {
-                            let _ = definition.addSection(songSection: viewModel.selectedSongSection!)
+                            let _ = jamTrack.addSection(songSection: viewModel.selectedSongSection!)
                         }
                     }
                 }
@@ -161,7 +169,7 @@ struct JamTrackDetailView: View {
             SwiftUI.Section(header: Text("Parts")) {
                 HStack {
                     List(selection: $viewModel.selectedPart) {
-                        ForEach(definition.parts) { part in
+                        ForEach(jamTrack.parts) { part in
                             NavigationLink {
                                 EditPartView(part: Binding(
                                     get: { part },
@@ -186,7 +194,7 @@ struct JamTrackDetailView: View {
                         
                         Button("Add Part") {
                             if let selectedMidiInstrument = viewModel.selectedMidiInstrument {
-                                let _ = definition.addPart(instrument: selectedMidiInstrument)
+                                let _ = jamTrack.addPart(instrument: selectedMidiInstrument)
                             }
                         }
                     }
@@ -281,7 +289,7 @@ struct JamTrackDetailView: View {
     }
     
     private func buildMidiDocument() -> MidiDocument? {
-        return definition.createMidiDocument(modelContext: modelContext)
+        return jamTrack.createMidiDocument(modelContext: modelContext)
     }
 }
 

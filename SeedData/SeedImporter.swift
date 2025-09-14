@@ -103,7 +103,7 @@ struct SeedImporter {
         return feelMap
     }
     
-    func importNoteData(context: ModelContext) -> [String:Note] {
+    func importNoteData(context: ModelContext) -> [String:RawNote] {
         guard let noteURL = Bundle.main.url(forResource: "note", withExtension: "json")
         else {
             print("Failed to load note JSON file")
@@ -120,9 +120,9 @@ struct SeedImporter {
             return [:]
         }
         
-        var noteMap: [String:Note] = [:]
+        var noteMap: [String:RawNote] = [:]
         for seed in noteSeeds {
-            let note = Note(name: seed.name, valueForMidiCalculation: seed.value)
+            let note = RawNote(name: seed.name, distanceFromC: seed.value)
             context.insert(note)
             noteMap[note.name] = note
         }
@@ -160,7 +160,7 @@ struct SeedImporter {
         return scaleDegreeMap
     }
 
-    func importKeyData(context: ModelContext, scaleDegreeMap: [String:ScaleDegree], noteMap: [String:Note]) {
+    func importKeyData(context: ModelContext, scaleDegreeMap: [String:ScaleDegree], noteMap: [String:RawNote]) {
         guard let keyURL = Bundle.main.url(forResource: "key", withExtension: "json")
         else {
             print("Failed to load key JSON file")
@@ -190,7 +190,8 @@ struct SeedImporter {
                 guard let degree = scaleDegreeMap[noteInKeySeed.scaleDegreeName] else {
                     fatalError("Missing scale degree: \(noteInKeySeed.scaleDegreeName)")
                 }
-                key.notes.append(NoteInKey(key: key, note: note, scaleDegree: degree))
+                let noteInKey = NoteInKey(key: key, rawNote: note, scaleDegree: degree)
+                key.addNoteInKey(noteInKey)
             }
         }
         
@@ -367,15 +368,11 @@ struct SeedImporter {
                 fatalError("Missing feel \(patternSeed.feel)")
             }
             
-            let pattern = HarmonicPattern(name: patternSeed.name, style: style, feel: feel)
+            let pattern = HarmonicPattern(name: patternSeed.name, style: style, feel: feel, baseOctave: patternSeed.baseOctave)
             context.insert(pattern)
             
             for harmonicNoteInPatternSeed in patternSeed.notes {
-                guard let scaleDegree = scaleDegreeMap[harmonicNoteInPatternSeed.scaleDegree] else {
-                    fatalError("Missing scaleDegree \(harmonicNoteInPatternSeed.scaleDegree)")
-                }
-                
-                let harmonicNoteInPattern = HarmonicNoteInPattern(pattern: pattern, scaleDegree: scaleDegree, octave: harmonicNoteInPatternSeed.octave, timestampOn: harmonicNoteInPatternSeed.timestampOn, timestampOff: harmonicNoteInPatternSeed.timestampOff)
+                let harmonicNoteInPattern = HarmonicNoteInPattern(pattern: pattern, halfSteps: harmonicNoteInPatternSeed.halfSteps, timestampOn: harmonicNoteInPatternSeed.timestampOn, timestampOff: harmonicNoteInPatternSeed.timestampOff)
                 pattern.harmonicNotesInPattern.append(harmonicNoteInPattern)
             }
         }

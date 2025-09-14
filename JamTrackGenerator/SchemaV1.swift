@@ -19,9 +19,9 @@ enum SchemaV1: VersionedSchema {
         
         @Relationship(deleteRule: .cascade, inverse: \DrumPattern.style) var drumPatterns: [DrumPattern]
         @Relationship(deleteRule: .cascade, inverse: \HarmonicPattern.style) var harmonicPatterns: [HarmonicPattern]
-        @Relationship(deleteRule: .cascade, inverse: \Definition.style) var definitions: [Definition]
+        @Relationship(deleteRule: .cascade, inverse: \JamTrack.style) var definitions: [JamTrack]
         
-        init(name: String, drumPatterns: [DrumPattern] = [], harmonicPatterns: [HarmonicPattern] = [], definitions: [Definition] = []) {
+        init(name: String, drumPatterns: [DrumPattern] = [], harmonicPatterns: [HarmonicPattern] = [], definitions: [JamTrack] = []) {
             self.name = name
             self.drumPatterns = drumPatterns
             self.harmonicPatterns = harmonicPatterns
@@ -34,9 +34,9 @@ enum SchemaV1: VersionedSchema {
         
         @Relationship(deleteRule: .nullify, inverse: \DrumPattern.feel) var drumPatterns: [DrumPattern]
         @Relationship(deleteRule: .nullify, inverse: \HarmonicPattern.feel) var harmonicPatterns: [HarmonicPattern]
-        @Relationship(deleteRule: .nullify, inverse: \Definition.feel) var definitions: [Definition]
+        @Relationship(deleteRule: .nullify, inverse: \JamTrack.feel) var definitions: [JamTrack]
         
-        init(name: String, drumPatterns: [DrumPattern] = [], harmonicPatterns: [HarmonicPattern] = [], definitions: [Definition] = []) {
+        init(name: String, drumPatterns: [DrumPattern] = [], harmonicPatterns: [HarmonicPattern] = [], definitions: [JamTrack] = []) {
             self.name = name
             self.drumPatterns = drumPatterns
             self.harmonicPatterns = harmonicPatterns
@@ -44,15 +44,15 @@ enum SchemaV1: VersionedSchema {
         }
     }
 
-    @Model class Note {
+    @Model class RawNote {
         var name: String
-        var valueForMidiCalculation: UInt8
+        var distanceFromC: UInt8
         
-        @Relationship(deleteRule: .nullify, inverse: \NoteInKey.note) var noteInKeys: [NoteInKey]
+        @Relationship(deleteRule: .nullify, inverse: \NoteInKey.rawNote) var noteInKeys: [NoteInKey]
         
-        init(name: String, valueForMidiCalculation: UInt8, noteInKeys: [NoteInKey] = []) {
+        init(name: String, distanceFromC: UInt8, noteInKeys: [NoteInKey] = []) {
             self.name = name
-            self.valueForMidiCalculation = valueForMidiCalculation
+            self.distanceFromC = distanceFromC
             self.noteInKeys = noteInKeys
         }
     }
@@ -60,24 +60,24 @@ enum SchemaV1: VersionedSchema {
     @Model class Key {
         var name: String
         
-        @Relationship(deleteRule: .cascade, inverse: \Definition.key) var definitions: [Definition]
-        @Relationship(deleteRule: .cascade, inverse: \NoteInKey.key) var notes: [NoteInKey]
+        @Relationship(deleteRule: .cascade, inverse: \JamTrack.key) var definitions: [JamTrack]
+        @Relationship(deleteRule: .cascade, inverse: \NoteInKey.key) var notesInKey: [NoteInKey]
         
-        init(name: String, definitions: [Definition] = [], notes: [NoteInKey] = []) {
+        init(name: String, definitions: [JamTrack] = [], notesInKey: [NoteInKey] = []) {
             self.name = name
             self.definitions = definitions
-            self.notes = notes
+            self.notesInKey = notesInKey
         }
     }
     
     @Model class NoteInKey {
         var key: Key?
-        var note: Note?
+        var rawNote: RawNote?
         var scaleDegree: ScaleDegree?
         
-        init(key: Key, note: Note, scaleDegree: ScaleDegree) {
+        init(key: Key, rawNote: RawNote, scaleDegree: ScaleDegree) {
             self.key = key
-            self.note = note
+            self.rawNote = rawNote
             self.scaleDegree = scaleDegree
         }
     }
@@ -96,14 +96,14 @@ enum SchemaV1: VersionedSchema {
     }
     
     @Model class Section {
-        var definition: Definition?
+        var jamTrack: JamTrack?
         var songSection: SongSection?
         var order: UInt8
         
         @Relationship(deleteRule: .cascade, inverse: \SectionPart.section) var sectionParts: [SectionPart]
         
-        init(definition: Definition?, songSection: SongSection, order: UInt8, sectionParts: [SectionPart] = []) {
-            self.definition = definition
+        init(jamTrack: JamTrack?, songSection: SongSection, order: UInt8, sectionParts: [SectionPart] = []) {
+            self.jamTrack = jamTrack
             self.songSection = songSection
             self.order = order
             self.sectionParts = sectionParts
@@ -137,28 +137,32 @@ enum SchemaV1: VersionedSchema {
     }
     
     @Model class Part {
-        var definition: Definition?
+        var jamTrack: JamTrack?
         var instrument: Instrument?
         
         @Relationship(deleteRule: .cascade, inverse: \SectionPart.part) var sectionParts: [SectionPart]
         
-        init(definition: Definition, instrument: Instrument, sectionParts: [SectionPart] = []) {
+        init(jamTrack: JamTrack, instrument: Instrument, sectionParts: [SectionPart] = []) {
             self.instrument = instrument
-            self.definition = definition
+            self.jamTrack = jamTrack
             self.sectionParts = sectionParts
         }
     }
 
-    @Model class Definition {
+    @Model class JamTrack {
         var name: String
         var style: Style?
         var key: Key?
         var feel: Feel?
-        var bpm: UInt8
+        var bpm: UInt8 {
+            willSet {
+                print("Setting BPM to \(newValue)")
+            }
+        }
         var includeCountIn: Bool
         
-        @Relationship(deleteRule: .cascade, inverse: \Section.definition) var sections: [Section]
-        @Relationship(deleteRule: .cascade, inverse: \Part.definition) var parts: [Part]
+        @Relationship(deleteRule: .cascade, inverse: \Section.jamTrack) var sections: [Section]
+        @Relationship(deleteRule: .cascade, inverse: \Part.jamTrack) var parts: [Part]
         
         init(name: String = "", style: Style? = nil, key: Key? = nil, feel: Feel? = nil, bpm: UInt8 = 120, includeCountIn: Bool = true, sections: [Section] = [], parts: [Part] = [], sectionPartPatterns: [SectionPart] = []) {
             self.name = name
@@ -174,16 +178,14 @@ enum SchemaV1: VersionedSchema {
     
     @Model class ScaleDegree {
         var name: String
-        var ordinal: Int
+        var ordinal: UInt8
         
         @Relationship(deleteRule: .cascade, inverse: \NoteInKey.scaleDegree) var noteInKeys: [NoteInKey]
-        @Relationship(deleteRule: .cascade, inverse: \HarmonicNoteInPattern.scaleDegree) var harmonicNotesInPattern: [HarmonicNoteInPattern]
         
-        init(name: String, ordinal: Int, noteInKeys: [NoteInKey] = [], harmonicNotesInPattern: [HarmonicNoteInPattern] = []) {
+        init(name: String, ordinal: UInt8, noteInKeys: [NoteInKey] = []) {
             self.name = name
             self.ordinal = ordinal
             self.noteInKeys = noteInKeys
-            self.harmonicNotesInPattern = harmonicNotesInPattern
         }
     }
     
@@ -218,15 +220,13 @@ enum SchemaV1: VersionedSchema {
     
     @Model class HarmonicNoteInPattern {
         var pattern: HarmonicPattern?
-        var scaleDegree: ScaleDegree?
-        var octave: UInt8
+        var halfSteps: Int8
         var timestampOn: UInt
         var timestampOff: UInt
         
-        init(pattern: HarmonicPattern, scaleDegree: ScaleDegree?, octave: UInt8, timestampOn: UInt, timestampOff: UInt) {
+        init(pattern: HarmonicPattern, halfSteps: Int8, timestampOn: UInt, timestampOff: UInt) {
             self.pattern = pattern
-            self.scaleDegree = scaleDegree
-            self.octave = octave
+            self.halfSteps = halfSteps
             self.timestampOn = timestampOn
             self.timestampOff = timestampOff
         }
@@ -236,13 +236,15 @@ enum SchemaV1: VersionedSchema {
         var name: String
         var style: Style?
         var feel: Feel?
+        var baseOctave: UInt8
         
         @Relationship(deleteRule: .cascade, inverse: \HarmonicNoteInPattern.pattern) var harmonicNotesInPattern: [HarmonicNoteInPattern]
         
-        init(name: String, style: Style?, feel: Feel?, harmonicNotesInPattern: [HarmonicNoteInPattern] = []) {
+        init(name: String, style: Style?, feel: Feel?, baseOctave: UInt8, harmonicNotesInPattern: [HarmonicNoteInPattern] = []) {
             self.name = name
             self.style = style
             self.feel = feel
+            self.baseOctave = baseOctave
             self.harmonicNotesInPattern = harmonicNotesInPattern
             
             if let style {

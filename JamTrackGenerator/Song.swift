@@ -17,7 +17,7 @@ struct Song {
         self.modelContext = modelContext
     }
     
-    mutating func buildTracks(definition: Definition) {
+    mutating func buildTracks(jamTrack: JamTrack) {
         // need to move through each song section, in order
         // build each track out for that section
         // need to store partial tracks in progress
@@ -27,7 +27,7 @@ struct Song {
         var partMap: [ObjectIdentifier: [EventDescriptor]] = [:]
         var programMap: [ObjectIdentifier: UInt8] = [:]
         
-        for section in definition.sections.sorted(by: { $0.order < $1.order } ) {
+        for section in jamTrack.sections.sorted(by: { $0.order < $1.order } ) {
             for sectionPart in section.sectionParts {
                 guard let part = sectionPart.part else {
                     fatalError("missing part in setionPart")
@@ -41,10 +41,10 @@ struct Song {
                 do {
                     if instrument.name == "Drums" {
                         drumPartId = part.id
-                        eventBuilder = try DrumEventBuilder(modelContext: modelContext, styleName: definition.style?.name ?? "", feelName: definition.feel?.name ?? "", patternName: sectionPart.patternName)
+                        eventBuilder = try DrumEventBuilder(modelContext: modelContext, styleName: jamTrack.style?.name ?? "", feelName: jamTrack.feel?.name ?? "", patternName: sectionPart.patternName)
                     }
                     else {
-                        guard let key = definition.key else {
+                        guard let key = jamTrack.key else {
                             fatalError("no key defined for song")
                         }
                         
@@ -92,9 +92,9 @@ struct Song {
 //        []
 //    }
     
-//    mutating func buildDrumTrack(definition: Definition) -> Track {
+//    mutating func buildDrumTrack(jamTrack: JamTrack) -> Track {
 //        var descriptors: [EventDescriptor] = []
-//        let drumPattern = DrumPattern(definition: definition)
+//        let drumPattern = DrumPattern(jamTrack: definition)
 //        let pattern = drumPattern.pattern05
 //        let maxPulse = pattern.chorus.last?.off ?? 0
 //        var currentOffset = UInt32(0)
@@ -141,7 +141,7 @@ struct Song {
 //        return (descriptors, offPulse)
 //    }
 //    
-//    mutating func buildBassTrack(definition: Definition) -> Track {
+//    mutating func buildBassTrack(jamTrack: JamTrack) -> Track {
 //        var descriptors: [EventDescriptor] = []
 //        let pattern = BassPattern(key: Key(definition.key)).pattern0
 //        let maxPulse = pattern.last?.off ?? 0

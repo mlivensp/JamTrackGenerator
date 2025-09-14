@@ -37,7 +37,7 @@ extension FixedWidthInteger where Self: UnsignedInteger {
 struct MidiDocument: FileDocument {
     static var readableContentTypes: [UTType] { [.midi] }
     
-//    let definition: Definition
+//    let jamTrack: JamTrack
     let song: Song
     let bpm: UInt8
     var header: MidiHeader
@@ -95,7 +95,7 @@ struct MidiDocument: FileDocument {
     mutating func buildMetaTrack() {
         var track = MidiTrack()
         track.addTimeSignature(beat: 4, beatType: 4)
-//        track.addTempo(bpm: definition.bpm)
+        track.addTempo(bpm: bpm)
         track.endTrack()
         tracks.append(track)
     }

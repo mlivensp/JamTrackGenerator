@@ -11,7 +11,8 @@ import Testing
 struct ChordProgressionTests {
 
     @Test func testBasic12BarBluesInE() async throws {
-        let sequencer = ChordSequencer(form: "12 Bar Blues", key: "E")
+        let key = Key(name: "E")
+        let sequencer = ChordSequencer(form: "12 Bar Blues", key: key)
         let one = Measure(thangs: [Chord(name: "E7", duration: .whole)])
         let four = Measure(thangs: [Chord(name: "A7", duration: .whole)])
         let five = Measure(thangs: [Chord(name: "B7", duration: .whole)])
@@ -29,7 +30,8 @@ struct ChordProgressionTests {
     }
 
     @Test func testBasic12BarBluesInA() async throws {
-        let sequencer = ChordSequencer(form: "12 Bar Blues", key: "A")
+        let key = Key(name: "A")
+        let sequencer = ChordSequencer(form: "12 Bar Blues", key: key)
         let one = Measure(thangs: [Chord(name: "A7", duration: .whole)])
         let four = Measure(thangs: [Chord(name: "D7", duration: .whole)])
         let five = Measure(thangs: [Chord(name: "E7", duration: .whole)])
@@ -47,7 +49,8 @@ struct ChordProgressionTests {
     }
 
     @Test func testBasic12BarBluesInBFlat() async throws {
-        let sequencer = ChordSequencer(form: "12 Bar Blues", key: "B♭")
+        let key = Key(name: "B♭")
+        let sequencer = ChordSequencer(form: "12 Bar Blues", key: key)
         let one = Measure(thangs: [Chord(name: "B♭7", duration: .whole)])
         let four = Measure(thangs: [Chord(name: "E♭7", duration: .whole)])
         let five = Measure(thangs: [Chord(name: "F7", duration: .whole)])

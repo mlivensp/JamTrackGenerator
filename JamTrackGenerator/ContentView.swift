@@ -10,12 +10,22 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query var definitions: [Definition]
+
     @Query var keys: [Key]
     @Query var instruments: [Instrument]
-    @State private var selectedDefinition: Definition?
+    @Query var harmonicPatterns: [HarmonicPattern]
+    @Query var drumPatterns: [DrumPattern]
+    @Query var styles: [Style]
+    @Query var feels: [Feel]
+    
     @State private var errorMessage: String?
-
+    @State private var selectedCategory: SidebarCategory = .jamTracks
+    @State private var selectedJamTrack: JamTrack? = nil
+    @State private var selectedHarmonicPattern: HarmonicPattern? = nil
+    @State private var selectedDrumPattern: DrumPattern? = nil
+    @State private var selectedStyle: Style? = nil
+    @State private var selectedFeel: Feel? = nil
+    
     var body: some View {
         Group {
 #if os(iOS)
@@ -28,46 +38,37 @@ struct ContentView: View {
             splitView
 #endif
         }
-//        .toolbar {
-//            ToolbarItem {
-//                Button(action: addItem) {
-//                    Label("Add Item", systemImage: "plus")
-//                }
-//            }
-//#if os(iOS)
-//            ToolbarItem(placement: .navigationBarTrailing) {
-//                EditButton()
-//            }
-//#endif
-//        }
     }
 
     private var splitView: some View {
         NavigationSplitView {
-            List {
-                ForEach(instruments.sorted(by: { $0.name < $1.name} )) { instrument in
-                    Text(instrument.name)
-                }
+            #if os(macOS)
+            List(SidebarCategory.allCases, selection: $selectedCategory) { category in
+                Text(category.rawValue).tag(category)
             }
+            .navigationTitle("Categories")
+            #else
+            List(SidebarCategory.allCases) { category in
+                NavigationLink(
+                    value: category,
+                    label: {
+                        Text(category.rawValue)
+                    }
+                )
+            }
+            .navigationTitle("Categories")
+            #endif
+            // Sidebar
         } content: {
-            List {
-                ForEach(definitions) { definition in
-                    NavigationLink(value: definition) {
-                        Text(definition.name)
-                    }
-                }
-                .onDelete(perform: deleteDefinitions)
-            }
-            .toolbar {
-                ToolbarItem {
-                    Button(action: addDefinition) {
-                        Label("Add", systemImage: "plus")
-                    }
-                }
-           }
+            // Content List based on selected category
+                CategoryContentView(category: selectedCategory, selectedJamTrack: $selectedJamTrack)
         } detail: {
-            if let selectedDefinition {
-                JamTrackDetailView(definition: selectedDefinition)
+            Group {
+                if let jamTrack = selectedJamTrack {
+                    JamTrackDetailView(jamTrack: jamTrack)
+                }else {
+                    Text("Select an item")
+                }
             }
         }
 #if os(macOS)
@@ -77,30 +78,14 @@ struct ContentView: View {
 
     private var stackView: some View {
         NavigationStack {
-            if let selectedDefinition {
-                JamTrackDetailView(definition: selectedDefinition)
-                    .navigationTitle("Jam Track Generator")
+            List(SidebarCategory.allCases, id: \.self) { category in
+                NavigationLink(value: category) {
+                    Text(category.rawValue)
+                }
             }
-        }
-    }
-
-    private func addDefinition() {
-        withAnimation {
-            let newDefinition = Definition.newDefinition(modelContext: modelContext)
-            modelContext.insert(newDefinition)
-            selectedDefinition = newDefinition
-            do {
-                try modelContext.save()
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
-    }
-
-    private func deleteDefinitions(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(definitions[index])
+            .navigationTitle("Categories")
+            .navigationDestination(for: SidebarCategory.self) { category in
+                    CategoryContentView(category: category, selectedJamTrack: $selectedJamTrack)
             }
         }
     }
@@ -108,5 +93,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Definition.self, inMemory: true)
+        .modelContainer(for: JamTrack.self, inMemory: true)
 }

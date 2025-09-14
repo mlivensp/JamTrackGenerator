@@ -8,7 +8,7 @@
 import Foundation
 
 extension NoteInKey {
-    var sortOrder: Int {
+    var sortOrder: UInt8 {
         scaleDegree?.ordinal ?? 0
     }
     
@@ -19,4 +19,10 @@ extension NoteInKey {
 //        
 //        return noteInKey.note?.name ?? ""
 //    }
+}
+
+extension NoteInKey: CustomStringConvertible {
+    var description: String {
+        rawNote?.name ?? "<< unknown >>"
+    }
 }

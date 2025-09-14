@@ -14,7 +14,7 @@ struct JamTrackGeneratorApp: App {
 //        let schema = Schema(versionedSchema: currentSchema)
         let schema = Schema([
             Style.self,
-            Note.self,
+            RawNote.self,
             Key.self,
             NoteInKey.self,
             Feel.self,
@@ -23,7 +23,7 @@ struct JamTrackGeneratorApp: App {
             InstrumentFamily.self,
             Instrument.self,
             Part.self,
-            Definition.self,
+            JamTrack.self,
             ScaleDegree.self,
             HarmonicNoteInPattern.self,
             HarmonicPattern.self,
