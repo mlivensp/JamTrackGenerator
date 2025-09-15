@@ -9,21 +9,21 @@ import Foundation
 import SwiftData
 
 extension JamTrack {
-    func addStyle(style: Style) {
-        self.style = style
-        style.definitions.append(self)
-    }
-    
-    func addFeel(feel: Feel) {
-        self.feel = feel
-        feel.definitions.append(self)
-    }
-    
-    func addKey(key: Key) {
-        self.key = key
-        key.definitions.append(self)
-    }
-    
+//    func addStyle(style: Style) {
+//        self.style = style
+//        style.definitions.append(self)
+//    }
+//    
+//    func addFeel(feel: Feel) {
+//        self.feel = feel
+//        feel.definitions.append(self)
+//    }
+//    
+//    func addKey(key: Key) {
+//        self.key = key
+//        key.definitions.append(self)
+//    }
+//    
     func addSection(songSection: SongSection) -> Section {
         let order = ( self.sections.map { $0.order }.max() ?? 0 ) + 1
         let section = Section(jamTrack: self, songSection: songSection, order: order)
@@ -42,7 +42,7 @@ extension JamTrack {
     func addSectionPart(section: Section, part: Part, patternName: String) {
         let sectionPart = SectionPart(section: section, part: part, patternName: patternName)
         section.sectionParts.append(sectionPart)
-        part.sectionParts.append(sectionPart)
+//        part.sectionParts.append(sectionPart)
     }
     
     static func newJamTrack(modelContext: ModelContext) -> JamTrack {

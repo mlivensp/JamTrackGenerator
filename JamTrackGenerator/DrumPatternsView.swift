@@ -43,6 +43,12 @@ struct DrumPatternsView: View {
             }
         }
         .fileImporter(isPresented: $importMidi, allowedContentTypes: [.midi]) { result in
+            switch result {
+                case .success(let url):
+                print("Imported MIDI files: \(url)")
+            case .failure(let error):
+                print("Failed to import MIDI file: \(error)")
+            }
             // parse midi file
             // find the drum track if any
             // get the events and add them to the pattern

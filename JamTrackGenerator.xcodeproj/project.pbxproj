@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		DD74C8A22E752EF200B213C1 /* SwiftData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD74C8A12E752EF200B213C1 /* SwiftData.framework */; };
+		DD74C91F2E769D3000B213C1 /* MidiParser in Frameworks */ = {isa = PBXBuildFile; productRef = DD74C91E2E769D3000B213C1 /* MidiParser */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +63,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD74C91F2E769D3000B213C1 /* MidiParser in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -134,6 +136,7 @@
 			);
 			name = JamTrackGenerator;
 			packageProductDependencies = (
+				DD74C91E2E769D3000B213C1 /* MidiParser */,
 			);
 			productName = JamTrackGenerator;
 			productReference = DD9941712E5394A0001AB0E7 /* JamTrackGenerator.app */;
@@ -217,6 +220,9 @@
 			);
 			mainGroup = DD9941682E5394A0001AB0E7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DD74C91D2E769D3000B213C1 /* XCLocalSwiftPackageReference "../MidiParser" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DD9941722E5394A0001AB0E7 /* Products */;
 			projectDirPath = "";
@@ -617,6 +623,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		DD74C91D2E769D3000B213C1 /* XCLocalSwiftPackageReference "../MidiParser" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../MidiParser;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DD74C91E2E769D3000B213C1 /* MidiParser */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MidiParser;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DD9941692E5394A0001AB0E7 /* Project object */;
 }

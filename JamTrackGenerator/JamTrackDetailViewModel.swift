@@ -78,7 +78,6 @@ extension JamTrackDetailView {
                 return
             }
 
-            print("playing at \(jamTrack.bpm) BPM")
             do {
                 if isPaused {
                     midiPlayer?.resumeMIDIFile()

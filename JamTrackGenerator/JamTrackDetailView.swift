@@ -14,11 +14,19 @@ struct JamTrackDetailView: View {
     @State private var viewModel: ViewModel
     @State private var export = false
     @State private var midiDocument: MidiDocument?
-    
+    @State private var playIsPressed = false
+    @State private var stopIsPressed = false
+    @State private var loopIsPressed = false
+
     @Query var keys: [Key]
     @Query var feels: [Feel]
+    @Query private var instrumentFamilies: [InstrumentFamily]
     @Query var instruments: [Instrument]
     @Query var songSections: [SongSection]
+
+    @State private var selectedFamily: InstrumentFamily?
+    @State private var selectedInstrument: Instrument?
+
     
     init(jamTrack: JamTrack) {
         self.jamTrack = jamTrack
@@ -76,7 +84,12 @@ struct JamTrackDetailView: View {
         HStack {
             VStack(spacing: 0) {
                 LabeledContent {
-                    Picker("Key", selection: $jamTrack.key) {
+                    TextField("", text: $jamTrack.name)
+                }
+                label: { Text("Name") }
+
+                LabeledContent {
+                    Picker("", selection: $jamTrack.key) {
                         ForEach(keys) { key in
                             Text(key.name).tag(key)
                         }
@@ -85,7 +98,7 @@ struct JamTrackDetailView: View {
                 label: { Text("Key") }
                 
                 LabeledContent {
-                    Picker("Feel", selection: $jamTrack.feel) {
+                    Picker("", selection: $jamTrack.feel) {
                         ForEach(feels, id: \.self) { feel in
                             Text(feel.name).tag(feel)
                         }
@@ -102,7 +115,7 @@ struct JamTrackDetailView: View {
                         f.allowsFloats = false
                         return f
                     }()
-                    TextField("BPM", value: $jamTrack.bpm, formatter: formatter)
+                    TextField("", value: $jamTrack.bpm, formatter: formatter)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 60)
                 }
@@ -120,15 +133,15 @@ struct JamTrackDetailView: View {
             SwiftUI.Section(header: Text("Song Sections")) {
                 HStack {
                     List(selection: $viewModel.selectedSection) {
-                        ForEach(jamTrack.sections) { section in
+                        ForEach(jamTrack.sections.sorted(by: { $0.order < $1.order } )) { section in
                             NavigationLink {
-                                EditSectionView(section: Binding(
+                                SectionDetailView(modelContext: modelContext, section: Binding(
                                     get: { section },
                                     set: { _ in return }
                                 ))
                             }
                             label: {
-                                Text(section.songSection?.name ?? "Unknown")
+                                Text(section.songSection?.name ?? "<< unknown >>")
                             }
                         }
                     }
@@ -159,9 +172,9 @@ struct JamTrackDetailView: View {
             SwiftUI.Section(header: Text("Parts")) {
                 HStack {
                     List(selection: $viewModel.selectedPart) {
-                        ForEach(jamTrack.parts) { part in
+                        ForEach(jamTrack.parts.sorted(by: { $0.instrument?.name ?? "" < $1.instrument?.name ?? "" } )) { part in
                             NavigationLink {
-                                EditPartView(part: Binding(
+                                PartDetailView(modelContext: modelContext, part: Binding(
                                     get: { part },
                                     set: { _ in return }
                                 ))
@@ -173,13 +186,26 @@ struct JamTrackDetailView: View {
                     }
                     
                     VStack {
-                        Spacer()
-                        Picker("", selection: $viewModel.selectedMidiInstrument) {
-                            ForEach(instruments) { instrument in
-                                Text(instrument.name).tag(instrument)
+                        // Picker for InstrumentFamily
+                            Picker("Instrument Family", selection: $selectedFamily) {
+                                ForEach(instrumentFamilies, id: \.self) { family in
+                                    Text(family.name).tag(Optional(family))
+                                }
                             }
-                        }
-                        .frame(maxWidth: .infinity)
+
+                            // Picker for Instruments in selected family
+                            Picker("Instrument", selection: $selectedInstrument) {
+                                ForEach(selectedFamily?.instruments ?? [], id: \.self) { instrument in
+                                    Text(instrument.name).tag(Optional(instrument))
+                                }
+                            }
+//                        Spacer()
+//                        Picker("", selection: $viewModel.selectedMidiInstrument) {
+//                            ForEach(instruments.sorted(by: { $0.name < $1.name } )) { instrument in
+//                                Text(instrument.name).tag(instrument)
+//                            }
+//                        }
+//                        .frame(maxWidth: .infinity)
                         
                         Spacer()
                         Button("Add Part") {
@@ -196,8 +222,8 @@ struct JamTrackDetailView: View {
     }
     
     private var playbackControls: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 20) {
+        VStack(spacing: 8) {
+            HStack(spacing: 10) {
                 Spacer()
                 
                 // Play/Pause button
@@ -205,27 +231,76 @@ struct JamTrackDetailView: View {
                     Image(systemName: playButtonIcon)
                         .font(.title)
                         .frame(width: 50, height: 50)
-//                        .background(Color.blue)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
+                        .accessibilityLabel(playButtonIcon == "play.fill" ? "Play" : "Pause") // Improves accessibility
                         .clipShape(Circle())
                 }
+                .buttonStyle(.plain) // Remove default button styling
+                .scaleEffect(playIsPressed ? 0.95 : 1.0) // Subtle press animation
+                .animation(.easeOut(duration: 0.2), value: playIsPressed) // Smooth animation
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { _ in
+                            playIsPressed = true
+                        }
+                        .onEnded { _ in
+                            playIsPressed = false
+                        }
+                )
                 
                 // Stop button
                 Button(action: { viewModel.stop() }) {
                     Image(systemName: "stop.fill")
                         .font(.title2)
+                        .frame(width: 50, height: 50)
+                        .foregroundStyle(.primary)
+                        .accessibilityLabel("Stop") // Improves accessibility
+                        .clipShape(Circle())
                 }
                 .disabled(viewModel.midiPlayer?.playbackState == .stopped)
-                
+                .buttonStyle(.plain) // Remove default button styling
+                .scaleEffect(playIsPressed ? 0.95 : 1.0) // Subtle press animation
+                .animation(.easeOut(duration: 0.2), value: stopIsPressed) // Smooth animation
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { _ in
+                            stopIsPressed = true
+                        }
+                        .onEnded { _ in
+                            stopIsPressed = false
+                        }
+                )
+
                 Spacer(minLength: 0)
                 HStack {
                     // Loop toggle
-                    Button(action: { viewModel.midiPlayer?.isLooping.toggle() }) {
+//                    Button(action: { viewModel.midiPlayer?.isLooping.toggle() }) {
+//                        Image(systemName: viewModel.midiPlayer?.isLooping ?? false ? "repeat.1" : "repeat")
+//                            .font(.title3)
+//                            .foregroundColor(viewModel.midiPlayer?.isLooping ?? false ? .blue : .gray)
+//                    }
+                    Button(action: { viewModel.midiPlayer?.isLooping.toggle() } ) {
                         Image(systemName: viewModel.midiPlayer?.isLooping ?? false ? "repeat.1" : "repeat")
                             .font(.title3)
-                            .foregroundColor(viewModel.midiPlayer?.isLooping ?? false ? .blue : .gray)
+                            .foregroundStyle(viewModel.midiPlayer?.isLooping ?? false ? Color.accentColor : .primary)
+                            .frame(width: 40, height: 40) // Consistent touch area
+                            .clipShape(.circle)
+//                            .background(.thinMaterial, in: .circle) // Subtle background
+                            .padding(8) // Larger touch area
                     }
-                }
+                    .buttonStyle(.plain) // Remove default button styling
+                    .scaleEffect(loopIsPressed ? 0.95 : 1.0) // Scale animation on press
+                    .animation(.easeOut(duration: 0.2), value: loopIsPressed) // Smooth animation
+                    .accessibilityLabel(viewModel.midiPlayer?.isLooping ?? false ? "Disable Loop" : "Enable Loop") // Dynamic accessibility label
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { _ in
+                                loopIsPressed = true
+                            }
+                            .onEnded { _ in
+                                loopIsPressed = false
+                            }
+                    )                }
                 .padding()
             }
             

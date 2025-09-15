@@ -154,11 +154,7 @@ enum SchemaV1: VersionedSchema {
         var style: Style?
         var key: Key?
         var feel: Feel?
-        var bpm: UInt8 {
-            willSet {
-                print("Setting BPM to \(newValue)")
-            }
-        }
+        var bpm: UInt8
         var includeCountIn: Bool
         
         @Relationship(deleteRule: .cascade, inverse: \Section.jamTrack) var sections: [Section]
