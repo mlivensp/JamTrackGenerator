@@ -8,7 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		DD74C8A22E752EF200B213C1 /* SwiftData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD74C8A12E752EF200B213C1 /* SwiftData.framework */; };
-		DD74C91F2E769D3000B213C1 /* MidiParser in Frameworks */ = {isa = PBXBuildFile; productRef = DD74C91E2E769D3000B213C1 /* MidiParser */; };
+		DD74CCC62E79333C00B213C1 /* MIDIKit in Frameworks */ = {isa = PBXBuildFile; productRef = DD74CCC52E79333C00B213C1 /* MIDIKit */; };
+		DD74CCC82E79333C00B213C1 /* MIDIKitCore in Frameworks */ = {isa = PBXBuildFile; productRef = DD74CCC72E79333C00B213C1 /* MIDIKitCore */; };
+		DD74CCCA2E79333C00B213C1 /* MIDIKitIO in Frameworks */ = {isa = PBXBuildFile; productRef = DD74CCC92E79333C00B213C1 /* MIDIKitIO */; };
+		DD74CCCC2E79333C00B213C1 /* MIDIKitSMF in Frameworks */ = {isa = PBXBuildFile; productRef = DD74CCCB2E79333C00B213C1 /* MIDIKitSMF */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -27,6 +30,19 @@
 			remoteInfo = JamTrackGenerator;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DD74CC9C2E78B05A00B213C1 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		DD74C8A12E752EF200B213C1 /* SwiftData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftData.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk/System/Library/Frameworks/SwiftData.framework; sourceTree = DEVELOPER_DIR; };
@@ -63,7 +79,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DD74C91F2E769D3000B213C1 /* MidiParser in Frameworks */,
+				DD74CCC62E79333C00B213C1 /* MIDIKit in Frameworks */,
+				DD74CCCA2E79333C00B213C1 /* MIDIKitIO in Frameworks */,
+				DD74CCC82E79333C00B213C1 /* MIDIKitCore in Frameworks */,
+				DD74CCCC2E79333C00B213C1 /* MIDIKitSMF in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +144,7 @@
 				DD99416D2E5394A0001AB0E7 /* Sources */,
 				DD99416E2E5394A0001AB0E7 /* Frameworks */,
 				DD99416F2E5394A0001AB0E7 /* Resources */,
+				DD74CC9C2E78B05A00B213C1 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -137,6 +157,10 @@
 			name = JamTrackGenerator;
 			packageProductDependencies = (
 				DD74C91E2E769D3000B213C1 /* MidiParser */,
+				DD74CCC52E79333C00B213C1 /* MIDIKit */,
+				DD74CCC72E79333C00B213C1 /* MIDIKitCore */,
+				DD74CCC92E79333C00B213C1 /* MIDIKitIO */,
+				DD74CCCB2E79333C00B213C1 /* MIDIKitSMF */,
 			);
 			productName = JamTrackGenerator;
 			productReference = DD9941712E5394A0001AB0E7 /* JamTrackGenerator.app */;
@@ -221,7 +245,7 @@
 			mainGroup = DD9941682E5394A0001AB0E7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				DD74C91D2E769D3000B213C1 /* XCLocalSwiftPackageReference "../MidiParser" */,
+				DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DD9941722E5394A0001AB0E7 /* Products */;
@@ -624,17 +648,41 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		DD74C91D2E769D3000B213C1 /* XCLocalSwiftPackageReference "../MidiParser" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../MidiParser;
+/* Begin XCRemoteSwiftPackageReference section */
+		DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/orchetect/MIDIKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.10.5;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		DD74C91E2E769D3000B213C1 /* MidiParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MidiParser;
+		};
+		DD74CCC52E79333C00B213C1 /* MIDIKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKit;
+		};
+		DD74CCC72E79333C00B213C1 /* MIDIKitCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKitCore;
+		};
+		DD74CCC92E79333C00B213C1 /* MIDIKitIO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKitIO;
+		};
+		DD74CCCB2E79333C00B213C1 /* MIDIKitSMF */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKitSMF;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -36,5 +36,37 @@
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "F78254BF-6E29-4A70-B4B4-7755DCD790B7"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../../../Users/michaellivenspargar/Library/Developer/Xcode/DerivedData/JamTrackGenerator-bramatrsdqynsjatvdafxhdkfikm/SourcePackages/checkouts/AudioKit/Sources/AudioKit/MIDI/MIDIFile/MIDIFile.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "90"
+            endingLineNumber = "90"
+            landmarkName = "init(url:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "1E5B73B1-1C07-4B91-B7A1-419A8CE8466E"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../../../Users/michaellivenspargar/Library/Developer/Xcode/DerivedData/JamTrackGenerator-bramatrsdqynsjatvdafxhdkfikm/SourcePackages/checkouts/AudioKit/Sources/AudioKit/MIDI/MIDIFile/MIDIFile.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "34"
+            endingLineNumber = "34"
+            landmarkName = "tracks"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>
