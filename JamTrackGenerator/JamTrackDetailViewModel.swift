@@ -36,7 +36,7 @@ extension JamTrackDetailView {
                 errorMessage = "Failed to initialize player: \(error.localizedDescription)"
             }
             
-            selectedSongSection = jamTrack.sections.first?.songSection
+            selectedSongSection = jamTrack.jamTrackSections.first?.songSection
 //            specification = JamTrackSpecification()
 //            specification.sections.append(Section(section: .chorus))
 //            sections = specification.sections
@@ -54,8 +54,8 @@ extension JamTrackDetailView {
 //        }
         
         func deleteSection(section: Section) {
-            if let sectionIndex = jamTrack.sections.firstIndex(of: section) {
-                jamTrack.sections.remove(at: sectionIndex)
+            if let sectionIndex = jamTrack.jamTrackSections.firstIndex(of: section) {
+                jamTrack.jamTrackSections.remove(at: sectionIndex)
             }
         }
 //        

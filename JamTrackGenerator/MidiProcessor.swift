@@ -157,17 +157,17 @@ struct MidiProcessor {
         for fileEvent in track.events {
             if let midiEvent = fileEvent.event() { // midiEvent is MIDIEvent?
                 // Debug: Log every MIDIEvent
-                print("Processing MIDIEvent: \(String(describing: midiEvent))")
+//                print("Processing MIDIEvent: \(String(describing: midiEvent))")
                 
                 if let smfEvent = midiEvent.smfEvent(delta: .ticks(0)) {
                     switch smfEvent {
                     case .text(delta: _, event: let textEvent) where textEvent.textType == .trackOrSequenceName:
                         // 0x03 meta event: sequence or track name (String)
-                        print("Track/Sequence Name (surfaced): \(textEvent.text)")
+//                        print("Track/Sequence Name (surfaced): \(textEvent.text)")
                         return textEvent.text // Return the first one found
                     default:
                         // Debug: Log non-track-name SMF events
-                        print("Non-track-name SMF event: \(String(describing: smfEvent))")
+//                        print("Non-track-name SMF event: \(String(describing: smfEvent))")
                         break
                     }
                 } else {
@@ -202,7 +202,7 @@ struct MidiProcessor {
                 
                 // Only parse the track matching trackIndex
                 if currentTrackIndex == trackIndex {
-                    print("Parsing MTrk chunk for track \(trackIndex): \(length) bytes")
+//                    print("Parsing MTrk chunk for track \(trackIndex): \(length) bytes")
                     // Parse track data for FF 03 <length> <text>
                     var j = i
                     while j < trackEnd - 1 {
@@ -243,7 +243,7 @@ struct MidiProcessor {
                             
                             let textBytes = fileBytes[textStart..<textEnd]
                             if let name = String(bytes: textBytes, encoding: .ascii) ?? String(bytes: textBytes, encoding: .utf8) {
-                                print("Raw-parsed Track/Sequence Name from track \(trackIndex): \(name)")
+//                                print("Raw-parsed Track/Sequence Name from track \(trackIndex): \(name)")
                                 return name
                             } else {
                                 print("Failed to decode text from bytes: \(textBytes.map { String(format: "%02X", $0) })")
@@ -268,18 +268,18 @@ struct MidiProcessor {
                 switch midiEvent {
                 case .sysEx7(let sysExData):
                     data = sysExData.data
-                    print("Found sysEx7 data: \(data.map { String(format: "%02X", $0) }) (ASCII: \(String(bytes: data, encoding: .ascii) ?? "N/A"))")
+//                    print("Found sysEx7 data: \(data.map { String(format: "%02X", $0) }) (ASCII: \(String(bytes: data, encoding: .ascii) ?? "N/A"))")
                 case .universalSysEx7(let univData):
                     data = univData.data
-                    print("Found universalSysEx7 data: \(data.map { String(format: "%02X", $0) }) (ASCII: \(String(bytes: data, encoding: .ascii) ?? "N/A"))")
+//                    print("Found universalSysEx7 data: \(data.map { String(format: "%02X", $0) }) (ASCII: \(String(bytes: data, encoding: .ascii) ?? "N/A"))")
                 default:
-                    print("Skipping MIDIEvent: \(String(describing: midiEvent))")
+//                    print("Skipping MIDIEvent: \(String(describing: midiEvent))")
                     continue
                 }
                 
                 // Meta event: FF 03 <length> <text>
                 guard data.count >= 2, data[0] == 0xFF, data[1] == 0x03 else {
-                    print("Data does not match FF 03: \(data.map { String(format: "%02X", $0) })")
+//                    print("Data does not match FF 03: \(data.map { String(format: "%02X", $0) })")
                     continue
                 }
                 
@@ -304,7 +304,7 @@ struct MidiProcessor {
                 
                 let textBytes = data[textStart..<textEnd]
                 if let name = String(bytes: textBytes, encoding: .ascii) ?? String(bytes: textBytes, encoding: .utf8) {
-                    print("Raw-parsed Track/Sequence Name: \(name)")
+//                    print("Raw-parsed Track/Sequence Name: \(name)")
                     return name
                 } else {
                     print("Failed to decode text from bytes: \(textBytes.map { String(format: "%02X", $0) })")
@@ -312,7 +312,7 @@ struct MidiProcessor {
             }
         }
         
-        print("No track name found for track \(trackIndex), even in raw data.")
+//        print("No track name found for track \(trackIndex), even in raw data.")
         return nil // No track/sequence name found
     }
 }

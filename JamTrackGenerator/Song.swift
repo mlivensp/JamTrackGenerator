@@ -27,8 +27,8 @@ struct Song {
         var partMap: [ObjectIdentifier: [EventDescriptor]] = [:]
         var programMap: [ObjectIdentifier: UInt8] = [:]
         
-        for section in jamTrack.sections.sorted(by: { $0.order < $1.order } ) {
-            for sectionPart in section.sectionParts {
+        for section in jamTrack.jamTrackSections.sorted(by: { $0.order < $1.order } ) {
+            for sectionPart in section.sectionParts.filter( { $0.patternName != "" } ) {
                 guard let part = sectionPart.part else {
                     fatalError("missing part in setionPart")
                 }

@@ -1,97 +1,99 @@
-//
-//  DrumPatternsView.swift
-//  JamTrackGenerator
-//
-//  Created by Michael Livenspargar on 9/13/25.
-//
-
 import SwiftData
 import SwiftUI
 
 struct DrumPatternsView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \DrumPattern.name) var drumPatterns: [DrumPattern]
+    @Query(sort: \DrumPattern.name) private var drumPatterns: [DrumPattern]
     @Binding var selectedDrumPatternNavigation: DrumPatternNavigation?
-    @State private var selectImportFile = false
+    @State private var importMidi = false
+    @State private var importError: String?
+    @State private var showImportOptions = false
+    @State private var trackNotes: [MidiTrackData] = []
     
     var body: some View {
         List {
-            ForEach(drumPatterns) { drumPattern in
-                NavigationLink(value: DrumPatternNavigation.existing(drumPattern)) {
-                    Text(drumPattern.name)
-                        .border(.blue, width: 1)
+            SwiftUI.Section {
+                ForEach(drumPatterns) { drumPattern in
+                    NavigationLink(value: DrumPatternNavigation.existing(drumPattern)) {
+                        Text(drumPattern.name)
+                    }
                 }
-                .onTapGesture { selectedDrumPatternNavigation = .existing(drumPattern) }
-            }
-            .onDelete { indexSet in
-                for index in indexSet {
-                    modelContext.delete(drumPatterns[index])
+                .onDelete { indexSet in
+                    for index in indexSet {
+                        modelContext.delete(drumPatterns[index])
+                    }
+                    try? modelContext.save()
                 }
-                do {
-                    try modelContext.save()
-                } catch {
-                    print("Failed to delete DrumPattern: \(error)")
-                }
+            } header: {
+                Text("Drum Patterns")
             }
         }
         .navigationTitle("Drum Patterns")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(action: { selectImportFile = true }) {
+                Button(action: {
+                    importMidi = true
+                }) {
                     Label("Add", systemImage: "plus")
                 }
             }
         }
-        .fileImporter(isPresented: $selectImportFile, allowedContentTypes: [.midi]) { result in
+        .fileImporter(isPresented: $importMidi, allowedContentTypes: [.midi]) { result in
             switch result {
             case .success(let url):
-                let trackNotes = importMidi(from: url)
-                selectedDrumPatternNavigation = .importOptions(trackNotes)
+                let tracks = importMidi(from: url)
+                print("Imported trackNotes: \(tracks.count) tracks")
+                if tracks.isEmpty {
+                    importError = "No tracks found in the MIDI file."
+                } else {
+                    trackNotes = tracks
+                    showImportOptions = true
+                    print("Showing DrumPatternImportOptionsView with \(tracks.count) tracks")
+                }
             case .failure(let error):
-                print("Failed to import MIDI file: \(error)")
+                importError = "Failed to import MIDI file: \(error.localizedDescription)"
+                print("File import error: \(error)")
             }
+        }
+        .sheet(isPresented: $showImportOptions) {
+            DrumPatternImportOptionsView(
+                trackNotes: trackNotes,
+                selectedDrumPatternNavigation: $selectedDrumPatternNavigation
+            )
+            .environment(\.modelContext, modelContext)
+            .onAppear {
+                print("DrumPatternImportOptionsView appeared with \(trackNotes.count) tracks")
+            }
+        }
+        .alert("Import Error", isPresented: Binding(
+            get: { importError != nil },
+            set: { if !$0 { importError = nil } }
+        )) {
+            Button("OK") {}
+        } message: {
+            Text(importError ?? "Unknown error")
+        }
+        .onAppear {
+            print("DrumPatternsView appeared")
         }
     }
     
     private func importMidi(from url: URL) -> [MidiTrackData] {
         guard url.startAccessingSecurityScopedResource() else {
             print("Failed to access security-scoped resource")
+            importError = "Unable to access the selected file."
             return []
         }
-        
         defer { url.stopAccessingSecurityScopedResource() }
         
         let processor = MidiProcessor()
-//        processor.dumpMIDIEvents(from: url)
         do {
             let trackNotes = try processor.process(url: url, filter: .all)
             return trackNotes
-//            for (_, trackInfo) in trackNotes.enumerated() {
-//                for note in trackInfo.notes {
-//                    print("  Note: \(note.note), On: \(note.tickOn), Off: \(note.tickOff), On Velocity: \(note.velocityOn), Off Velocity: \(note.velocityOff)")
-//                }
-//            }
         } catch {
-            fatalError("midi processing failed: \(error)")
+            print("MIDI processing failed: \(error)")
+            importError = "MIDI processing failed: \(error.localizedDescription)"
+            return []
         }
     }
-//    
-//    private func addDrumPattern() {
-//        withAnimation {
-//            let newDrumPattern = DrumPattern.newDrumPattern(modelContext: modelContext)
-//            modelContext.insert(newDrumPattern)
-//            selectedDrumPattern = newDrumPattern
-//            do {
-//                try modelContext.save()
-//            } catch {
-//                print("Failed to save DrumPattern: \(error)")
-//            }
-//            
-//            importMidi = true
-//        }
-//    }
 }
-
-//#Preview {
-//    DrumPatternsView()
-//}

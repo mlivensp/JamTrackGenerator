@@ -86,16 +86,16 @@ enum SchemaV1: VersionedSchema {
         var name: String
         var sortOrder: UInt8
         
-        @Relationship(deleteRule: .nullify, inverse: \Section.songSection) var sections: [Section]
+        @Relationship(deleteRule: .nullify, inverse: \JamTrackSection.songSection) var sections: [JamTrackSection]
         
-        init(name: String, sortOrder: UInt8, sections: [Section] = []) {
+        init(name: String, sortOrder: UInt8, sections: [JamTrackSection] = []) {
             self.name = name
             self.sortOrder = sortOrder
             self.sections = sections
         }
     }
     
-    @Model class Section {
+    @Model class JamTrackSection {
         var jamTrack: JamTrack?
         var songSection: SongSection?
         var order: UInt8
@@ -157,17 +157,17 @@ enum SchemaV1: VersionedSchema {
         var bpm: UInt8
         var includeCountIn: Bool
         
-        @Relationship(deleteRule: .cascade, inverse: \Section.jamTrack) var sections: [Section]
+        @Relationship(deleteRule: .cascade, inverse: \JamTrackSection.jamTrack) var jamTrackSections: [JamTrackSection]
         @Relationship(deleteRule: .cascade, inverse: \Part.jamTrack) var parts: [Part]
         
-        init(name: String = "", style: Style? = nil, key: Key? = nil, feel: Feel? = nil, bpm: UInt8 = 120, includeCountIn: Bool = true, sections: [Section] = [], parts: [Part] = [], sectionPartPatterns: [SectionPart] = []) {
+        init(name: String = "", style: Style? = nil, key: Key? = nil, feel: Feel? = nil, bpm: UInt8 = 120, includeCountIn: Bool = true, jamTrackSections: [JamTrackSection] = [], parts: [Part] = [], sectionPartPatterns: [SectionPart] = []) {
             self.name = name
             self.style = style
             self.key = key
             self.feel = feel
             self.bpm = bpm
             self.includeCountIn = includeCountIn
-            self.sections = sections
+            self.jamTrackSections = jamTrackSections
             self.parts = parts
         }
     }
@@ -254,11 +254,11 @@ enum SchemaV1: VersionedSchema {
     }
     
     @Model class SectionPart {
-        var section: Section?
+        var section: JamTrackSection?
         var part: Part?
         var patternName: String
         
-        init(section: Section, part: Part, patternName: String) {
+        init(section: JamTrackSection, part: Part, patternName: String) {
             self.section = section
             self.part = part
             self.patternName = patternName

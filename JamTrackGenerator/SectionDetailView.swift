@@ -149,7 +149,7 @@ struct SectionDetailView: View {
     let jamTrack = JamTrack(name: "Sample Track", style: style)
     let songSection = SongSection(name: "Verse", sortOrder: 2)
     let section = Section(jamTrack: jamTrack, songSection: songSection, order: 1)
-    jamTrack.sections = [section]
+    jamTrack.jamTrackSections = [section]
     let instrument = Instrument(name: "Piano", programNumber: 15, instrumentFamily: nil)
     let part = Part(jamTrack: jamTrack, instrument: instrument)
     let sectionPart = SectionPart(section: section, part: part, patternName: "Pattern 1")

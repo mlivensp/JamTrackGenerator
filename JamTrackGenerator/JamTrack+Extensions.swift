@@ -25,9 +25,9 @@ extension JamTrack {
 //    }
 //    
     func addSection(songSection: SongSection) -> Section {
-        let order = ( self.sections.map { $0.order }.max() ?? 0 ) + 1
+        let order = ( self.jamTrackSections.map { $0.order }.max() ?? 0 ) + 1
         let section = Section(jamTrack: self, songSection: songSection, order: order)
-        sections.append(section)
+        jamTrackSections.append(section)
         songSection.sections.append(section)
         return section
     }

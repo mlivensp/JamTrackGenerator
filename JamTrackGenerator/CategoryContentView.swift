@@ -30,21 +30,6 @@ struct CategoryContentView: View {
         .navigationDestination(for: Style.self) { Text($0.name) }
         .navigationDestination(for: Feel.self) { Text($0.name) }
         .navigationDestination(for: HarmonicPattern.self) { Text($0.name) }
-        .navigationDestination(for: DrumPatternNavigation.self) { navigation in
-            switch navigation {
-            case .existing(let drumPattern):
-                Text("Existing drum pattern")
-//                DrumPatternDetailView(drumPattern: drumPattern)
-//                    .onAppear { print("Navigated to DrumPatternDetailView for pattern: \(drumPattern.name)") }
-            case .importOptions(let trackNotes):
-                DrumPatternImportOptionsView(
-                    trackNotes: trackNotes,
-                    selectedDrumPatternNavigation: $selectedDrumPatternNavigation
-                )
-                .environment(\.modelContext, modelContext)
-                .onAppear { print("Navigated to DrumPatternImportOptionsView with \(trackNotes.count) tracks") }
-            }
-        }
         .onAppear {
             print("CategoryContentView appeared for category: \(category.rawValue)")
         }

@@ -133,7 +133,7 @@ struct JamTrackDetailView: View {
             SwiftUI.Section(header: Text("Song Sections")) {
                 HStack {
                     List(selection: $viewModel.selectedSection) {
-                        ForEach(jamTrack.sections.sorted(by: { $0.order < $1.order } )) { section in
+                        ForEach(jamTrack.jamTrackSections.sorted(by: { $0.order < $1.order } )) { section in
                             NavigationLink {
                                 SectionDetailView(modelContext: modelContext, section: Binding(
                                     get: { section },
@@ -174,10 +174,11 @@ struct JamTrackDetailView: View {
                     List(selection: $viewModel.selectedPart) {
                         ForEach(jamTrack.parts.sorted(by: { $0.instrument?.name ?? "" < $1.instrument?.name ?? "" } )) { part in
                             NavigationLink {
-                                PartDetailView(modelContext: modelContext, part: Binding(
-                                    get: { part },
-                                    set: { _ in return }
-                                ))
+                                PartDetailView(part: part, sections: jamTrack.jamTrackSections.sorted(by: { $0.order < $1.order } ))
+//                                PartDetailView(part: Binding(
+//                                                get: { part },
+//                                                set: { _ in return }
+//                                               ))
                             }
                             label: {
                                 Text(part.instrument?.name ?? "<< unknown >>")
