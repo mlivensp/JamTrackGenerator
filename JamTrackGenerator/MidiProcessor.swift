@@ -11,7 +11,7 @@ enum TrackFilter {
 
 // MARK: - Models
 
-struct MidiNote {
+struct MidiNote: Hashable {
     let note: UInt8
     let tickOn: UInt64
     let tickOff: UInt64
@@ -20,7 +20,7 @@ struct MidiNote {
     let channel: UInt8
 }
 
-struct MidiTrackData {
+struct MidiTrackData: Hashable {
     let name: String
     let isDrumTrack: Bool
     let notes: [MidiNote]
@@ -348,7 +348,7 @@ func dumpMIDIEvents(from url: URL) {
                 print("\n=== Track \(trackIndex) (Raw MTrk, \(length) bytes) ===")
                 print("Raw track data: \(fileBytes[i..<min(i + 100, trackEnd)].map { String(format: "%02X", $0) })...")
                 
-                var currentTick: UInt64 = 0
+                let currentTick: UInt64 = 0
                 var j = i
                 while j < trackEnd {
                     // Parse delta-time

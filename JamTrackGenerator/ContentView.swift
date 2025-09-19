@@ -8,6 +8,11 @@
 import SwiftUI
 import SwiftData
 
+enum DrumPatternNavigation: Hashable {
+    case existing(DrumPattern)
+    case importOptions([MidiTrackData])
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
 
@@ -22,8 +27,8 @@ struct ContentView: View {
     @State private var selectedCategory: SidebarCategory = .jamTracks
     @State private var selectedJamTrack: JamTrack? = nil
     @State private var selectedHarmonicPattern: HarmonicPattern? = nil
-    @State private var selectedDrumPattern: DrumPattern? = nil
-    @State private var selectedStyle: Style? = nil
+    @State private var selectedDrumPatternNavigation: DrumPatternNavigation? = nil
+      @State private var selectedStyle: Style? = nil
     @State private var selectedFeel: Feel? = nil
     
     var body: some View {
@@ -67,8 +72,8 @@ struct ContentView: View {
                 selectedJamTrack: $selectedJamTrack,
                 selectedStyle: $selectedStyle,
                 selectedFeel: $selectedFeel,
-                selectedDrumPattern: $selectedDrumPattern,
-                selectedHarmonicPattern: $selectedHarmonicPattern
+                selectedDrumPatternNavigation: $selectedDrumPatternNavigation,
+                  selectedHarmonicPattern: $selectedHarmonicPattern
             )
         } detail: {
             Group {
@@ -78,8 +83,14 @@ struct ContentView: View {
                     Text(style.name) // Replace with StyleDetailView(style: $0)
                 } else if let feel = selectedFeel {
                     Text(feel.name) // Replace with FeelDetailView(feel: $0)
-                } else if let drumPattern = selectedDrumPattern {
-                    Text(drumPattern.name) // Replace with DrumPatternDetailView(pattern: $0)
+                } else if let navigation = selectedDrumPatternNavigation {
+                     switch navigation {
+                     case .existing(let drumPattern):
+                         Text(drumPattern.name) // Replace with DrumPatternDetailView
+                     case .importOptions(let trackNotes):
+                         DrumPatternImportOptionsView(trackNotes: trackNotes, selectedDrumPatternNavigation: $selectedDrumPatternNavigation)
+                             .environment(\.modelContext, modelContext)
+                     }
                 } else if let harmonicPattern = selectedHarmonicPattern {
                     Text(harmonicPattern.name) // Replace with HarmonicPatternDetailView(pattern: $0)
                 } else {
@@ -89,7 +100,15 @@ struct ContentView: View {
             .navigationDestination(for: JamTrack.self) { JamTrackDetailView(jamTrack: $0) }
             .navigationDestination(for: Style.self) { Text($0.name) } // Replace with StyleDetailView
             .navigationDestination(for: Feel.self) { Text($0.name) } // Replace with FeelDetailView
-            .navigationDestination(for: DrumPattern.self) { Text($0.name) } // Replace with DrumPatternDetailView
+            .navigationDestination(for: DrumPatternNavigation.self) { navigation in
+                 switch navigation {
+                 case .existing(let drumPattern):
+                     Text(drumPattern.name) // Replace with DrumPatternDetailView
+                 case .importOptions(let trackNotes):
+                     DrumPatternImportOptionsView(trackNotes: trackNotes, selectedDrumPatternNavigation: $selectedDrumPatternNavigation)
+//                         .environment(\.modelContext, modelContext)
+                 }
+             }
             .navigationDestination(for: HarmonicPattern.self) { Text($0.name) } // Replace with HarmonicPatternDetailView
         }
     #if os(macOS)
@@ -99,9 +118,11 @@ struct ContentView: View {
 
     private var stackView: some View {
         NavigationStack {
-            List(SidebarCategory.allCases, id: \.self) { category in
-                NavigationLink(value: category) {
-                    Text(category.rawValue)
+            List {
+                ForEach(SidebarCategory.allCases, id: \.self) { category in
+                    NavigationLink(value: category) {
+                        Text(category.rawValue)
+                    }
                 }
             }
             .navigationTitle("Categories")
@@ -111,7 +132,7 @@ struct ContentView: View {
                      selectedJamTrack: $selectedJamTrack,
                      selectedStyle: $selectedStyle,
                      selectedFeel: $selectedFeel,
-                     selectedDrumPattern: $selectedDrumPattern,
+                     selectedDrumPatternNavigation: $selectedDrumPatternNavigation,
                      selectedHarmonicPattern: $selectedHarmonicPattern
                  )
              }
