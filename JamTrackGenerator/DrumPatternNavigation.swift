@@ -17,7 +17,7 @@ extension DrumPatternNavigation: CustomStringConvertible {
         switch self {
         case .existing(let pattern):
             return "Existing: \(pattern)"
-        case .importOptions(let options):
+        case .importOptions(_):
             return "Import Options: [...]"
         }
     }

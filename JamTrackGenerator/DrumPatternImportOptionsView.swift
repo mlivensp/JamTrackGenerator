@@ -9,106 +9,114 @@ struct DrumPatternImportOptionsView: View {
     @Query(sort: \Feel.name) private var feels: [Feel]
     let trackNotes: [MidiTrackData]
     @Binding var selectedDrumPatternNavigation: DrumPatternNavigation?
-    @State private var selectedTracks: [MidiTrackData: Bool] = [:]
-    @State private var trackStyles: [MidiTrackData: Style?] = [:]
-    @State private var trackFeels: [MidiTrackData: Feel?] = [:]
-    @State private var customNames: [MidiTrackData: String] = [:]
-    @State private var showError = false
-    @State private var errorMessage = ""
+    @State private var viewModel: ViewModel
     
     private let gridColumns = [
-        GridItem(.fixed(40), alignment: .center), // Toggle
-        GridItem(.flexible(), alignment: .leading), // Track Name
+        GridItem(.fixed(40), alignment: .center), // Select Toggle
+        GridItem(.flexible(minimum: 120, maximum: 200), alignment: .leading), // Track Name
         GridItem(.fixed(40), alignment: .trailing), // Drum Icon
-        GridItem(.flexible(), alignment: .leading), // Custom Name
-        GridItem(.fixed(120), alignment: .leading), // Style
-        GridItem(.fixed(120), alignment: .leading) // Feel
+        GridItem(.flexible(minimum: 120, maximum: 200), alignment: .leading), // Pattern Name
+        GridItem(.fixed(80), alignment: .leading), // Use Style Checkbox
+        GridItem(.fixed(80), alignment: .leading) // Use Feel Checkbox
     ]
     
+    init(
+        trackNotes: [MidiTrackData],
+        selectedDrumPatternNavigation: Binding<DrumPatternNavigation?>
+    ) {
+        self.trackNotes = trackNotes
+        self._selectedDrumPatternNavigation = selectedDrumPatternNavigation
+        self._viewModel = State(wrappedValue: ViewModel(
+            drumNotes: [],
+            styles: [],
+            feels: [],
+            trackNotes: trackNotes
+        ))
+    }
+    
     var body: some View {
-        NavigationView {
-            Form {
-                SwiftUI.Section {
+        NavigationStack {
+            VStack(spacing: 0) {
+                // Custom Header with Global Pickers
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("MIDI Track Options")
+                        .font(.headline)
+                        .padding(.horizontal)
+                        .padding(.top)
+                    
+                    HStack(spacing: 16) {
+                        Picker("Style", selection: $viewModel.selectedStyle) {
+                            Text("None").tag(nil as Style?)
+                            ForEach(styles) { style in
+                                Text(style.name).tag(style as Style?)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .onChange(of: viewModel.selectedStyle) {
+                            if let error = viewModel.validateGlobalStyle() {
+                                viewModel.errorMessage = error
+                                viewModel.showError = true
+                            }
+                        }
+                        
+                        Picker("Feel", selection: $viewModel.selectedFeel) {
+                            Text("None").tag(nil as Feel?)
+                            ForEach(feels) { feel in
+                                Text(feel.name).tag(feel as Feel?)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .onChange(of: viewModel.selectedFeel) {
+                            if let error = viewModel.validateGlobalFeel() {
+                                viewModel.errorMessage = error
+                                viewModel.showError = true
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    
                     // Column Headers
                     LazyVGrid(columns: gridColumns, spacing: 10) {
                         Text("Select")
                             .font(.headline)
-                            .frame(width: 40)
-                        Text("Track Name")
+                            .frame(width: 40, alignment: .center)
+                        Text("Track")
                             .font(.headline)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Text("")
-                            .frame(width: 40) // Placeholder for Drum Icon
-                        Text("Custom Name")
+                            .frame(width: 40, alignment: .trailing)
+                        Text("Pattern Name")
                             .font(.headline)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        Text("Style")
+                        Text("Use Style")
                             .font(.headline)
-                            .frame(width: 120)
-                        Text("Feel")
+                            .frame(width: 80, alignment: .leading)
+                        Text("Use Feel")
                             .font(.headline)
-                            .frame(width: 120)
+                            .frame(width: 80, alignment: .leading)
                     }
                     .padding(.horizontal)
-                    
-                    // Track Rows
-                    ScrollView {
-                        LazyVGrid(columns: gridColumns, spacing: 10) {
-                            ForEach(trackNotes, id: \.self) { track in
-                                Toggle("", isOn: Binding(
-                                    get: { selectedTracks[track] ?? false },
-                                    set: { selectedTracks[track] = $0 }
-                                ))
-                                .frame(width: 40)
-                                
-                                Text(track.name.isEmpty ? "Track \(trackNotes.firstIndex(of: track)! + 1)" : track.name)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                
-                                if track.isDrumTrack {
-                                    Image(systemName: "drum")
-                                        .foregroundColor(.accentColor)
-                                        .frame(width: 40, alignment: .trailing)
-                                } else {
-                                    Color.clear
-                                        .frame(width: 40)
-                                }
-                                
-                                TextField("Custom Name", text: Binding(
-                                    get: { customNames[track] ?? "" },
-                                    set: { customNames[track] = $0 }
-                                ))
-                                .textFieldStyle(.roundedBorder)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                
-                                Picker("", selection: Binding(
-                                    get: { trackStyles[track] ?? nil },
-                                    set: { trackStyles[track] = $0 }
-                                )) {
-                                    Text("Empty").tag(nil as Style?)
-                                    ForEach(styles) { style in
-                                        Text(style.name).tag(style as Style?)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                                .frame(width: 120)
-                                
-                                Picker("", selection: Binding(
-                                    get: { trackFeels[track] ?? nil },
-                                    set: { trackFeels[track] = $0 }
-                                )) {
-                                    Text("Empty").tag(nil as Feel?)
-                                    ForEach(feels) { feel in
-                                        Text(feel.name).tag(feel as Feel?)
-                                    }
-                                }
-                                .pickerStyle(.menu)
-                                .frame(width: 120)
-                            }
+                    .padding(.vertical, 8)
+                }
+                #if os(iOS)
+                .background(Color(UIColor.secondarySystemGroupedBackground))
+                #else
+                .background(Color(NSColor.controlBackgroundColor))
+                #endif
+                
+                // Track Rows
+                ScrollView {
+                    VStack(spacing: 10) {
+                        ForEach(trackNotes, id: \.self) { track in
+                            TrackRowView(
+                                track: track,
+                                viewModel: viewModel
+                            )
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
                     }
-                } header: {
-                    Text("MIDI Track Options")
+                    .padding(.bottom)
                 }
             }
             .navigationTitle("Import Drum Tracks")
@@ -123,9 +131,13 @@ struct DrumPatternImportOptionsView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button("Done") {
-                        importSelectedTracks()
+                        viewModel.importSelectedTracks { success in
+                            if success {
+                                dismiss()
+                            }
+                        }
                     }
-                    .disabled(selectedTracks.values.allSatisfy { !$0 })
+                    .disabled(!viewModel.isDoneButtonEnabled)
                 }
             }
             .overlay {
@@ -137,90 +149,87 @@ struct DrumPatternImportOptionsView: View {
                     )
                 }
             }
-            .alert("Import Error", isPresented: $showError) {
-                Button("OK") { dismiss() }
+            .alert("Import Error", isPresented: $viewModel.showError) {
+                Button("OK") {
+                    viewModel.showError = false
+                    dismiss()
+                }
             } message: {
-                Text(errorMessage)
+                Text(viewModel.errorMessage)
             }
             .onAppear {
-                trackNotes.forEach { track in
-                    selectedTracks[track] = false
-                    trackStyles[track] = nil
-                    trackFeels[track] = nil
-                    customNames[track] = ""
-                }
                 print("DrumPatternImportOptionsView appeared with \(trackNotes.count) tracks")
+                viewModel.configure(with: modelContext)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-    }
-    
-    private func importSelectedTracks() {
-        let selected = selectedTracks.filter { $0.value }.keys
-        if selected.isEmpty {
-            errorMessage = "No tracks selected for import."
-            showError = true
-            return
-        }
-        
-        var hasError = false
-        for track in selected {
-            let customName = customNames[track]?.trimmingCharacters(in: .whitespacesAndNewlines)
-            let patternName = customName?.isEmpty ?? true
-                ? (track.name.isEmpty ? "Imported Pattern \(trackNotes.firstIndex(of: track)! + 1)" : track.name)
-                : customName!
-            
-            let newDrumPattern = DrumPattern(
-                name: patternName,
-                style: trackStyles[track] ?? nil,
-                feel: trackFeels[track] ?? nil
-            )
-            
-            let drumNotesInPattern = track.notes.compactMap { midiNote -> DrumNoteInPattern? in
-                guard let drumNote = drumNotes.first(where: { $0.midiValue == midiNote.note }) else {
-                    return nil
-                }
-                return DrumNoteInPattern(
-                    pattern: newDrumPattern,
-                    drumNote: drumNote,
-                    timestampOn: UInt(midiNote.tickOn),
-                    timestampOff: UInt(midiNote.tickOff)
-                )
-            }
-            
-            if drumNotesInPattern.isEmpty {
-                hasError = true
-                continue
-            }
-            
-            newDrumPattern.drumNotesInPattern = drumNotesInPattern
-            modelContext.insert(newDrumPattern)
-        }
-        
-        if hasError {
-            errorMessage = "Some tracks could not be imported due to invalid drum notes."
-            showError = true
-        } else {
-            try? modelContext.save()
-            dismiss()
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
-#Preview {
-    let trackNotes = [
-        MidiTrackData(name: "Drums", isDrumTrack: true, notes: [
-            MidiNote(note: 36, tickOn: 0, tickOff: 100, velocityOn: 100, velocityOff: 0, channel: 10)
-        ]),
-        MidiTrackData(name: "Piano", isDrumTrack: false, notes: [
-            MidiNote(note: 60, tickOn: 0, tickOff: 100, velocityOn: 100, velocityOff: 0, channel: 0)
-        ]),
-        MidiTrackData(name: "Bass", isDrumTrack: true, notes: [
-            MidiNote(note: 38, tickOn: 200, tickOff: 300, velocityOn: 90, velocityOff: 0, channel: 10)
-        ])
-    ]
-    return DrumPatternImportOptionsView(
-        trackNotes: trackNotes,
-        selectedDrumPatternNavigation: .constant(nil)
-    )
-    .modelContainer(for: [DrumPattern.self, DrumNote.self, Style.self, Feel.self, Section.self], inMemory: true)
+struct TrackRowView: View {
+    let track: MidiTrackData
+    let viewModel: DrumPatternImportOptionsView.ViewModel // No @ObservedObject needed
+    
+    var body: some View {
+        HStack(alignment: .center, spacing: 10) {
+            // Select Toggle
+            Toggle("", isOn: Binding(
+                get: { viewModel.selectedTracks[track] ?? false },
+                set: {
+                    viewModel.selectedTracks[track] = $0
+                    if !$0 {
+                        viewModel.patternNames[track] = ""
+                    }
+                }
+            ))
+            .frame(width: 40, alignment: .center)
+            
+            // Track Name
+            Text(track.name.isEmpty ? "Track \(viewModel.trackNotes.firstIndex(of: track)! + 1)" : track.name)
+                .frame(maxWidth: 120, alignment: .leading)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            
+            // Drum Icon
+            Group {
+                if track.isDrumTrack {
+                    Image(systemName: "drum")
+                        .foregroundColor(.accentColor)
+                } else {
+                    Color.clear
+                }
+            }
+            .frame(width: 40, alignment: .trailing)
+            
+            // Pattern Name
+            TextField("Pattern Name", text: Binding(
+                get: { viewModel.patternNames[track] ?? "" },
+                set: {
+                    viewModel.patternNames[track] = $0
+                    if let error = viewModel.validatePatternName(for: track) {
+                        viewModel.errorMessage = error
+                        viewModel.showError = true
+                    }
+                }
+            ))
+            .textFieldStyle(.roundedBorder)
+            .frame(maxWidth: 120, alignment: .leading)
+            
+            // Use Style Toggle
+            Toggle("", isOn: Binding(
+                get: { viewModel.useStyleForTrack[track] ?? false },
+                set: { viewModel.useStyleForTrack[track] = $0 }
+            ))
+            .frame(width: 80, alignment: .leading)
+            
+            // Use Feel Toggle
+            Toggle("", isOn: Binding(
+                get: { viewModel.useFeelForTrack[track] ?? false },
+                set: { viewModel.useFeelForTrack[track] = $0 }
+            ))
+            .frame(width: 80, alignment: .leading)
+        }
+        .padding(.vertical, 8)
+    }
 }

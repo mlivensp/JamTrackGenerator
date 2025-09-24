@@ -61,6 +61,9 @@ struct DrumPatternsView: View {
                 selectedDrumPatternNavigation: $selectedDrumPatternNavigation
             )
             .environment(\.modelContext, modelContext)
+            #if os(macOS)
+            .frame(minWidth: 600, idealWidth: 800, minHeight: 500, idealHeight: 600)
+            #endif
             .onAppear {
                 print("DrumPatternImportOptionsView appeared with \(trackNotes.count) tracks")
             }
