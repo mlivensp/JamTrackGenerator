@@ -29,11 +29,11 @@ extension Key {
     
     func pitchedNote(distanceFromRoot halfSteps: Int8, octave: UInt8 = 0) -> PitchedNote {
         guard let root = notesInKey.first(where: { $0.scaleDegree?.name == "Root" } ) else {
-            fatalError("root not found for key \(self.name)")
+            fatalError("root not found for key \(self.noteName)")
         }
         
         guard let rawRootNote = root.rawNote else {
-            fatalError("note not found on root in key \(self.name)")
+            fatalError("note not found on root in key \(self.noteName)")
         }
         
         var signedHalfSteps: Int8 = 0

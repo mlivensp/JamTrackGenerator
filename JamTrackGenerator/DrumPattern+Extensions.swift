@@ -9,6 +9,10 @@ import Foundation
 import SwiftData
 
 extension DrumPattern {
+    var sortedNotes: [DrumNoteInPattern] {
+        drumNotesInPattern.sorted(by: { $0.timestampOn < $1.timestampOn })
+    }
+    
     static func newDrumPattern(modelContext: ModelContext) -> DrumPattern {
         let drumPattern = DrumPattern(name: "New Drum Pattern")
         

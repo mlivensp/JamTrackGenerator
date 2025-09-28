@@ -179,7 +179,9 @@ struct SeedImporter {
         
         var count = 0
         for seed in keySeeds {
-            let key = Key(name: seed.key)
+            let parts = seed.key.split(separator: " ")
+            assert(parts.count == 2)
+            let key = Key(noteName: String(parts[0]), isMajor: parts[1] == "Major")
             context.insert(key)
             count += 1
             

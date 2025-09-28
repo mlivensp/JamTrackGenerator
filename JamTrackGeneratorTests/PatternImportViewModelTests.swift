@@ -3,13 +3,14 @@ import SwiftData
 @testable import JamTrackGenerator
 import Foundation
 
-@Suite("PatternImportOptionsViewModel Tests")
-struct PatternImportOptionsViewModelTests {
+@Suite("PatternImportViewModel Tests")
+struct PatternImportViewModelTests {
     var modelContext: ModelContext!
-    var viewModel: PatternImportOptionsView.ViewModel!
+    var viewModel: PatternImportView.ViewModel!
     var drumNotes: [DrumNote]!
     var styles: [Style]!
     var feels: [Feel]!
+    var rawNotes: [RawNote]!
     var trackNotes: [MidiTrackData]!
     
     mutating func setUp() throws {
@@ -49,6 +50,9 @@ struct PatternImportOptionsViewModelTests {
             Feel(name: "Straight"),
             Feel(name: "Swing")
         ]
+        rawNotes = [
+            RawNote(name: "C", distanceFromC: 0)
+        ]
         trackNotes = [
             MidiTrackData(
                 name: "Drums",
@@ -56,7 +60,7 @@ struct PatternImportOptionsViewModelTests {
                 notes: [
                     MidiNote(note: 36, tickOn: 0, tickOff: 100, velocityOn: 100, velocityOff: 0, channel: 10)
                 ],
-                keySignature: "C Major"
+                keySignature: "C"
             ),
             MidiTrackData(
                 name: "Piano",
@@ -65,15 +69,16 @@ struct PatternImportOptionsViewModelTests {
                     MidiNote(note: 72, tickOn: 0, tickOff: 100, velocityOn: 100, velocityOff: 0, channel: 0),
                     MidiNote(note: 74, tickOn: 200, tickOff: 300, velocityOn: 100, velocityOff: 0, channel: 0)
                 ],
-                keySignature: "C Major"
+                keySignature: "C"
             )
         ]
         
         drumNotes.forEach { modelContext.insert($0) }
         styles.forEach { modelContext.insert($0) }
         feels.forEach { modelContext.insert($0) }
+        rawNotes.forEach { modelContext.insert($0) }
         
-        viewModel = PatternImportOptionsView.ViewModel(
+        viewModel = PatternImportView.ViewModel(
             drumNotes: drumNotes,
             styles: styles,
             feels: feels,
@@ -155,7 +160,7 @@ struct PatternImportOptionsViewModelTests {
             keySignature: "C Major"
         )
         trackNotes.append(drumTrack2)
-        viewModel = PatternImportOptionsView.ViewModel(
+        viewModel = PatternImportView.ViewModel(
             drumNotes: drumNotes,
             styles: styles,
             feels: feels,
@@ -405,8 +410,8 @@ struct PatternImportOptionsViewModelTests {
         #expect(patterns.first?.name == "DrumPattern")
         #expect(patterns.first?.style?.name == "Rock")
         #expect(patterns.first?.feel?.name == "Straight")
-        #expect(patterns.first?.drumNotesInPattern.count == 1)
-        #expect(patterns.first?.drumNotesInPattern.first?.drumNote?.midiValue == 36)
+        #expect(patterns.first?.sortedNotes.count == 1)
+        #expect(patterns.first?.sortedNotes.first?.drumNote?.midiValue == 36)
         tearDown()
     }
     
@@ -435,8 +440,8 @@ struct PatternImportOptionsViewModelTests {
         #expect(patterns.first?.feel?.name == "Straight")
         #expect(patterns.first?.harmonicNotesInPattern.count == 2)
         #expect(patterns.first?.baseOctave == 5)
-        #expect(patterns.first?.harmonicNotesInPattern[0].halfSteps == 0)
-        #expect(patterns.first?.harmonicNotesInPattern[1].halfSteps == 2)
+        #expect(patterns.first?.sortedNotes[0].halfSteps == 0)
+        #expect(patterns.first?.sortedNotes[1].halfSteps == 2)
         tearDown()
     }
 }

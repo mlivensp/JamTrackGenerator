@@ -53,7 +53,7 @@ struct KeyAndNoteTests {
     @Test func testPitchedNotesFromC2() async throws {
         let keyFetchDescriptor = FetchDescriptor<Key>()
         let keys = try container.mainContext.fetch(keyFetchDescriptor)
-        guard let key = keys.first(where: { $0.name == "C Major"} ) else {
+        guard let key = keys.first(where: { $0.noteName == "C" && $0.isMajor == true } ) else {
             fatalError("key not found")
         }
 
@@ -67,7 +67,7 @@ struct KeyAndNoteTests {
     @Test func testPitchedNotesFromG2() async throws {
         let keyFetchDescriptor = FetchDescriptor<Key>()
         let keys = try container.mainContext.fetch(keyFetchDescriptor)
-        guard let key = keys.first(where: { $0.name == "G Major"} ) else {
+        guard let key = keys.first(where: { $0.noteName == "G" && $0.isMajor == true } ) else {
             fatalError("key not found")
         }
         

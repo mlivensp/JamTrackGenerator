@@ -52,9 +52,10 @@ extension JamTrack {
         let styleFetchDescriptor = FetchDescriptor<Style>(predicate: #Predicate { style in
             style.name == "12 Bar Blues"
         })
-                                                          
+
+        // TODO: this needs to distinguish between major and minor
         let keysFetchDescriptor = FetchDescriptor<Key>(predicate: #Predicate { key in
-            key.name == "A Major"
+            key.noteName == "A Major"
         })
                                                           
         let feelFetchDescriptor = FetchDescriptor<Feel>(predicate: #Predicate { feel in

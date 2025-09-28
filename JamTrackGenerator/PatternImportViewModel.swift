@@ -1,7 +1,7 @@
 import SwiftData
 import Foundation
 
-extension PatternImportOptionsView {
+extension PatternImportView {
     @Observable class ViewModel {
         private var modelContext: ModelContext!
         private let drumNotes: [DrumNote]
@@ -244,7 +244,10 @@ extension PatternImportOptionsView {
                     modelContext.insert(newDrumPattern)
                 } else {
                     let baseOctave = track.notes.first.map { UInt8($0.note / 12 - 1) } ?? 4
-                    guard let harmonicNotesInPattern = createHarmonicNotesInPattern(for: track) else {
+                    let keyNoteName = track.keySignature.hasSuffix("m") ? String(track.keySignature.dropLast()) : track.keySignature
+                    let rootMidiValue = calculateMidiValueForNote(noteName: keyNoteName, octave: baseOctave)
+                    // compute midi note value from keyNoteName and baseOctave
+                    guard let harmonicNotesInPattern = createHarmonicNotesInPattern(for: track, rootValue: rootMidiValue) else {
                         hasError = true
                         continue
                     }
@@ -258,10 +261,6 @@ extension PatternImportOptionsView {
                     
                     harmonicNotesInPattern.forEach { note in
                         note.pattern = newHarmonicPattern
-                        // half steps is distance from root in baseOctave to current note (note.midiValue - root.midiValue)
-                        let halfSteps = Int8(2)
-//                        let halfSteps = Int8(max(min(Int(note.noteValue) - Int(baseOctave * 12 + 12), 127), -128))
-                        note.halfSteps = halfSteps
                     }
                     newHarmonicPattern.harmonicNotesInPattern = harmonicNotesInPattern
                     modelContext.insert(newHarmonicPattern)
@@ -275,6 +274,20 @@ extension PatternImportOptionsView {
             } else {
                 completion(true)
             }
+        }
+        
+        func calculateMidiValueForNote(noteName: String, octave: UInt8) -> UInt8 {
+            let fetchDescriptor = FetchDescriptor<RawNote>(predicate: #Predicate { rawNote in
+                rawNote.name == noteName } )
+            do {
+                if let rawNote = try modelContext.fetch(fetchDescriptor).first {
+                    return (octave + 1) * 12 + rawNote.distanceFromC
+                }
+            } catch {
+                return 255
+            }
+        
+            return 255
         }
         
         private func createDrumNotesInPattern(for track: MidiTrackData) -> [DrumNoteInPattern]? {
@@ -297,11 +310,13 @@ extension PatternImportOptionsView {
             return drumNotesInPattern
         }
         
-        private func createHarmonicNotesInPattern(for track: MidiTrackData) -> [HarmonicNoteInPattern]? {
+        private func createHarmonicNotesInPattern(for track: MidiTrackData, rootValue: UInt8) -> [HarmonicNoteInPattern]? {
             let harmonicNotesInPattern = track.notes.compactMap { midiNote -> HarmonicNoteInPattern? in
+                let halfSteps = Int8(midiNote.note) - Int8(rootValue)
+                print("\(midiNote.note) - \(halfSteps)")
                 return HarmonicNoteInPattern(
                     pattern: HarmonicPattern(name: "Temporary", style: nil, feel: nil, baseOctave: 4),
-                    halfSteps: 0,
+                    halfSteps: halfSteps,
                     timestampOn: UInt(midiNote.tickOn),
                     timestampOff: UInt(midiNote.tickOff)
                 )

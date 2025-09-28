@@ -56,7 +56,7 @@ struct DrumPatternsView: View {
             }
         }
         .sheet(isPresented: $showImportOptions) {
-            PatternImportOptionsView(
+            PatternImportView(
                 trackNotes: trackNotes,
                 selectedDrumPatternNavigation: $selectedDrumPatternNavigation
             )

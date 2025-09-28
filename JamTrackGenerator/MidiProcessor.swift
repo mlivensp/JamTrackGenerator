@@ -296,44 +296,6 @@ struct MidiProcessor {
     // MARK: - Key signature extraction
     
     private func firstKeySignature(in track: MIDIFile.Chunk.Track, url: URL, trackIndex: Int) throws -> String? {
-        // First pass: Try surfaced meta events via smfEvent (commented to avoid compile issues)
-        /*
-        for fileEvent in track.events {
-            if let midiEvent = fileEvent.event() {
-                if let smfEvent = try midiEvent.smfEvent(delta: .ticks(0)) {
-                    switch smfEvent {
-                    case .keySignature(delta: _, event: let keySigEvent):
-                        let rawBytes = keySigEvent.midi1SMFRawBytes
-                        guard rawBytes.count == 2 else {
-                            continue
-                        }
-                        let sf = Int8(bitPattern: rawBytes[0])
-                        let mi = rawBytes[1]
-                        let isMajor = mi == 0
-                        let majorKeys: [Int8: String] = [
-                            -7: "Cb", -6: "Gb", -5: "Db", -4: "Ab", -3: "Eb",
-                            -2: "Bb", -1: "F", 0: "C", 1: "G", 2: "D",
-                            3: "A", 4: "E", 5: "B", 6: "F#", 7: "C#"
-                        ]
-                        
-                        let minorKeys: [Int8: String] = [
-                            -7: "Abm", -6: "Ebm", -5: "Bbm", -4: "Fm", -3: "Cm",
-                            -2: "Gm", -1: "Dm", 0: "Am", 1: "Em", 2: "Bm",
-                            3: "F#m", 4: "C#m", 5: "G#m", 6: "D#m", 7: "A#m"
-                        ]
-                        
-                        let keyMap = isMajor ? majorKeys : minorKeys
-                        return keyMap[sf] ?? "C major"
-                    default:
-                        continue
-                    }
-                }
-            }
-        }
-        */
-        
-        // Fallback: Parse raw MIDI file data for MTrk chunks
-        print("No surfaced key signature found for track \(trackIndex); attempting raw file parse...")
         let fileData = try Data(contentsOf: url)
         let fileBytes = [UInt8](fileData)
         
@@ -389,19 +351,19 @@ struct MidiProcessor {
                             
                             let isMajor = mi == 0
                             let majorKeys: [Int8: String] = [
-                                -7: "Cb", -6: "Gb", -5: "Db", -4: "Ab", -3: "Eb",
-                                -2: "Bb", -1: "F", 0: "C", 1: "G", 2: "D",
-                                3: "A", 4: "E", 5: "B", 6: "F#", 7: "C#"
+                                -7: "C♭", -6: "G♭", -5: "D♭", -4: "A♭", -3: "E♭",
+                                -2: "B♭", -1: "F", 0: "C", 1: "G", 2: "D",
+                                3: "A", 4: "E", 5: "B", 6: "F♯", 7: "C♯"
                             ]
                             
                             let minorKeys: [Int8: String] = [
-                                -7: "Abm", -6: "Ebm", -5: "Bbm", -4: "Fm", -3: "Cm",
+                                -7: "A♭m", -6: "E♭m", -5: "B♭m", -4: "Fm", -3: "Cm",
                                 -2: "Gm", -1: "Dm", 0: "Am", 1: "Em", 2: "Bm",
-                                3: "F#m", 4: "C#m", 5: "G#m", 6: "D#m", 7: "A#m"
+                                3: "F♯m", 4: "C♯m", 5: "G♯m", 6: "D♯m", 7: "A♯m"
                             ]
                             
                             let keyMap = isMajor ? majorKeys : minorKeys
-                            return keyMap[sf] ?? "C major"
+                            return keyMap[sf] ?? "C"
                         }
                         j += 1
                     }

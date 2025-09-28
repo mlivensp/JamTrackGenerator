@@ -91,7 +91,7 @@ struct JamTrackDetailView: View {
                 LabeledContent {
                     Picker("", selection: $jamTrack.key) {
                         ForEach(keys) { key in
-                            Text(key.name).tag(key)
+                            Text(key.noteName).tag(key)
                         }
                     }
                 }

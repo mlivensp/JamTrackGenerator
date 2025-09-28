@@ -77,7 +77,7 @@ struct ContentView: View {
                     case .existing(let drumPattern):
                         Text(drumPattern.name) // Replace with DrumPatternDetailView
                     case .importOptions(let trackNotes):
-                        PatternImportOptionsView(
+                        PatternImportView(
                             trackNotes: trackNotes,
                             selectedDrumPatternNavigation: $selectedDrumPatternNavigation
                         )
@@ -97,7 +97,7 @@ struct ContentView: View {
                 case .existing(let drumPattern):
                     Text(drumPattern.name) // Replace with DrumPatternDetailView
                 case .importOptions(let trackNotes):
-                    PatternImportOptionsView(
+                    PatternImportView(
                         trackNotes: trackNotes,
                         selectedDrumPatternNavigation: $selectedDrumPatternNavigation
                     )
@@ -140,7 +140,7 @@ struct ContentView: View {
                     Text(drumPattern.name) // Replace with DrumPatternDetailView
                         .onAppear { print("Navigated to DrumPatternDetailView for pattern: \(drumPattern.name)") }
                 case .importOptions(let trackNotes):
-                    PatternImportOptionsView(
+                    PatternImportView(
                         trackNotes: trackNotes,
                         selectedDrumPatternNavigation: $selectedDrumPatternNavigation
                     )

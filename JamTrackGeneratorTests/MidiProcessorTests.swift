@@ -60,7 +60,7 @@ func testMalformedMIDIFileThrows() throws {
     let url = try writeTempDataFile(data)
     do {
         _ = try processor.process(url: url)
-        #expect(false, "Expected error, but didn't get one")
+        #expect(Bool(false), "Expected error, but didn't get one")
     } catch {
         // Success: Threw an error as expected
     }

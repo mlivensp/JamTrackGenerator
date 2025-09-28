@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct PatternImportOptionsView: View {
+struct PatternImportView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \DrumNote.midiValue) private var drumNotes: [DrumNote]
@@ -169,7 +169,7 @@ struct PatternImportOptionsView: View {
 
 struct TrackRowView: View {
     let track: MidiTrackData
-    let viewModel: PatternImportOptionsView.ViewModel // No @ObservedObject needed
+    let viewModel: PatternImportView.ViewModel // No @ObservedObject needed
     
     var body: some View {
         HStack(alignment: .center, spacing: 10) {

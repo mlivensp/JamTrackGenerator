@@ -24,9 +24,10 @@ struct HarmonicEventBuilder: EventBuilder {
             throw NSError(domain: "JamTrackGenerator", code: 1, userInfo: nil)
         }
         
-        let songKeyName = songKey.name
+        // TODO: this needs to distinguish between major and minor
+        let songKeyName = songKey.noteName
         let keyFetchDescriptor = FetchDescriptor<Key>(predicate: #Predicate { key in
-            key.name == songKeyName
+            key.noteName == songKeyName
         })
 
         if let key = try modelContext.fetch(keyFetchDescriptor).first {

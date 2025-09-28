@@ -58,13 +58,15 @@ enum SchemaV1: VersionedSchema {
     }
 
     @Model class Key {
-        var name: String
+        var noteName: String
+        var isMajor: Bool
         
         @Relationship(deleteRule: .cascade, inverse: \JamTrack.key) var definitions: [JamTrack]
         @Relationship(deleteRule: .cascade, inverse: \NoteInKey.key) var notesInKey: [NoteInKey]
         
-        init(name: String, definitions: [JamTrack] = [], notesInKey: [NoteInKey] = []) {
-            self.name = name
+        init(noteName: String, isMajor: Bool, definitions: [JamTrack] = [], notesInKey: [NoteInKey] = []) {
+            self.noteName = noteName
+            self.isMajor = isMajor
             self.definitions = definitions
             self.notesInKey = notesInKey
         }
