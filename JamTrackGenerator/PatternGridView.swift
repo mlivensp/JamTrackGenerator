@@ -9,11 +9,11 @@ import SwiftData
 import SwiftUI
 
 struct PatternsGridView: View {
-    let sections: [Section]
+    let sections: [JamTrackSection]
     @Bindable var part: Part
     @Environment(\.modelContext) private var modelContext
 
-    private func sectionPart(for section: Section) -> SectionPart? {
+    private func sectionPart(for section: JamTrackSection) -> SectionPart? {
         part.sectionParts.first { $0.section?.id == section.id }
     }
     
@@ -59,7 +59,7 @@ struct PatternsGridView: View {
 }
 // MARK: - Section Row View (handles editing for each row)
 struct SectionRowView: View {
-    let section: Section
+    let section: JamTrackSection
     @Bindable var sectionPart: SectionPart
     @Environment(\.modelContext) private var modelContext
 

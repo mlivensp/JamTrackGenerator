@@ -24,6 +24,7 @@ struct MidiTrackData: Hashable {
     let name: String
     let isDrumTrack: Bool
     let notes: [MidiNote]
+    let keySignature: String
 }
 
 // MARK: - Processor
@@ -58,6 +59,9 @@ struct MidiProcessor {
         for (trackIndex, track) in midiFile.tracks.enumerated() {
             // Try to get a name from meta events
             let foundName = try firstMetaName(in: track, url: url, trackIndex: trackIndex)
+            
+            // Try to get key signature from meta events
+            let keySignature = try firstKeySignature(in: track, url: url, trackIndex: trackIndex) ?? "C major"
             
             // Parse notes with tick normalization
             var notes: [MidiNote] = []
@@ -142,7 +146,8 @@ struct MidiProcessor {
                 results.append(MidiTrackData(
                     name: originalName,
                     isDrumTrack: isDrumTrack,
-                    notes: notes
+                    notes: notes,
+                    keySignature: keySignature
                 ))
             }
         }
@@ -155,23 +160,14 @@ struct MidiProcessor {
     private func firstMetaName(in track: MIDIFile.Chunk.Track, url: URL, trackIndex: Int) throws -> String? {
         // First pass: Try surfaced meta events via smfEvent
         for fileEvent in track.events {
-            if let midiEvent = fileEvent.event() { // midiEvent is MIDIEvent?
-                // Debug: Log every MIDIEvent
-//                print("Processing MIDIEvent: \(String(describing: midiEvent))")
-                
+            if let midiEvent = fileEvent.event() {
                 if let smfEvent = midiEvent.smfEvent(delta: .ticks(0)) {
                     switch smfEvent {
                     case .text(delta: _, event: let textEvent) where textEvent.textType == .trackOrSequenceName:
-                        // 0x03 meta event: sequence or track name (String)
-//                        print("Track/Sequence Name (surfaced): \(textEvent.text)")
-                        return textEvent.text // Return the first one found
+                        return textEvent.text
                     default:
-                        // Debug: Log non-track-name SMF events
-//                        print("Non-track-name SMF event: \(String(describing: smfEvent))")
                         break
                     }
-                } else {
-                    print("smfEvent returned nil for MIDIEvent: \(String(describing: midiEvent))")
                 }
             }
         }
@@ -184,10 +180,8 @@ struct MidiProcessor {
         var currentTrackIndex = 0
         var i = 0
         while i < fileBytes.count - 3 {
-            // Look for MTrk chunk
             if fileBytes[i] == 0x4D, fileBytes[i + 1] == 0x54, fileBytes[i + 2] == 0x72, fileBytes[i + 3] == 0x6B {
                 i += 4
-                // Read chunk length (4 bytes, big-endian)
                 guard i + 4 <= fileBytes.count else {
                     print("Invalid MTrk chunk length at index \(i)")
                     break
@@ -200,13 +194,9 @@ struct MidiProcessor {
                     break
                 }
                 
-                // Only parse the track matching trackIndex
                 if currentTrackIndex == trackIndex {
-//                    print("Parsing MTrk chunk for track \(trackIndex): \(length) bytes")
-                    // Parse track data for FF 03 <length> <text>
                     var j = i
                     while j < trackEnd - 1 {
-                        // Skip delta-time (VLQ)
                         var deltaTime: UInt32 = 0
                         repeat {
                             guard j < trackEnd else {
@@ -218,10 +208,8 @@ struct MidiProcessor {
                             j += 1
                         } while j < trackEnd && (fileBytes[j - 1] & 0x80) != 0
                         
-                        // Look for FF 03
                         if j < trackEnd - 1, fileBytes[j] == 0xFF, fileBytes[j + 1] == 0x03 {
                             j += 2
-                            // Parse VLQ length
                             var length: UInt32 = 0
                             repeat {
                                 guard j < trackEnd else {
@@ -237,30 +225,28 @@ struct MidiProcessor {
                             let textEnd = textStart + Int(length)
                             guard textEnd <= trackEnd, textStart < textEnd else {
                                 print("Invalid text range: start=\(textStart), end=\(textEnd), track end=\(trackEnd)")
-                                j = textStart // Move past invalid event
+                                j = textStart
                                 continue
                             }
                             
                             let textBytes = fileBytes[textStart..<textEnd]
                             if let name = String(bytes: textBytes, encoding: .ascii) ?? String(bytes: textBytes, encoding: .utf8) {
-//                                print("Raw-parsed Track/Sequence Name from track \(trackIndex): \(name)")
                                 return name
-                            } else {
-                                print("Failed to decode text from bytes: \(textBytes.map { String(format: "%02X", $0) })")
                             }
+                            print("Failed to decode text from bytes: \(textBytes.map { String(format: "%02X", $0) })")
                         }
                         j += 1
                     }
-                    break // Found the target track, no need to parse further
+                    break
                 }
-                i = trackEnd // Skip to next chunk
+                i = trackEnd
                 currentTrackIndex += 1
             } else {
                 i += 1
             }
         }
         
-        // Secondary fallback: Check MIDIEvent cases (unlikely to contain FF 03)
+        // Secondary fallback: Check MIDIEvent cases
         print("No track name found in raw file parse for track \(trackIndex); attempting MIDIEvent fallback...")
         for fileEvent in track.events {
             if let midiEvent = fileEvent.event() {
@@ -268,22 +254,16 @@ struct MidiProcessor {
                 switch midiEvent {
                 case .sysEx7(let sysExData):
                     data = sysExData.data
-//                    print("Found sysEx7 data: \(data.map { String(format: "%02X", $0) }) (ASCII: \(String(bytes: data, encoding: .ascii) ?? "N/A"))")
                 case .universalSysEx7(let univData):
                     data = univData.data
-//                    print("Found universalSysEx7 data: \(data.map { String(format: "%02X", $0) }) (ASCII: \(String(bytes: data, encoding: .ascii) ?? "N/A"))")
                 default:
-//                    print("Skipping MIDIEvent: \(String(describing: midiEvent))")
                     continue
                 }
                 
-                // Meta event: FF 03 <length> <text>
                 guard data.count >= 2, data[0] == 0xFF, data[1] == 0x03 else {
-//                    print("Data does not match FF 03: \(data.map { String(format: "%02X", $0) })")
                     continue
                 }
                 
-                // Parse VLQ length
                 var i = 2
                 var length: UInt32 = 0
                 repeat {
@@ -304,16 +284,198 @@ struct MidiProcessor {
                 
                 let textBytes = data[textStart..<textEnd]
                 if let name = String(bytes: textBytes, encoding: .ascii) ?? String(bytes: textBytes, encoding: .utf8) {
-//                    print("Raw-parsed Track/Sequence Name: \(name)")
                     return name
+                }
+                print("Failed to decode text from bytes: \(textBytes.map { String(format: "%02X", $0) })")
+            }
+        }
+        
+        return nil
+    }
+    
+    // MARK: - Key signature extraction
+    
+    private func firstKeySignature(in track: MIDIFile.Chunk.Track, url: URL, trackIndex: Int) throws -> String? {
+        // First pass: Try surfaced meta events via smfEvent (commented to avoid compile issues)
+        /*
+        for fileEvent in track.events {
+            if let midiEvent = fileEvent.event() {
+                if let smfEvent = try midiEvent.smfEvent(delta: .ticks(0)) {
+                    switch smfEvent {
+                    case .keySignature(delta: _, event: let keySigEvent):
+                        let rawBytes = keySigEvent.midi1SMFRawBytes
+                        guard rawBytes.count == 2 else {
+                            continue
+                        }
+                        let sf = Int8(bitPattern: rawBytes[0])
+                        let mi = rawBytes[1]
+                        let isMajor = mi == 0
+                        let majorKeys: [Int8: String] = [
+                            -7: "Cb", -6: "Gb", -5: "Db", -4: "Ab", -3: "Eb",
+                            -2: "Bb", -1: "F", 0: "C", 1: "G", 2: "D",
+                            3: "A", 4: "E", 5: "B", 6: "F#", 7: "C#"
+                        ]
+                        
+                        let minorKeys: [Int8: String] = [
+                            -7: "Abm", -6: "Ebm", -5: "Bbm", -4: "Fm", -3: "Cm",
+                            -2: "Gm", -1: "Dm", 0: "Am", 1: "Em", 2: "Bm",
+                            3: "F#m", 4: "C#m", 5: "G#m", 6: "D#m", 7: "A#m"
+                        ]
+                        
+                        let keyMap = isMajor ? majorKeys : minorKeys
+                        return keyMap[sf] ?? "C major"
+                    default:
+                        continue
+                    }
+                }
+            }
+        }
+        */
+        
+        // Fallback: Parse raw MIDI file data for MTrk chunks
+        print("No surfaced key signature found for track \(trackIndex); attempting raw file parse...")
+        let fileData = try Data(contentsOf: url)
+        let fileBytes = [UInt8](fileData)
+        
+        var currentTrackIndex = 0
+        var i = 0
+        while i < fileBytes.count - 3 {
+            if fileBytes[i] == 0x4D, fileBytes[i + 1] == 0x54, fileBytes[i + 2] == 0x72, fileBytes[i + 3] == 0x6B {
+                i += 4
+                guard i + 4 <= fileBytes.count else {
+                    print("Invalid MTrk chunk length at index \(i)")
+                    break
+                }
+                let length = UInt32(fileBytes[i]) << 24 | UInt32(fileBytes[i + 1]) << 16 | UInt32(fileBytes[i + 2]) << 8 | UInt32(fileBytes[i + 3])
+                i += 4
+                let trackEnd = i + Int(length)
+                guard trackEnd <= fileBytes.count else {
+                    print("Invalid track end: \(trackEnd), file size: \(fileBytes.count)")
+                    break
+                }
+                
+                if currentTrackIndex == trackIndex {
+                    var j = i
+                    while j < trackEnd - 1 {
+                        var deltaTime: UInt32 = 0
+                        repeat {
+                            guard j < trackEnd else {
+                                print("Invalid delta-time at index \(j)")
+                                break
+                            }
+                            let byte = fileBytes[j]
+                            deltaTime = (deltaTime << 7) | UInt32(byte & 0x7F)
+                            j += 1
+                        } while j < trackEnd && (fileBytes[j - 1] & 0x80) != 0
+                        
+                        // Look for FF 58 (key signature)
+                        if j < trackEnd - 1, fileBytes[j] == 0xFF, fileBytes[j + 1] == 0x58 {
+                            j += 2
+                            // Key signature event has fixed length of 2 bytes
+                            guard j < trackEnd, fileBytes[j] == 0x02 else {
+                                print("Invalid key signature length at index \(j)")
+                                j += 1
+                                continue
+                            }
+                            j += 1
+                            guard j + 1 < trackEnd else {
+                                print("Incomplete key signature data at index \(j)")
+                                j += 2
+                                continue
+                            }
+                            let sf = Int8(bitPattern: fileBytes[j])
+                            let mi = fileBytes[j + 1]
+                            j += 2
+                            
+                            let isMajor = mi == 0
+                            let majorKeys: [Int8: String] = [
+                                -7: "Cb", -6: "Gb", -5: "Db", -4: "Ab", -3: "Eb",
+                                -2: "Bb", -1: "F", 0: "C", 1: "G", 2: "D",
+                                3: "A", 4: "E", 5: "B", 6: "F#", 7: "C#"
+                            ]
+                            
+                            let minorKeys: [Int8: String] = [
+                                -7: "Abm", -6: "Ebm", -5: "Bbm", -4: "Fm", -3: "Cm",
+                                -2: "Gm", -1: "Dm", 0: "Am", 1: "Em", 2: "Bm",
+                                3: "F#m", 4: "C#m", 5: "G#m", 6: "D#m", 7: "A#m"
+                            ]
+                            
+                            let keyMap = isMajor ? majorKeys : minorKeys
+                            return keyMap[sf] ?? "C major"
+                        }
+                        j += 1
+                    }
+                    break
+                }
+                i = trackEnd
+                currentTrackIndex += 1
+            } else {
+                i += 1
+            }
+        }
+        
+        // Secondary fallback: Check MIDIEvent cases
+        print("No track key signature found in raw file parse for track \(trackIndex); attempting MIDIEvent fallback...")
+        for fileEvent in track.events {
+            if let midiEvent = fileEvent.event() {
+                var data: [UInt8] = []
+                switch midiEvent {
+                case .sysEx7(let sysExData):
+                    data = sysExData.data
+                case .universalSysEx7(let univData):
+                    data = univData.data
+                default:
+                    continue
+                }
+                
+                guard data.count >= 2, data[0] == 0xFF, data[1] == 0x58 else {
+                    continue
+                }
+                
+                var i = 2
+                var length: UInt32 = 0
+                repeat {
+                    guard i < data.count else {
+                        print("Invalid VLQ length in data: \(data.map { String(format: "%02X", $0) })")
+                        break
+                    }
+                    let byte = data[i]
+                    length = (length << 7) | UInt32(byte & 0x7F)
+                    i += 1
+                } while i < data.count && (data[i - 1] & 0x80) != 0
+                let textStart = i
+                let textEnd = textStart + Int(length)
+                guard textEnd <= data.count, textStart < textEnd else {
+                    print("Invalid text range: start=\(textStart), end=\(textEnd), data count=\(data.count)")
+                    continue
+                }
+                
+                let textBytes = data[textStart..<textEnd]
+                if textBytes.count == 2 {
+                    let sf = Int8(bitPattern: textBytes[0])
+                    let mi = textBytes[1]
+                    let isMajor = mi == 0
+                    let majorKeys: [Int8: String] = [
+                        -7: "Cb", -6: "Gb", -5: "Db", -4: "Ab", -3: "Eb",
+                        -2: "Bb", -1: "F", 0: "C", 1: "G", 2: "D",
+                        3: "A", 4: "E", 5: "B", 6: "F#", 7: "C#"
+                    ]
+                    
+                    let minorKeys: [Int8: String] = [
+                        -7: "Abm", -6: "Ebm", -5: "Bbm", -4: "Fm", -3: "Cm",
+                        -2: "Gm", -1: "Dm", 0: "Am", 1: "Em", 2: "Bm",
+                        3: "F#m", 4: "C#m", 5: "G#m", 6: "D#m", 7: "A#m"
+                    ]
+                    
+                    let keyMap = isMajor ? majorKeys : minorKeys
+                    return keyMap[sf] ?? "C major"
                 } else {
-                    print("Failed to decode text from bytes: \(textBytes.map { String(format: "%02X", $0) })")
+                    print("Failed to parse key signature from bytes: \(textBytes.map { String(format: "%02X", $0) })")
                 }
             }
         }
         
-//        print("No track name found for track \(trackIndex), even in raw data.")
-        return nil // No track/sequence name found
+        return nil
     }
 }
 
@@ -348,7 +510,7 @@ func dumpMIDIEvents(from url: URL) {
                 print("\n=== Track \(trackIndex) (Raw MTrk, \(length) bytes) ===")
                 print("Raw track data: \(fileBytes[i..<min(i + 100, trackEnd)].map { String(format: "%02X", $0) })...")
                 
-                let currentTick: UInt64 = 0
+                var currentTick: UInt64 = 0
                 var j = i
                 while j < trackEnd {
                     // Parse delta-time
@@ -362,29 +524,63 @@ func dumpMIDIEvents(from url: URL) {
                         deltaTime = (deltaTime << 7) | UInt32(byte & 0x7F)
                         j += 1
                     } while j < trackEnd && (fileBytes[j - 1] & 0x80) != 0
+                    currentTick += UInt64(deltaTime)
                     
                     guard j < trackEnd else { break }
                     let eventStart = j
-                    // Check for FF 03
-                    if j < trackEnd - 1, fileBytes[j] == 0xFF, fileBytes[j + 1] == 0x03 {
-                        j += 2
-                        var length: UInt32 = 0
-                        repeat {
-                            guard j < trackEnd else { break }
-                            let byte = fileBytes[j]
-                            length = (length << 7) | UInt32(byte & 0x7F)
+                    // Check for FF 03 (track name) or FF 58 (key signature)
+                    if j < trackEnd - 1, fileBytes[j] == 0xFF {
+                        if fileBytes[j + 1] == 0x03 {
+                            j += 2
+                            var length: UInt32 = 0
+                            repeat {
+                                guard j < trackEnd else { break }
+                                let byte = fileBytes[j]
+                                length = (length << 7) | UInt32(byte & 0x7F)
+                                j += 1
+                            } while j < trackEnd && (fileBytes[j - 1] & 0x80) != 0
+                            let textStart = j
+                            let textEnd = textStart + Int(length)
+                            if textEnd <= trackEnd, textStart < textEnd {
+                                let textBytes = fileBytes[textStart..<textEnd]
+                                let ascii = String(bytes: textBytes, encoding: .ascii) ?? String(bytes: textBytes, encoding: .utf8) ?? "N/A"
+                                print("[tick \(currentTick)] Raw event: FF 03 (Track/Sequence Name): \(textBytes.map { String(format: "%02X", $0) }) (ASCII: \(ascii))")
+                            }
+                            j = textEnd
+                        } else if fileBytes[j + 1] == 0x58 {
+                            j += 2
+                            guard j < trackEnd, fileBytes[j] == 0x02 else {
+                                j += 1
+                                continue
+                            }
                             j += 1
-                        } while j < trackEnd && (fileBytes[j - 1] & 0x80) != 0
-                        let textStart = j
-                        let textEnd = textStart + Int(length)
-                        if textEnd <= trackEnd, textStart < textEnd {
-                            let textBytes = fileBytes[textStart..<textEnd]
-                            let ascii = String(bytes: textBytes, encoding: .ascii) ?? String(bytes: textBytes, encoding: .utf8) ?? "N/A"
-                            print("[tick \(currentTick)] Raw event: FF 03 (Track/Sequence Name): \(textBytes.map { String(format: "%02X", $0) }) (ASCII: \(ascii))")
+                            guard j + 1 < trackEnd else {
+                                j += 2
+                                continue
+                            }
+                            let sf = Int8(bitPattern: fileBytes[j])
+                            let mi = fileBytes[j + 1]
+                            j += 2
+                            
+                            let isMajor = mi == 0
+                            let majorKeys: [Int8: String] = [
+                                -7: "Cb", -6: "Gb", -5: "Db", -4: "Ab", -3: "Eb",
+                                -2: "Bb", -1: "F", 0: "C", 1: "G", 2: "D",
+                                3: "A", 4: "E", 5: "B", 6: "F#", 7: "C#"
+                            ]
+                            
+                            let minorKeys: [Int8: String] = [
+                                -7: "Abm", -6: "Ebm", -5: "Bbm", -4: "Fm", -3: "Cm",
+                                -2: "Gm", -1: "Dm", 0: "Am", 1: "Em", 2: "Bm",
+                                3: "F#m", 4: "C#m", 5: "G#m", 6: "D#m", 7: "A#m"
+                            ]
+                            
+                            let keyMap = isMajor ? majorKeys : minorKeys
+                            print("[tick \(currentTick)] Raw event: FF 58 (Key Signature): \(keyMap[sf] ?? "C major")")
+                        } else {
+                            j += 1
                         }
-                        j = textEnd
                     } else {
-                        // Skip event (simplified, assumes status byte + data)
                         while j < trackEnd && (fileBytes[j] & 0x80) == 0 { j += 1 }
                         j += 1
                     }

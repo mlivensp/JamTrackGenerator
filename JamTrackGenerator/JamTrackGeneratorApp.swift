@@ -19,7 +19,7 @@ struct JamTrackGeneratorApp: App {
             NoteInKey.self,
             Feel.self,
             SongSection.self,
-            Section.self,
+            JamTrackSection.self,
             InstrumentFamily.self,
             Instrument.self,
             Part.self,

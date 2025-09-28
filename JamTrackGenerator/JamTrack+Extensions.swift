@@ -24,9 +24,9 @@ extension JamTrack {
 //        key.definitions.append(self)
 //    }
 //    
-    func addSection(songSection: SongSection) -> Section {
+    func addSection(songSection: SongSection) -> JamTrackSection {
         let order = ( self.jamTrackSections.map { $0.order }.max() ?? 0 ) + 1
-        let section = Section(jamTrack: self, songSection: songSection, order: order)
+        let section = JamTrackSection(jamTrack: self, songSection: songSection, order: order)
         jamTrackSections.append(section)
         songSection.sections.append(section)
         return section
@@ -39,7 +39,7 @@ extension JamTrack {
         return part
     }
     
-    func addSectionPart(section: Section, part: Part, patternName: String) {
+    func addSectionPart(section: JamTrackSection, part: Part, patternName: String) {
         let sectionPart = SectionPart(section: section, part: part, patternName: patternName)
         section.sectionParts.append(sectionPart)
 //        part.sectionParts.append(sectionPart)
@@ -90,7 +90,7 @@ extension JamTrack {
             pattern.name == "Walking Bass"
         })
         
-        var sectionMap: [String: Section] = [:]
+        var sectionMap: [String: JamTrackSection] = [:]
         var partMap: [String: Part] = [:]
         
         do {

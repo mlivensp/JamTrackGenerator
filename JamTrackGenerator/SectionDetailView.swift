@@ -11,12 +11,12 @@ import SwiftData
 struct SectionDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) var dismiss
-    @Binding var section: Section
+    @Binding var section: JamTrackSection
     @Query private var sectionParts: [SectionPart]
     private var harmonicPatterns: [HarmonicPattern] = []
     private var drumPatterns: [DrumPattern] = []
     
-    init(modelContext: ModelContext, section: Binding<Section>) {
+    init(modelContext: ModelContext, section: Binding<JamTrackSection>) {
         self._section = section
         let sectionID = section.wrappedValue.persistentModelID
         self._sectionParts = Query(filter: #Predicate<SectionPart> { sectionPart in
@@ -138,7 +138,7 @@ struct SectionDetailView: View {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(
         for: Style.self, RawNote.self, Key.self, NoteInKey.self, Feel.self,
-        SongSection.self, Section.self, InstrumentFamily.self, Instrument.self,
+        SongSection.self, JamTrackSection.self, InstrumentFamily.self, Instrument.self,
         Part.self, JamTrack.self, ScaleDegree.self, HarmonicNoteInPattern.self,
         HarmonicPattern.self, SectionPart.self, DrumNote.self, DrumNoteInPattern.self,
         DrumPattern.self,
@@ -148,26 +148,26 @@ struct SectionDetailView: View {
     let style = Style(name: "Rock")
     let jamTrack = JamTrack(name: "Sample Track", style: style)
     let songSection = SongSection(name: "Verse", sortOrder: 2)
-    let section = Section(jamTrack: jamTrack, songSection: songSection, order: 1)
-    jamTrack.jamTrackSections = [section]
+    let jamTrackSection = JamTrackSection(jamTrack: jamTrack, songSection: songSection, order: 1)
+    jamTrack.jamTrackSections = [jamTrackSection]
     let instrument = Instrument(name: "Piano", programNumber: 15, instrumentFamily: nil)
     let part = Part(jamTrack: jamTrack, instrument: instrument)
-    let sectionPart = SectionPart(section: section, part: part, patternName: "Pattern 1")
+    let sectionPart = SectionPart(section: jamTrackSection, part: part, patternName: "Pattern 1")
     part.sectionParts = [sectionPart]
-    section.sectionParts = [sectionPart]
+    jamTrackSection.sectionParts = [sectionPart]
     let harmonicPattern = HarmonicPattern(name: "Pattern 1", style: style, feel: nil, baseOctave: 4)
     
     container.mainContext.insert(style)
     container.mainContext.insert(jamTrack)
     container.mainContext.insert(songSection)
-    container.mainContext.insert(section)
+    container.mainContext.insert(jamTrackSection)
     container.mainContext.insert(instrument)
     container.mainContext.insert(part)
     container.mainContext.insert(sectionPart)
     container.mainContext.insert(harmonicPattern)
     
     return NavigationStack {
-        SectionDetailView(modelContext: container.mainContext, section: .constant(section))
+        SectionDetailView(modelContext: container.mainContext, section: .constant(jamTrackSection))
             .modelContainer(container)
     }
 }

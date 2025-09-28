@@ -23,9 +23,9 @@ struct Song {
         // need to store partial tracks in progress
         // each part needs a unique id
         var currentPulse: UInt = 0
-        var drumPartId: ObjectIdentifier? = nil
-        var partMap: [ObjectIdentifier: [EventDescriptor]] = [:]
-        var programMap: [ObjectIdentifier: UInt8] = [:]
+        var drumPartId: PersistentIdentifier? = nil
+        var partMap: [PersistentIdentifier: [EventDescriptor]] = [:]
+        var programMap: [PersistentIdentifier: UInt8] = [:]
         
         for section in jamTrack.jamTrackSections.sorted(by: { $0.order < $1.order } ) {
             for sectionPart in section.sectionParts.filter( { $0.patternName != "" } ) {
@@ -176,3 +176,4 @@ struct Song {
         return channel
     }
 }
+

@@ -7,11 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DD64E26B2E883451005312BE /* MIDIKit in Frameworks */ = {isa = PBXBuildFile; productRef = DD64E26A2E883451005312BE /* MIDIKit */; };
 		DD74C8A22E752EF200B213C1 /* SwiftData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD74C8A12E752EF200B213C1 /* SwiftData.framework */; };
-		DD74CCC62E79333C00B213C1 /* MIDIKit in Frameworks */ = {isa = PBXBuildFile; productRef = DD74CCC52E79333C00B213C1 /* MIDIKit */; };
-		DD74CCC82E79333C00B213C1 /* MIDIKitCore in Frameworks */ = {isa = PBXBuildFile; productRef = DD74CCC72E79333C00B213C1 /* MIDIKitCore */; };
-		DD74CCCA2E79333C00B213C1 /* MIDIKitIO in Frameworks */ = {isa = PBXBuildFile; productRef = DD74CCC92E79333C00B213C1 /* MIDIKitIO */; };
-		DD74CCCC2E79333C00B213C1 /* MIDIKitSMF in Frameworks */ = {isa = PBXBuildFile; productRef = DD74CCCB2E79333C00B213C1 /* MIDIKitSMF */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,10 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DD74CCC62E79333C00B213C1 /* MIDIKit in Frameworks */,
-				DD74CCCA2E79333C00B213C1 /* MIDIKitIO in Frameworks */,
-				DD74CCC82E79333C00B213C1 /* MIDIKitCore in Frameworks */,
-				DD74CCCC2E79333C00B213C1 /* MIDIKitSMF in Frameworks */,
+				DD64E26B2E883451005312BE /* MIDIKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -157,10 +151,7 @@
 			name = JamTrackGenerator;
 			packageProductDependencies = (
 				DD74C91E2E769D3000B213C1 /* MidiParser */,
-				DD74CCC52E79333C00B213C1 /* MIDIKit */,
-				DD74CCC72E79333C00B213C1 /* MIDIKitCore */,
-				DD74CCC92E79333C00B213C1 /* MIDIKitIO */,
-				DD74CCCB2E79333C00B213C1 /* MIDIKitSMF */,
+				DD64E26A2E883451005312BE /* MIDIKit */,
 			);
 			productName = JamTrackGenerator;
 			productReference = DD9941712E5394A0001AB0E7 /* JamTrackGenerator.app */;
@@ -177,6 +168,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				DD64E2712E883777005312BE /* PBXTargetDependency */,
 				DD9941832E5394A1001AB0E7 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
@@ -184,6 +176,7 @@
 			);
 			name = JamTrackGeneratorTests;
 			packageProductDependencies = (
+				DD64E2722E883785005312BE /* MIDIKitSMF */,
 			);
 			productName = JamTrackGeneratorTests;
 			productReference = DD9941812E5394A1001AB0E7 /* JamTrackGeneratorTests.xctest */;
@@ -220,7 +213,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1640;
-				LastUpgradeCheck = 1640;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					DD9941702E5394A0001AB0E7 = {
 						CreatedOnToolsVersion = 16.4;
@@ -245,7 +238,7 @@
 			mainGroup = DD9941682E5394A0001AB0E7;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */,
+				DD64E2692E883451005312BE /* XCRemoteSwiftPackageReference "MIDIKit" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DD9941722E5394A0001AB0E7 /* Products */;
@@ -308,6 +301,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		DD64E2712E883777005312BE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = DD64E2702E883777005312BE /* MIDIKitSMF */;
+		};
 		DD9941832E5394A1001AB0E7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = DD9941702E5394A0001AB0E7 /* JamTrackGenerator */;
@@ -355,6 +352,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 7XKQ86X66K;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -378,6 +376,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -417,6 +416,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 7XKQ86X66K;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -433,6 +433,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -445,9 +446,13 @@
 				CODE_SIGN_ENTITLEMENTS = JamTrackGenerator/JamTrackGenerator.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7XKQ86X66K;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				FRAMEWORK_SEARCH_PATHS = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -464,6 +469,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = bitpicker.com.JamTrackGenerator;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -485,9 +491,13 @@
 				CODE_SIGN_ENTITLEMENTS = JamTrackGenerator/JamTrackGenerator.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7XKQ86X66K;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				FRAMEWORK_SEARCH_PATHS = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -504,6 +514,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "";
 				PRODUCT_BUNDLE_IDENTIFIER = bitpicker.com.JamTrackGenerator;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -523,6 +534,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7XKQ86X66K;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
@@ -546,6 +558,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7XKQ86X66K;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
@@ -568,6 +581,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7XKQ86X66K;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
@@ -590,6 +604,7 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 7XKQ86X66K;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
@@ -649,7 +664,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */ = {
+		DD64E2692E883451005312BE /* XCRemoteSwiftPackageReference "MIDIKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/orchetect/MIDIKit";
 			requirement = {
@@ -660,29 +675,24 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		DD64E26A2E883451005312BE /* MIDIKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD64E2692E883451005312BE /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKit;
+		};
+		DD64E2702E883777005312BE /* MIDIKitSMF */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD64E2692E883451005312BE /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKitSMF;
+		};
+		DD64E2722E883785005312BE /* MIDIKitSMF */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DD64E2692E883451005312BE /* XCRemoteSwiftPackageReference "MIDIKit" */;
+			productName = MIDIKitSMF;
+		};
 		DD74C91E2E769D3000B213C1 /* MidiParser */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MidiParser;
-		};
-		DD74CCC52E79333C00B213C1 /* MIDIKit */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */;
-			productName = MIDIKit;
-		};
-		DD74CCC72E79333C00B213C1 /* MIDIKitCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */;
-			productName = MIDIKitCore;
-		};
-		DD74CCC92E79333C00B213C1 /* MIDIKitIO */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */;
-			productName = MIDIKitIO;
-		};
-		DD74CCCB2E79333C00B213C1 /* MIDIKitSMF */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DD74CCC42E79333C00B213C1 /* XCRemoteSwiftPackageReference "MIDIKit" */;
-			productName = MIDIKitSMF;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

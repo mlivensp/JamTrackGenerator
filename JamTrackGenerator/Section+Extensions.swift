@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Section {
+extension JamTrackSection {
     func addSongSection(songSection: SongSection) {
         self.songSection = songSection
         songSection.sections.append(self)

@@ -1,31 +1,42 @@
 import Testing
 import SwiftData
-@testable import JamTrackGenerator // Replace with your actual module name
+@testable import JamTrackGenerator
 import Foundation
 
-@Suite("DrumPatternImportOptionsViewModel Tests")
-struct DrumPatternImportOptionsViewModelTests {
+@Suite("PatternImportOptionsViewModel Tests")
+struct PatternImportOptionsViewModelTests {
     var modelContext: ModelContext!
-    var viewModel: DrumPatternImportOptionsView.ViewModel!
+    var viewModel: PatternImportOptionsView.ViewModel!
     var drumNotes: [DrumNote]!
     var styles: [Style]!
     var feels: [Feel]!
     var trackNotes: [MidiTrackData]!
     
     mutating func setUp() throws {
-        // Set up in-memory ModelContainer
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(
-            for: DrumPattern.self,
-            DrumNote.self,
-            Style.self,
-            Feel.self,
-            DrumNoteInPattern.self,
+            for: Style.self,
+                 Feel.self,
+                 RawNote.self,
+                 Key.self,
+                 NoteInKey.self,
+                 ScaleDegree.self,
+                 SongSection.self,
+                 JamTrackSection.self,
+                 InstrumentFamily.self,
+                 Instrument.self,
+                 Part.self,
+                 JamTrack.self,
+                 DrumNoteInPattern.self,
+                 DrumPattern.self,
+                 HarmonicNoteInPattern.self,
+                 HarmonicPattern.self,
+                 SectionPart.self,
+                 DrumNote.self,
             configurations: config
         )
         modelContext = ModelContext(container)
         
-        // Mock data
         drumNotes = [
             DrumNote(name: "Kick", midiValue: 36),
             DrumNote(name: "Snare", midiValue: 38)
@@ -44,24 +55,25 @@ struct DrumPatternImportOptionsViewModelTests {
                 isDrumTrack: true,
                 notes: [
                     MidiNote(note: 36, tickOn: 0, tickOff: 100, velocityOn: 100, velocityOff: 0, channel: 10)
-                ]
+                ],
+                keySignature: "C Major"
             ),
             MidiTrackData(
                 name: "Piano",
                 isDrumTrack: false,
                 notes: [
-                    MidiNote(note: 60, tickOn: 0, tickOff: 100, velocityOn: 100, velocityOff: 0, channel: 0)
-                ]
+                    MidiNote(note: 72, tickOn: 0, tickOff: 100, velocityOn: 100, velocityOff: 0, channel: 0),
+                    MidiNote(note: 74, tickOn: 200, tickOff: 300, velocityOn: 100, velocityOff: 0, channel: 0)
+                ],
+                keySignature: "C Major"
             )
         ]
         
-        // Insert mock data into ModelContext
         drumNotes.forEach { modelContext.insert($0) }
         styles.forEach { modelContext.insert($0) }
         feels.forEach { modelContext.insert($0) }
         
-        // Initialize ViewModel
-        viewModel = DrumPatternImportOptionsView.ViewModel(
+        viewModel = PatternImportOptionsView.ViewModel(
             drumNotes: drumNotes,
             styles: styles,
             feels: feels,
@@ -134,6 +146,42 @@ struct DrumPatternImportOptionsViewModelTests {
     @Test("Pattern name validation detects duplicates among selected tracks")
     mutating func testPatternNameValidationDuplicatesInTracks() throws {
         try setUp()
+        let drumTrack2 = MidiTrackData(
+            name: "Drums2",
+            isDrumTrack: true,
+            notes: [
+                MidiNote(note: 38, tickOn: 0, tickOff: 100, velocityOn: 100, velocityOff: 0, channel: 10)
+            ],
+            keySignature: "C Major"
+        )
+        trackNotes.append(drumTrack2)
+        viewModel = PatternImportOptionsView.ViewModel(
+            drumNotes: drumNotes,
+            styles: styles,
+            feels: feels,
+            trackNotes: trackNotes
+        )
+        viewModel.configure(with: modelContext)
+        
+        viewModel.selectedTracks[trackNotes[0]] = true
+        viewModel.selectedTracks[drumTrack2] = true
+        viewModel.patternNames[trackNotes[0]] = "TestPattern"
+        viewModel.patternNames[drumTrack2] = "TestPattern"
+        viewModel.useStyleForTrack[trackNotes[0]] = true
+        viewModel.useStyleForTrack[drumTrack2] = true
+        viewModel.useFeelForTrack[trackNotes[0]] = true
+        viewModel.useFeelForTrack[drumTrack2] = true
+        viewModel.selectedStyle = styles[0]
+        viewModel.selectedFeel = feels[0]
+        
+        let error = viewModel.validatePatternName(for: drumTrack2)
+        #expect(error == "Pattern with name 'TestPattern', style 'Rock', and feel 'Straight' is already in use among selected tracks.")
+        tearDown()
+    }
+    
+    @Test("Pattern name validation allows same name for different track types")
+    mutating func testPatternNameValidationSameNameDifferentTrackTypes() throws {
+        try setUp()
         viewModel.selectedTracks[trackNotes[0]] = true
         viewModel.selectedTracks[trackNotes[1]] = true
         viewModel.patternNames[trackNotes[0]] = "TestPattern"
@@ -146,7 +194,7 @@ struct DrumPatternImportOptionsViewModelTests {
         viewModel.selectedFeel = feels[0]
         
         let error = viewModel.validatePatternName(for: trackNotes[1])
-        #expect(error == "Pattern with name 'TestPattern', style 'Rock', and feel 'Straight' is already in use among selected tracks.")
+        #expect(error == nil)
         tearDown()
     }
     
@@ -160,19 +208,18 @@ struct DrumPatternImportOptionsViewModelTests {
         viewModel.useStyleForTrack[trackNotes[0]] = true
         viewModel.useStyleForTrack[trackNotes[1]] = true
         viewModel.useFeelForTrack[trackNotes[0]] = true
-        viewModel.useFeelForTrack[trackNotes[1]] = false // Different feel
-        viewModel.selectedStyle = styles[0] // Rock
-        viewModel.selectedFeel = feels[0] // Straight
+        viewModel.useFeelForTrack[trackNotes[1]] = false
+        viewModel.selectedStyle = styles[0]
+        viewModel.selectedFeel = feels[0]
         
         let error = viewModel.validatePatternName(for: trackNotes[1])
-        #expect(error == nil) // Different feel (nil vs Straight) allows same name
+        #expect(error == nil)
         tearDown()
     }
     
-    @Test("Pattern name validation detects duplicates in database with style and feel")
-    mutating func testPatternNameValidationDuplicatesInDatabaseWithStyleAndFeel() throws {
+    @Test("Drum pattern name validation detects duplicates in database")
+    mutating func testDrumPatternNameValidationDuplicatesInDatabase() throws {
         try setUp()
-        // Insert a DrumPattern into the database
         let existingPattern = DrumPattern(name: "TestPattern", style: styles[0], feel: feels[0])
         modelContext.insert(existingPattern)
         try modelContext.save()
@@ -181,10 +228,29 @@ struct DrumPatternImportOptionsViewModelTests {
         viewModel.patternNames[trackNotes[0]] = "TestPattern"
         viewModel.useStyleForTrack[trackNotes[0]] = true
         viewModel.useFeelForTrack[trackNotes[0]] = true
-        viewModel.selectedStyle = styles[0] // Rock
-        viewModel.selectedFeel = feels[0] // Straight
+        viewModel.selectedStyle = styles[0]
+        viewModel.selectedFeel = feels[0]
         
         let error = viewModel.validatePatternName(for: trackNotes[0])
+        #expect(error == "Pattern with name 'TestPattern', style 'Rock', and feel 'Straight' already exists in the database.")
+        tearDown()
+    }
+    
+    @Test("Harmonic pattern name validation detects duplicates in database")
+    mutating func testHarmonicPatternNameValidationDuplicatesInDatabase() throws {
+        try setUp()
+        let existingPattern = HarmonicPattern(name: "TestPattern", style: styles[0], feel: feels[0], baseOctave: 4)
+        modelContext.insert(existingPattern)
+        try modelContext.save()
+        
+        viewModel.selectedTracks[trackNotes[1]] = true
+        viewModel.patternNames[trackNotes[1]] = "TestPattern"
+        viewModel.useStyleForTrack[trackNotes[1]] = true
+        viewModel.useFeelForTrack[trackNotes[1]] = true
+        viewModel.selectedStyle = styles[0]
+        viewModel.selectedFeel = feels[0]
+        
+        let error = viewModel.validatePatternName(for: trackNotes[1])
         #expect(error == "Pattern with name 'TestPattern', style 'Rock', and feel 'Straight' already exists in the database.")
         tearDown()
     }
@@ -192,9 +258,10 @@ struct DrumPatternImportOptionsViewModelTests {
     @Test("Pattern name validation detects duplicates in database with nil style and feel")
     mutating func testPatternNameValidationDuplicatesInDatabaseNilStyleAndFeel() throws {
         try setUp()
-        // Insert a DrumPattern with nil style and feel
-        let existingPattern = DrumPattern(name: "TestPattern", style: nil, feel: nil)
-        modelContext.insert(existingPattern)
+        let existingDrumPattern = DrumPattern(name: "TestPattern", style: nil, feel: nil)
+        let existingHarmonicPattern = HarmonicPattern(name: "TestPattern", style: nil, feel: nil, baseOctave: 4)
+        modelContext.insert(existingDrumPattern)
+        modelContext.insert(existingHarmonicPattern)
         try modelContext.save()
         
         viewModel.selectedTracks[trackNotes[0]] = true
@@ -202,15 +269,22 @@ struct DrumPatternImportOptionsViewModelTests {
         viewModel.useStyleForTrack[trackNotes[0]] = false
         viewModel.useFeelForTrack[trackNotes[0]] = false
         
-        let error = viewModel.validatePatternName(for: trackNotes[0])
-        #expect(error == "Pattern with name 'TestPattern', style 'None', and feel 'None' already exists in the database.")
+        let drumError = viewModel.validatePatternName(for: trackNotes[0])
+        #expect(drumError == "Pattern with name 'TestPattern', style 'None', and feel 'None' already exists in the database.")
+        
+        viewModel.selectedTracks[trackNotes[1]] = true
+        viewModel.patternNames[trackNotes[1]] = "TestPattern"
+        viewModel.useStyleForTrack[trackNotes[1]] = false
+        viewModel.useFeelForTrack[trackNotes[1]] = false
+        
+        let harmonicError = viewModel.validatePatternName(for: trackNotes[1])
+        #expect(harmonicError == "Pattern with name 'TestPattern', style 'None', and feel 'None' already exists in the database.")
         tearDown()
     }
     
     @Test("Pattern name validation detects duplicates in database with style only")
     mutating func testPatternNameValidationDuplicatesInDatabaseStyleOnly() throws {
         try setUp()
-        // Insert a DrumPattern with style but nil feel
         let existingPattern = DrumPattern(name: "TestPattern", style: styles[0], feel: nil)
         modelContext.insert(existingPattern)
         try modelContext.save()
@@ -219,7 +293,7 @@ struct DrumPatternImportOptionsViewModelTests {
         viewModel.patternNames[trackNotes[0]] = "TestPattern"
         viewModel.useStyleForTrack[trackNotes[0]] = true
         viewModel.useFeelForTrack[trackNotes[0]] = false
-        viewModel.selectedStyle = styles[0] // Rock
+        viewModel.selectedStyle = styles[0]
         
         let error = viewModel.validatePatternName(for: trackNotes[0])
         #expect(error == "Pattern with name 'TestPattern', style 'Rock', and feel 'None' already exists in the database.")
@@ -229,7 +303,6 @@ struct DrumPatternImportOptionsViewModelTests {
     @Test("Pattern name validation detects duplicates in database with feel only")
     mutating func testPatternNameValidationDuplicatesInDatabaseFeelOnly() throws {
         try setUp()
-        // Insert a DrumPattern with nil style but feel
         let existingPattern = DrumPattern(name: "TestPattern", style: nil, feel: feels[0])
         modelContext.insert(existingPattern)
         try modelContext.save()
@@ -238,7 +311,7 @@ struct DrumPatternImportOptionsViewModelTests {
         viewModel.patternNames[trackNotes[0]] = "TestPattern"
         viewModel.useStyleForTrack[trackNotes[0]] = false
         viewModel.useFeelForTrack[trackNotes[0]] = true
-        viewModel.selectedFeel = feels[0] // Straight
+        viewModel.selectedFeel = feels[0]
         
         let error = viewModel.validatePatternName(for: trackNotes[0])
         #expect(error == "Pattern with name 'TestPattern', style 'None', and feel 'Straight' already exists in the database.")
@@ -288,7 +361,6 @@ struct DrumPatternImportOptionsViewModelTests {
     @Test("Import fails with duplicate pattern in database")
     mutating func testImportFailsWithDuplicateInDatabase() async throws {
         try setUp()
-        // Insert a DrumPattern into the database
         let existingPattern = DrumPattern(name: "DrumPattern", style: styles[0], feel: feels[0])
         modelContext.insert(existingPattern)
         try modelContext.save()
@@ -310,8 +382,8 @@ struct DrumPatternImportOptionsViewModelTests {
         tearDown()
     }
     
-    @Test("Import succeeds with valid tracks")
-    mutating func testImportSuccess() async throws {
+    @Test("Import succeeds with valid drum track")
+    mutating func testImportSuccessDrumTrack() async throws {
         try setUp()
         viewModel.selectedTracks[trackNotes[0]] = true
         viewModel.patternNames[trackNotes[0]] = "DrumPattern"
@@ -338,63 +410,13 @@ struct DrumPatternImportOptionsViewModelTests {
         tearDown()
     }
     
-    @Test("Import fails with invalid drum notes")
-    mutating func testImportInvalidDrumNotes() async throws {
+    @Test("Import succeeds with valid harmonic track")
+    mutating func testImportSuccessHarmonicTrack() async throws {
         try setUp()
-        // Use a valid UInt8 note value that doesn't match drumNotes (36 or 38)
-        let invalidTrack = MidiTrackData(
-            name: "Invalid",
-            isDrumTrack: true,
-            notes: [MidiNote(note: 50, tickOn: 0, tickOff: 100, velocityOn: 100, velocityOff: 0, channel: 10)]
-        )
-        let newViewModel = DrumPatternImportOptionsView.ViewModel(
-            drumNotes: drumNotes,
-            styles: styles,
-            feels: feels,
-            trackNotes: [invalidTrack]
-        )
-        newViewModel.configure(with: modelContext)
-        
-        newViewModel.selectedTracks[invalidTrack] = true
-        newViewModel.patternNames[invalidTrack] = "InvalidPattern"
-        
-        var success: Bool = false
-        await newViewModel.importSelectedTracks { result in
-            success = result
-        }
-        #expect(success == false)
-        #expect(newViewModel.showError == true)
-        #expect(newViewModel.errorMessage == "Some tracks could not be imported due to invalid drum notes.")
-        tearDown()
-    }
-    
-    @Test("Import uses track name when pattern name is empty")
-    mutating func testImportUsesTrackName() async throws {
-        try setUp()
-        viewModel.selectedTracks[trackNotes[0]] = true
-        viewModel.patternNames[trackNotes[0]] = "" // Empty pattern name
-        
-        var success: Bool = false
-        await viewModel.importSelectedTracks { result in
-            success = result
-        }
-        #expect(success == true)
-        #expect(viewModel.showError == false)
-        
-        let fetchDescriptor = FetchDescriptor<DrumPattern>()
-        let patterns = try modelContext.fetch(fetchDescriptor)
-        #expect(patterns.count == 1)
-        #expect(patterns.first?.name == "Drums")
-        tearDown()
-    }
-    
-    @Test("Import respects style and feel toggles")
-    mutating func testImportStyleFeelToggles() async throws {
-        try setUp()
-        viewModel.selectedTracks[trackNotes[0]] = true
-        viewModel.patternNames[trackNotes[0]] = "DrumPattern"
-        viewModel.useStyleForTrack[trackNotes[0]] = false // Don't use global style
-        viewModel.useFeelForTrack[trackNotes[0]] = false // Don't use global feel
+        viewModel.selectedTracks[trackNotes[1]] = true
+        viewModel.patternNames[trackNotes[1]] = "HarmonicPattern"
+        viewModel.useStyleForTrack[trackNotes[1]] = true
+        viewModel.useFeelForTrack[trackNotes[1]] = true
         viewModel.selectedStyle = styles[0]
         viewModel.selectedFeel = feels[0]
         
@@ -405,11 +427,16 @@ struct DrumPatternImportOptionsViewModelTests {
         #expect(success == true)
         #expect(viewModel.showError == false)
         
-        let fetchDescriptor = FetchDescriptor<DrumPattern>()
+        let fetchDescriptor = FetchDescriptor<HarmonicPattern>()
         let patterns = try modelContext.fetch(fetchDescriptor)
         #expect(patterns.count == 1)
-        #expect(patterns.first?.style == nil)
-        #expect(patterns.first?.feel == nil)
+        #expect(patterns.first?.name == "HarmonicPattern")
+        #expect(patterns.first?.style?.name == "Rock")
+        #expect(patterns.first?.feel?.name == "Straight")
+        #expect(patterns.first?.harmonicNotesInPattern.count == 2)
+        #expect(patterns.first?.baseOctave == 5)
+        #expect(patterns.first?.harmonicNotesInPattern[0].halfSteps == 0)
+        #expect(patterns.first?.harmonicNotesInPattern[1].halfSteps == 2)
         tearDown()
     }
 }

@@ -20,7 +20,7 @@ extension JamTrackDetailView {
 
         
 //        var sections: [Section] = []
-        var selectedSection: Section? = nil
+        var selectedSection: JamTrackSection? = nil
         var selectedSongSection: SongSection? = nil
         
         var parts: [Part] = []
@@ -53,7 +53,7 @@ extension JamTrackDetailView {
 ////            sections = jamTrack.sections
 //        }
         
-        func deleteSection(section: Section) {
+        func deleteSection(section: JamTrackSection) {
             if let sectionIndex = jamTrack.jamTrackSections.firstIndex(of: section) {
                 jamTrack.jamTrackSections.remove(at: sectionIndex)
             }
