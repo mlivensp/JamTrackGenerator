@@ -330,8 +330,8 @@ struct MidiProcessor {
                             j += 1
                         } while j < trackEnd && (fileBytes[j - 1] & 0x80) != 0
                         
-                        // Look for FF 58 (key signature)
-                        if j < trackEnd - 1, fileBytes[j] == 0xFF, fileBytes[j + 1] == 0x58 {
+                        // Look for FF 59 (key signature)
+                        if j < trackEnd - 1, fileBytes[j] == 0xFF, fileBytes[j + 1] == 0x59 {
                             j += 2
                             // Key signature event has fixed length of 2 bytes
                             guard j < trackEnd, fileBytes[j] == 0x02 else {

@@ -12,7 +12,7 @@ struct HarmonicEventBuilder: EventBuilder {
     let pattern: HarmonicPattern
     let key: Key
     
-    init(modelContext: ModelContext, songKey: Key, patternName: String) throws {
+    init(modelContext: ModelContext, key: Key, patternName: String) throws {
         let fetchDescriptor = FetchDescriptor<HarmonicPattern>(predicate: #Predicate { pattern in
             pattern.name == patternName
         })
@@ -24,18 +24,7 @@ struct HarmonicEventBuilder: EventBuilder {
             throw NSError(domain: "JamTrackGenerator", code: 1, userInfo: nil)
         }
         
-        // TODO: this needs to distinguish between major and minor
-        let songKeyName = songKey.noteName
-        let keyFetchDescriptor = FetchDescriptor<Key>(predicate: #Predicate { key in
-            key.noteName == songKeyName
-        })
-
-        if let key = try modelContext.fetch(keyFetchDescriptor).first {
-            self.key = key
-        } else {
-            // TODO: get a better error
-            throw NSError(domain: "JamTrackGenerator", code: 1, userInfo: nil)
-        }
+        self.key = key
     }
     
     func buildEvents(startingPulse: UInt) -> [EventDescriptor] {

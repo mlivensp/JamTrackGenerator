@@ -18,10 +18,6 @@ struct Song {
     }
     
     mutating func buildTracks(jamTrack: JamTrack) {
-        // need to move through each song section, in order
-        // build each track out for that section
-        // need to store partial tracks in progress
-        // each part needs a unique id
         var currentPulse: UInt = 0
         var drumPartId: PersistentIdentifier? = nil
         var partMap: [PersistentIdentifier: [EventDescriptor]] = [:]
@@ -49,7 +45,7 @@ struct Song {
                         }
                         
                         programMap[part.id] = instrument.programNumber
-                        eventBuilder = try HarmonicEventBuilder(modelContext: modelContext, songKey: key, patternName: sectionPart.patternName)
+                        eventBuilder = try HarmonicEventBuilder(modelContext: modelContext, key: key, patternName: sectionPart.patternName)
                     }
                 } catch {
                     fatalError(error.localizedDescription)

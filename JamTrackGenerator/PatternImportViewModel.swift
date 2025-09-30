@@ -13,13 +13,14 @@ extension PatternImportView {
         var useStyleForTrack: [MidiTrackData: Bool] = [:]
         var useFeelForTrack: [MidiTrackData: Bool] = [:]
         var patternNames: [MidiTrackData: String] = [:]
+        var errorMessages: [MidiTrackData: String] = [:]
         var selectedStyle: Style? = nil
         var selectedFeel: Feel? = nil
         var showError = false
-        var errorMessage = ""
+        var singleErrorMessage = ""
         
         var isDoneButtonEnabled: Bool {
-            selectedTracks.values.contains(where: { $0 })
+            selectedTracks.values.contains(where: { $0 }) && errorMessages.isEmpty && singleErrorMessage.isEmpty
         }
         
         var selectedTracksCount: Int {
@@ -177,7 +178,7 @@ extension PatternImportView {
             let selected = Array(selectedTracks.filter { $0.value }.keys)
             
             if selected.isEmpty {
-                errorMessage = "No tracks selected for import."
+                singleErrorMessage = "No tracks selected for import."
                 showError = true
                 completion(false)
                 return
@@ -188,7 +189,10 @@ extension PatternImportView {
             for track in selected {
                 if let nameError = validatePatternName(for: track) {
                     let trackName = track.name.isEmpty ? "Track \(trackNotes.firstIndex(of: track)! + 1)" : track.name
-                    validationErrors.append("Track '\(trackName)': \(nameError)")
+                    errorMessages[track] = nameError
+//                    validationErrors.append("Track '\(trackName)': \(nameError)")
+                } else {
+                    errorMessages[track] = nil
                 }
             }
             
@@ -201,7 +205,7 @@ extension PatternImportView {
             }
             
             if !validationErrors.isEmpty {
-                errorMessage = validationErrors.joined(separator: "\n")
+                singleErrorMessage = validationErrors.joined(separator: "\n")
                 showError = true
                 completion(false)
                 return
@@ -268,7 +272,7 @@ extension PatternImportView {
             }
             
             if hasError {
-                errorMessage = "Some tracks could not be imported due to invalid notes."
+                singleErrorMessage = "Some tracks could not be imported due to invalid notes."
                 showError = true
                 completion(false)
             } else {

@@ -54,7 +54,7 @@ struct PatternImportView: View {
                         .pickerStyle(.menu)
                         .onChange(of: viewModel.selectedStyle) {
                             if let error = viewModel.validateGlobalStyle() {
-                                viewModel.errorMessage = error
+                                viewModel.singleErrorMessage = error
                                 viewModel.showError = true
                             }
                         }
@@ -68,7 +68,7 @@ struct PatternImportView: View {
                         .pickerStyle(.menu)
                         .onChange(of: viewModel.selectedFeel) {
                             if let error = viewModel.validateGlobalFeel() {
-                                viewModel.errorMessage = error
+                                viewModel.singleErrorMessage = error
                                 viewModel.showError = true
                             }
                         }
@@ -155,7 +155,7 @@ struct PatternImportView: View {
                     dismiss()
                 }
             } message: {
-                Text(viewModel.errorMessage)
+                Text(viewModel.singleErrorMessage)
             }
             .onAppear {
                 print("DrumPatternImportOptionsView appeared with \(trackNotes.count) tracks")
@@ -172,64 +172,76 @@ struct TrackRowView: View {
     let viewModel: PatternImportView.ViewModel // No @ObservedObject needed
     
     var body: some View {
-        HStack(alignment: .center, spacing: 10) {
-            // Select Toggle
-            Toggle("", isOn: Binding(
-                get: { viewModel.selectedTracks[track] ?? false },
-                set: {
-                    viewModel.selectedTracks[track] = $0
-                    if !$0 {
-                        viewModel.patternNames[track] = ""
+        VStack {
+            HStack(alignment: .center, spacing: 10) {
+                // Select Toggle
+                Toggle("", isOn: Binding(
+                    get: { viewModel.selectedTracks[track] ?? false },
+                    set: {
+                        viewModel.selectedTracks[track] = $0
+                        if !$0 {
+                            viewModel.patternNames[track] = ""
+                        }
+                    }
+                ))
+                .frame(width: 40, alignment: .center)
+                
+                // Track Name
+                Text(track.name.isEmpty ? "Track \(viewModel.trackNotes.firstIndex(of: track)! + 1)" : track.name)
+                    .frame(maxWidth: 120, alignment: .leading)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                
+                // Drum Icon
+                Group {
+                    if track.isDrumTrack {
+                        Image(systemName: "drum")
+                            .foregroundColor(.accentColor)
+                    } else {
+                        Color.clear
                     }
                 }
-            ))
-            .frame(width: 40, alignment: .center)
-            
-            // Track Name
-            Text(track.name.isEmpty ? "Track \(viewModel.trackNotes.firstIndex(of: track)! + 1)" : track.name)
+                .frame(width: 40, alignment: .trailing)
+                
+                // Pattern Name
+                TextField("Pattern Name", text: Binding(
+                    get: { viewModel.patternNames[track] ?? "" },
+                    set: {
+                        viewModel.patternNames[track] = $0
+                        if let error = viewModel.validatePatternName(for: track) {
+                            viewModel.errorMessages[track] = error
+//                            viewModel.showError = true
+                        } else {
+                            viewModel.errorMessages[track] = nil
+                        }
+                    }
+                ))
+                .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 120, alignment: .leading)
-                .lineLimit(1)
-                .truncationMode(.tail)
-            
-            // Drum Icon
-            Group {
-                if track.isDrumTrack {
-                    Image(systemName: "drum")
-                        .foregroundColor(.accentColor)
-                } else {
-                    Color.clear
-                }
+                
+                // Use Style Toggle
+                Toggle("", isOn: Binding(
+                    get: { viewModel.useStyleForTrack[track] ?? false },
+                    set: { viewModel.useStyleForTrack[track] = $0 }
+                ))
+                .frame(width: 80, alignment: .leading)
+                
+                // Use Feel Toggle
+                Toggle("", isOn: Binding(
+                    get: { viewModel.useFeelForTrack[track] ?? false },
+                    set: { viewModel.useFeelForTrack[track] = $0 }
+                ))
+                .frame(width: 80, alignment: .leading)
             }
-            .frame(width: 40, alignment: .trailing)
+            .padding(.vertical, 8)
             
-            // Pattern Name
-            TextField("Pattern Name", text: Binding(
-                get: { viewModel.patternNames[track] ?? "" },
-                set: {
-                    viewModel.patternNames[track] = $0
-                    if let error = viewModel.validatePatternName(for: track) {
-                        viewModel.errorMessage = error
-                        viewModel.showError = true
-                    }
-                }
-            ))
-            .textFieldStyle(.roundedBorder)
-            .frame(maxWidth: 120, alignment: .leading)
-            
-            // Use Style Toggle
-            Toggle("", isOn: Binding(
-                get: { viewModel.useStyleForTrack[track] ?? false },
-                set: { viewModel.useStyleForTrack[track] = $0 }
-            ))
-            .frame(width: 80, alignment: .leading)
-            
-            // Use Feel Toggle
-            Toggle("", isOn: Binding(
-                get: { viewModel.useFeelForTrack[track] ?? false },
-                set: { viewModel.useFeelForTrack[track] = $0 }
-            ))
-            .frame(width: 80, alignment: .leading)
+            if let errorMessage = viewModel.errorMessages[track] {
+                Text(errorMessage)
+                    .foregroundStyle(Color.red)
+            } else {
+                Text("")
+                    .foregroundStyle(Color.clear)
+            }
         }
-        .padding(.vertical, 8)
     }
 }
