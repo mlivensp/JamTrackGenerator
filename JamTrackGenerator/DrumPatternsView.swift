@@ -4,28 +4,51 @@ import SwiftUI
 struct DrumPatternsView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \DrumPattern.name) private var drumPatterns: [DrumPattern]
+    @Query(sort: \Style.name) private var styles: [Style]
+    @Query(sort: \Feel.name) private var feels: [Feel]
     @Binding var selectedDrumPatternNavigation: DrumPatternNavigation?
     @State private var importMidi = false
     @State private var importError: String?
     @State private var showImportOptions = false
     @State private var trackNotes: [MidiTrackData] = []
+    @State private var selectedStyle: Style? = nil
+    @State private var selectedFeel: Feel? = nil
     
     var body: some View {
-        List {
-            SwiftUI.Section {
-                ForEach(drumPatterns) { drumPattern in
-                    NavigationLink(value: DrumPatternNavigation.existing(drumPattern)) {
-                        Text(drumPattern.name)
+        VStack {
+            HStack {
+                Picker("Style", selection: $selectedStyle) {
+                    Text("All Styles").tag(nil as Style?)
+                    ForEach(styles, id: \.self) { style in
+                        Text(style.name).tag(style as Style?)
                     }
                 }
-                .onDelete { indexSet in
-                    for index in indexSet {
-                        modelContext.delete(drumPatterns[index])
+                .pickerStyle(MenuPickerStyle())
+
+                Picker("Feel", selection: $selectedFeel) {
+                    Text("All Feels").tag(nil as Feel?)
+                    ForEach(feels, id: \.self) { feel in
+                        Text(feel.name).tag(feel as Feel?)
                     }
-                    try? modelContext.save()
                 }
-            } header: {
-                Text("Drum Patterns")
+                .pickerStyle(MenuPickerStyle())
+            }
+            .padding(.horizontal)
+            
+            List {
+                Section(header: Text("Drum Patterns")) {
+                     ForEach(filteredDrumPatterns) { drumPattern in
+                         NavigationLink(value: DrumPatternNavigation.existing(drumPattern)) {
+                             Text(drumPattern.name)
+                         }
+                     }
+                     .onDelete { indexSet in
+                         for index in indexSet {
+                             modelContext.delete(filteredDrumPatterns[index])
+                         }
+                         try? modelContext.save()
+                     }
+                 }
             }
         }
         .navigationTitle("Drum Patterns")
@@ -78,6 +101,13 @@ struct DrumPatternsView: View {
         }
         .onAppear {
             print("DrumPatternsView appeared")
+        }
+    }
+    
+    private var filteredDrumPatterns: [DrumPattern] {
+        drumPatterns.filter { pattern in
+            (selectedStyle == nil || pattern.style == selectedStyle) &&
+            (selectedFeel == nil || pattern.feel == selectedFeel)
         }
     }
     
