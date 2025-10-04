@@ -202,6 +202,7 @@ enum SchemaV1: VersionedSchema {
     }
     
     @Model class DrumPattern {
+        var id: UUID = UUID()
         var name: String
         var style: Style?
         var feel: Feel?
@@ -231,6 +232,7 @@ enum SchemaV1: VersionedSchema {
     }
 
     @Model class HarmonicPattern {
+        var id: UUID = UUID()
         var name: String
         var style: Style?
         var feel: Feel?

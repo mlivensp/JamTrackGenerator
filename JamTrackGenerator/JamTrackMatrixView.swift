@@ -2,8 +2,8 @@ import SwiftData
 import SwiftUI
 
 enum PatternSelection: Hashable {
-    case drum(id: String)
-    case harmonic(id: String)
+    case drum(id: UUID)
+    case harmonic(id: UUID)
 }
 
 struct JamTrackMatrixView: View {
@@ -14,7 +14,7 @@ struct JamTrackMatrixView: View {
     @Query var drumPatterns: [DrumPattern]
     @Query var harmonicPatterns: [HarmonicPattern]
     @Query var instrumentFamilies: [InstrumentFamily]
-    @State private var cellSelections: [String: PatternSelection] = [:]
+//    @State private var cellSelections: [String: PatternSelection] = [:]
     
     var body: some View {
         VStack {
@@ -22,12 +22,12 @@ struct JamTrackMatrixView: View {
                 Button("Add Section") {
                     let newSection = SongSection(name: "New Section", sortOrder: 5)
                     modelContext.insert(newSection)
-                    jamTrack.addSection(songSection: newSection)
+                    let _ = jamTrack.addSection(songSection: newSection)
                 }
                 Button("Add Part") {
                     guard let family = instrumentFamilies.first,
                           let newInstrument = family.instruments.first else { return }
-                    jamTrack.addPart(instrument: newInstrument)
+                    let _ = jamTrack.addPart(instrument: newInstrument)
                 }
             }
             .padding()
@@ -76,29 +76,33 @@ struct JamTrackMatrixView: View {
                 .padding()
             }
         }
-        .onAppear {
-            for section in jamTrack.sortedSections {
-                for sectionPart in section.sectionParts {
-                    guard let part = sectionPart.part,
-                          let section = sectionPart.section else { continue }
-                    
-                    let cellKey = "\(section.id)-\(part.id)"
-                    let patternName = sectionPart.patternName
-                    
-                    if part.instrument?.isDrums == true {
-                        if let pattern = drumPatterns.first(where: { $0.name == patternName }) {
-                            cellSelections[cellKey] = .drum(id: pattern.name)
-                        }
-                    } else {
-                        if let pattern = harmonicPatterns.first(where: { $0.name == patternName }) {
-                            cellSelections[cellKey] = .harmonic(id: pattern.name)
-                        }
+    }
+    
+    private var cellSelections: [String: PatternSelection] {
+        var result: [String: PatternSelection] = [:]
+        
+        for section in jamTrack.sortedSections {
+            for sectionPart in section.sectionParts {
+                guard let part = sectionPart.part,
+                      let section = sectionPart.section else { continue }
+                
+                let cellKey = "\(section.id)-\(part.id)"
+                let patternName = sectionPart.patternName
+                
+                if part.instrument?.isDrums == true {
+                    if let pattern = drumPatterns.first(where: { $0.name == patternName }) {
+                        result[cellKey] = .drum(id: pattern.id)
+                    }
+                } else {
+                    if let pattern = harmonicPatterns.first(where: { $0.name == patternName }) {
+                        result[cellKey] = .harmonic(id: pattern.id)
                     }
                 }
             }
         }
+        
+        return result
     }
-    
     private var gridColumns: [GridItem] {
         var items: [GridItem] = [.init(.fixed(150))] // Row header
         items += Array(repeating: GridItem(.fixed(150)), count: jamTrack.sortedParts.count)
@@ -107,55 +111,61 @@ struct JamTrackMatrixView: View {
     
     func patternPicker(section: JamTrackSection, part: Part) -> some View {
         let cellKey = "\(section.id)-\(part.id)"
+        let selected = cellSelections[cellKey]
+
+        let isDrums = part.instrument?.isDrums == true
+
+        let filtered: [PatternSelection] = isDrums
+            ? drumPatterns
+                .filter { ($0.style == nil || $0.style == jamTrack.style) && ($0.feel == nil || $0.feel == jamTrack.feel) }
+                .map { .drum(id: $0.id) }
+            : harmonicPatterns
+                .filter { ($0.style == nil || $0.style == jamTrack.style) && ($0.feel == nil || $0.feel == jamTrack.feel) }
+                .map { .harmonic(id: $0.id) }
+
+        let patterns: [PatternSelection] = {
+            guard let selected, !filtered.contains(selected) else { return filtered }
+            return [selected] + filtered
+        }()
+
         let binding = Binding<PatternSelection?>(
-            get: { cellSelections[cellKey] },
+            get: { selected },
             set: { newValue in
-                cellSelections[cellKey] = newValue
-                
-                // Persist to model
-                if let newValue {
-                    let patternName: String
-                    switch newValue {
-                    case .drum(let id):
-                        guard let pattern = drumPatterns.first(where: { $0.name == id }) else { return }
-                        patternName = pattern.name
-                    case .harmonic(let id):
-                        guard let pattern = harmonicPatterns.first(where: { $0.name == id }) else { return }
-                        patternName = pattern.name
+                guard let newValue else { return }
+
+                let patternName: String
+                switch newValue {
+                case .drum(let id):
+                    guard let pattern = drumPatterns.first(where: { $0.id == id }) else {
+                        fatalError("Drum pattern with id \(id) not found in drumPatterns")
                     }
-                    
-                    if let existing = section.sectionParts.first(where: { $0.part == part }) {
-                        existing.patternName = patternName
-                    } else {
-                        let newSectionPart = SectionPart(section: section, part: part, patternName: patternName)
-                        section.sectionParts.append(newSectionPart)
+                    patternName = pattern.name
+                case .harmonic(let id):
+                    guard let pattern = harmonicPatterns.first(where: { $0.id == id }) else {
+                        fatalError("Harmonic pattern with id \(id) not found in harmonicPatterns")
                     }
+                    patternName = pattern.name
+                }
+
+                if let existing = section.sectionParts.first(where: { $0.part == part }) {
+                    existing.patternName = patternName
+                } else {
+                    let newSectionPart = SectionPart(section: section, part: part, patternName: patternName)
+                    section.sectionParts.append(newSectionPart)
                 }
             }
         )
-        
+
         return Group {
-            if let instrument = part.instrument {
-                let isDrums = instrument.isDrums
-                let patterns: [PatternSelection] = isDrums
-                ? drumPatterns.map { .drum(id: $0.name) }
-                : harmonicPatterns.map { .harmonic(id: $0.name) }
-                
+            if part.instrument != nil {
                 Picker("", selection: binding) {
                     Text("<Empty>").tag(nil as PatternSelection?)
                     ForEach(patterns, id: \.self) { pattern in
-                        switch pattern {
-                        case .drum(let id):
-                            if let drum = drumPatterns.first(where: { $0.name == id }) {
-                                Text(drum.name).tag(PatternSelection.drum(id: id))
-                            }
-                        case .harmonic(let id):
-                            if let harmonic = harmonicPatterns.first(where: { $0.name == id }) {
-                                Text(harmonic.name).tag(PatternSelection.harmonic(id: id))
-                            }
-                        }
+                        let label = patternName(pattern)
+                        Text(label).tag(pattern)
                     }
                 }
+                .id(cellKey)
             } else {
                 Text("No instrument")
                     .frame(width: 150, height: 50)
@@ -163,4 +173,18 @@ struct JamTrackMatrixView: View {
             }
         }
     }
-}
+
+    private func patternName(_ pattern: PatternSelection) -> String {
+        switch pattern {
+        case .drum(let id):
+            guard let label = drumPatterns.first(where: { $0.id == id })?.name else {
+                fatalError("Drum pattern with id \(id) not found in drumPatterns")
+            }
+            return label
+        case .harmonic(let id):
+            guard let label = harmonicPatterns.first(where: { $0.id == id })?.name else {
+                fatalError("Harmonic pattern with id \(id) not found in harmonicPatterns")
+            }
+            return label
+        }
+    }}
