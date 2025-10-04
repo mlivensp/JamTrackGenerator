@@ -15,41 +15,44 @@ struct DrumPatternsView: View {
     @State private var selectedFeel: Feel? = nil
     
     var body: some View {
-        VStack {
-            HStack {
-                Picker("Style", selection: $selectedStyle) {
-                    Text("All Styles").tag(nil as Style?)
-                    ForEach(styles, id: \.self) { style in
-                        Text(style.name).tag(style as Style?)
+        GeometryReader { geometry in
+            VStack {
+                HStack {
+                    Picker("Style", selection: $selectedStyle) {
+                        Text("All Styles").tag(nil as Style?)
+                        ForEach(styles, id: \.self) { style in
+                            Text(style.name).tag(style as Style?)
+                        }
                     }
-                }
-                .pickerStyle(MenuPickerStyle())
+                    .pickerStyle(MenuPickerStyle())
 
-                Picker("Feel", selection: $selectedFeel) {
-                    Text("All Feels").tag(nil as Feel?)
-                    ForEach(feels, id: \.self) { feel in
-                        Text(feel.name).tag(feel as Feel?)
+                    Picker("Feel", selection: $selectedFeel) {
+                        Text("All Feels").tag(nil as Feel?)
+                        ForEach(feels, id: \.self) { feel in
+                            Text(feel.name).tag(feel as Feel?)
+                        }
                     }
+                    .pickerStyle(MenuPickerStyle())
                 }
-                .pickerStyle(MenuPickerStyle())
-            }
-            .padding(.horizontal)
-            
-            List {
-                Section(header: Text("Drum Patterns")) {
-                     ForEach(filteredDrumPatterns) { drumPattern in
-                         NavigationLink(value: DrumPatternNavigation.existing(drumPattern)) {
-                             Text(drumPattern.name)
+                .padding(.horizontal)
+                
+                List {
+                    Section(header: Text("Drum Patterns")) {
+                         ForEach(filteredDrumPatterns) { drumPattern in
+                             NavigationLink(value: DrumPatternNavigation.existing(drumPattern)) {
+                                 Text(drumPattern.name)
+                             }
+                         }
+                         .onDelete { indexSet in
+                             for index in indexSet {
+                                 modelContext.delete(filteredDrumPatterns[index])
+                             }
+                             try? modelContext.save()
                          }
                      }
-                     .onDelete { indexSet in
-                         for index in indexSet {
-                             modelContext.delete(filteredDrumPatterns[index])
-                         }
-                         try? modelContext.save()
-                     }
-                 }
+                }
             }
+            .background(Color.clear.preference(key: ContentWidthPreferenceKey.self, value: 400))
         }
         .navigationTitle("Drum Patterns")
         .toolbar {

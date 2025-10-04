@@ -13,7 +13,7 @@ extension JamTrackDetailView {
         var jamTrack: JamTrack
         var isPlaying = false
         var isPaused = false
-        var export = false
+//        var export = false
         var errorMessage: String?
 
         var midiPlayer: MIDIPlayer?
@@ -23,7 +23,7 @@ extension JamTrackDetailView {
         var selectedSection: JamTrackSection? = nil
         var selectedSongSection: SongSection? = nil
         
-        var parts: [Part] = []
+//        var parts: [Part] = []
         var selectedPart: Part? = nil
         var selectedMidiInstrument: Instrument? = nil
 
@@ -37,33 +37,13 @@ extension JamTrackDetailView {
             }
             
             selectedSongSection = jamTrack.jamTrackSections.first?.songSection
-//            specification = JamTrackSpecification()
-//            specification.sections.append(Section(section: .chorus))
-//            sections = specification.sections
-//            selectedSongSection = .intro
-//            
-//            specification.parts.append(Part(instrument: .drums))
-//            specification.parts.append(Part(instrument: .electricBassFinger))
-//            parts = specification.parts
         }
-//        
-//        func addSection(songSection: SongSection) {
-//            let order = jamTrack.sections.map { $0.order }.max() ?? 0
-//            jamTrack.sections.append(Section(jamTrack: jamTrack, songSection: songSection, order: order + 1))
-////            sections = jamTrack.sections
-//        }
         
         func deleteSection(section: JamTrackSection) {
             if let sectionIndex = jamTrack.jamTrackSections.firstIndex(of: section) {
                 jamTrack.jamTrackSections.remove(at: sectionIndex)
             }
         }
-//        
-//        func addPart(instrument: Instrument) {
-//            let part = Part(jamTrack: self,instrument: instrument)
-//            jamTrack.parts.append(part)
-//            parts = jamTrack.parts
-//        }
         
         func deletePart(part: Part) {
             if let partIndex = jamTrack.parts.firstIndex(of: part) {
@@ -103,14 +83,6 @@ extension JamTrackDetailView {
             isPlaying = false
             isPaused = false
         }
-
-//        func buildDocument() -> MidiDocument {
-//            var song = Song()
-//            song.buildTracks(jamTrack: jamTrack)
-//            var document = MidiDocument(song: song, bpm: jamTrack.bpm)
-//            document.encodeMidi()
-//            return document
-//        }
 
         private func saveToDocuments(data: Data) -> URL? {
             guard let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }

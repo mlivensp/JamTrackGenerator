@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var selectedDrumPatternNavigation: DrumPatternNavigation? = nil
     @State private var selectedStyle: Style? = nil
     @State private var selectedFeel: Feel? = nil
+    @State private var contentWidth: CGFloat = 0
     
     var body: some View {
 #if os(iOS)
@@ -64,9 +65,15 @@ struct ContentView: View {
                 selectedDrumPatternNavigation: $selectedDrumPatternNavigation,
                 selectedHarmonicPattern: $selectedHarmonicPattern
             )
+            .frame(width: contentWidth > 0 ? contentWidth : nil)
+            .onPreferenceChange(ContentWidthPreferenceKey.self) {
+                print("onPreferenceChange \($0)")
+                self.contentWidth = $0
+            }
         } detail: {
             Group {
                 if let jamTrack = selectedJamTrack {
+//                    JamTrackMatrixView(jamTrack: jamTrack)
                     JamTrackDetailView(jamTrack: jamTrack)
                 } else if let style = selectedStyle {
                     Text(style.name) // Replace with StyleDetailView

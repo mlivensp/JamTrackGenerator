@@ -41,6 +41,7 @@ struct JamTracksView: View {
                 }
             }
         }
+        .background(Color.clear.preference(key: ContentWidthPreferenceKey.self, value: 300))
     }
     
     private func addJamTrack() {

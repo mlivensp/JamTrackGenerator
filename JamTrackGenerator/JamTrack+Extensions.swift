@@ -9,21 +9,14 @@ import Foundation
 import SwiftData
 
 extension JamTrack {
-//    func addStyle(style: Style) {
-//        self.style = style
-//        style.definitions.append(self)
-//    }
-//    
-//    func addFeel(feel: Feel) {
-//        self.feel = feel
-//        feel.definitions.append(self)
-//    }
-//    
-//    func addKey(key: Key) {
-//        self.key = key
-//        key.definitions.append(self)
-//    }
-//    
+    var sortedSections: [JamTrackSection] {
+        self.jamTrackSections.sorted(by: { $0.order < $1.order })
+    }
+    
+    var sortedParts: [Part] {
+        self.parts.sorted(by: { $0.instrument?.name ?? "" < $1.instrument?.name ?? "" })
+    }
+    
     func addSection(songSection: SongSection) -> JamTrackSection {
         let order = ( self.jamTrackSections.map { $0.order }.max() ?? 0 ) + 1
         let section = JamTrackSection(jamTrack: self, songSection: songSection, order: order)
