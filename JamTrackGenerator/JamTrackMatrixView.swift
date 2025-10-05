@@ -9,12 +9,11 @@ enum PatternSelection: Hashable {
 struct JamTrackMatrixView: View {
     @Environment(\.modelContext) var modelContext
     @Bindable var jamTrack: JamTrack
-    @Query var songSections: [SongSection]
+    @Query(sort: \SongSection.sortOrder) var songSections: [SongSection]
     @Query var instruments: [Instrument]
     @Query var drumPatterns: [DrumPattern]
     @Query var harmonicPatterns: [HarmonicPattern]
     @Query var instrumentFamilies: [InstrumentFamily]
-//    @State private var cellSelections: [String: PatternSelection] = [:]
     
     var body: some View {
         VStack {

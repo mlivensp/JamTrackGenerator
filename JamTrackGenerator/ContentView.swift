@@ -72,46 +72,51 @@ struct ContentView: View {
             }
         } detail: {
             Group {
-                if let jamTrack = selectedJamTrack {
-//                    JamTrackMatrixView(jamTrack: jamTrack)
-                    JamTrackDetailView(jamTrack: jamTrack)
-                } else if let style = selectedStyle {
-                    Text(style.name) // Replace with StyleDetailView
-                } else if let feel = selectedFeel {
-                    Text(feel.name) // Replace with FeelDetailView
-                } else if let navigation = selectedDrumPatternNavigation {
-                    switch navigation {
-                    case .existing(let drumPattern):
-                        Text(drumPattern.name) // Replace with DrumPatternDetailView
-                    case .importOptions(let trackNotes):
-                        PatternImportView(
-                            trackNotes: trackNotes,
-                            selectedDrumPatternNavigation: $selectedDrumPatternNavigation
-                        )
-                        .environment(\.modelContext, modelContext)
+                switch selectedCategory {
+                case .jamTracks:
+                    if let jamTrack = selectedJamTrack {
+                        JamTrackDetailView(jamTrack: jamTrack)
+                    } else {
+                        Text("Select a Jam Track")
                     }
-                } else if let harmonicPattern = selectedHarmonicPattern {
-                    Text(harmonicPattern.name) // Replace with HarmonicPatternDetailView
-                } else {
-                    Text("Select an item")
+                case .styles:
+                    if let style = selectedStyle {
+                        Text(style.name) // Replace with StyleDetailView
+                    } else {
+                        Text("Select a Style")
+                    }
+                    
+                case .feels:
+                    if let feel = selectedFeel {
+                        Text(feel.name) // Replace with FeelDetailView
+                    } else {
+                        Text("Select a Feel")
+                    }
+                    
+                case .drumPatterns:
+                    if let navigation = selectedDrumPatternNavigation {
+                        switch navigation {
+                        case .existing(let drumPattern):
+                            Text(drumPattern.name) // Replace with DrumPatternDetailView
+                        case .importOptions(let trackNotes):
+                            PatternImportView(
+                                trackNotes: trackNotes,
+                                selectedDrumPatternNavigation: $selectedDrumPatternNavigation
+                            )
+                            .environment(\.modelContext, modelContext)
+                        }
+                    } else {
+                        Text("Select a Drum Pattern")
+                    }
+                    
+                case .harmonicPatterns:
+                    if let harmonicPattern = selectedHarmonicPattern {
+                        Text(harmonicPattern.name) // Replace with HarmonicPatternDetailView
+                    } else {
+                        Text("Select a Harmonic Pattern")
+                    }
                 }
             }
-            .navigationDestination(for: JamTrack.self) { JamTrackDetailView(jamTrack: $0) }
-            .navigationDestination(for: Style.self) { Text($0.name) }
-            .navigationDestination(for: Feel.self) { Text($0.name) }
-            .navigationDestination(for: DrumPatternNavigation.self) { navigation in
-                switch navigation {
-                case .existing(let drumPattern):
-                    Text(drumPattern.name) // Replace with DrumPatternDetailView
-                case .importOptions(let trackNotes):
-                    PatternImportView(
-                        trackNotes: trackNotes,
-                        selectedDrumPatternNavigation: $selectedDrumPatternNavigation
-                    )
-                    .environment(\.modelContext, modelContext)
-                }
-            }
-            .navigationDestination(for: HarmonicPattern.self) { Text($0.name) }
         }
         #if os(macOS)
         .navigationSplitViewColumnWidth(min: 180, ideal: 200)
