@@ -1,6 +1,8 @@
 [
   {
-    "key" : "C Major",
+    "key" : "C",
+    "sharpsOrFlats": 0,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "C",
@@ -53,7 +55,9 @@
     ]
   },
   {
-    "key" : "C Minor",
+    "key" : "C",
+    "sharpsOrFlats": -3,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "C",
@@ -107,6 +111,8 @@
   },
   {
     "key" : "C♯ Major",
+    "sharpsOrFlats": 7,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "C♯",
@@ -160,6 +166,8 @@
   },
   {
     "key" : "C♯ Minor",
+    "sharpsOrFlats": 4,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "C♯",
@@ -212,7 +220,9 @@
     ]
   },
   {
-    "key" : "D Major",
+    "key" : "D",
+    "sharpsOrFlats": 2,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "D",
@@ -265,7 +275,9 @@
     ]
   },
   {
-    "key" : "D Minor",
+    "key" : "D",
+    "sharpsOrFlats": -1,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "D",
@@ -319,6 +331,8 @@
   },
   {
     "key" : "D♯ Major",
+    "sharpsOrFlats": -3,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "E♭",
@@ -372,6 +386,8 @@
   },
   {
     "key" : "D♯ Minor",
+    "sharpsOrFlats": 6,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "E♭",
@@ -424,7 +440,9 @@
     ]
   },
   {
-    "key" : "E Major",
+    "key" : "E",
+    "sharpsOrFlats": 4,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "E",
@@ -477,7 +495,9 @@
     ]
   },
   {
-    "key" : "E Minor",
+    "key" : "E",
+    "sharpsOrFlats": 1,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "E",
@@ -530,7 +550,9 @@
     ]
   },
   {
-    "key" : "F Major",
+    "key" : "F",
+    "sharpsOrFlats": -1,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "F",
@@ -583,7 +605,9 @@
     ]
   },
   {
-    "key" : "F Minor",
+    "key" : "F",
+    "sharpsOrFlats": -4,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "F",
@@ -637,6 +661,8 @@
   },
   {
     "key" : "F♯ Major",
+    "sharpsOrFlats": 6,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "F♯",
@@ -690,6 +716,8 @@
   },
   {
     "key" : "F♯ Minor",
+    "sharpsOrFlats": 3,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "F♯",
@@ -742,7 +770,9 @@
     ]
   },
   {
-    "key" : "G Major",
+    "key" : "G",
+    "sharpsOrFlats": 1,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "G",
@@ -795,7 +825,9 @@
     ]
   },
   {
-    "key" : "G Minor",
+    "key" : "G",
+    "sharpsOrFlats": -2,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "G",
@@ -849,6 +881,8 @@
   },
   {
     "key" : "G♯ Major",
+    "sharpsOrFlats": -4,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "A♭",
@@ -902,6 +936,8 @@
   },
   {
     "key" : "G♯ Minor",
+    "sharpsOrFlats": 5,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "A♭",
@@ -954,7 +990,9 @@
     ]
   },
   {
-    "key" : "A Major",
+    "key" : "A",
+    "sharpsOrFlats": 3,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "A",
@@ -1007,7 +1045,9 @@
     ]
   },
   {
-    "key" : "A Minor",
+    "key" : "A",
+    "sharpsOrFlats": 0,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "A",
@@ -1061,6 +1101,8 @@
   },
   {
     "key" : "A♯ Major",
+    "sharpsOrFlats": -2,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "B♭",
@@ -1114,6 +1156,8 @@
   },
   {
     "key" : "A♯ Minor",
+    "sharpsOrFlats": 7,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "B♭",
@@ -1166,7 +1210,9 @@
     ]
   },
   {
-    "key" : "B Major",
+    "key" : "B",
+    "sharpsOrFlats": 5,
+    "isMajor": true,
     "notes" : [
       {
         "note" : "B",
@@ -1219,7 +1265,9 @@
     ]
   },
   {
-    "key" : "B Minor",
+    "key" : "B",
+    "sharpsOrFlats": 2,
+    "isMajor": false,
     "notes" : [
       {
         "note" : "B",

@@ -39,13 +39,17 @@ struct MidiDocument: FileDocument {
     
 //    let jamTrack: JamTrack
     let song: Song
+    let sharpsOrFlats: Int8
+    let isMajor: Bool
     let bpm: UInt8
     var header: MidiHeader
     var tracks: [MidiTrack] = []
     
-    init(song: Song, bpm: UInt8) {
+    init(song: Song, sharpsOrFlats: Int8, isMajor: Bool, bpm: UInt8) {
 //        self.definition = definition
         self.song = song
+        self.sharpsOrFlats = sharpsOrFlats
+        self.isMajor = isMajor
         self.bpm = bpm
         self.header = .init(pulsesPerQuarterNote: Global.pulsesPerQuarterNote)
         self.tracks = []
@@ -70,9 +74,16 @@ struct MidiDocument: FileDocument {
         var lastPulse: UInt = 0
         var track = MidiTrack()
         if let program = instrumentTrack.program {
-            track.add([0x00, 0xc1, program])
+            track.add([0x00, 0xc0 | instrumentTrack.channel, program])
+        } else {
+            track.add([0x00, 0xc9, 0x00])
         }
         
+        // TODO: nothing plays in the player if i add these track names
+//        track.add([0xff, 0x03, 0x0b])
+//        let nameBytes: [UInt8] = Array(instrumentTrack.name.utf8)
+//        track.add(nameBytes)
+
         for event in events {
             let delay = event.pulse - lastPulse
             track.addEvent(delay: delay, channel: instrumentTrack.channel, command: event.command, note: event.value, velocity: event.velocity)
@@ -95,6 +106,7 @@ struct MidiDocument: FileDocument {
     mutating func buildMetaTrack() {
         var track = MidiTrack()
         track.addTimeSignature(beat: 4, beatType: 4)
+        track.addKeySignature(sharpsOrFlats: sharpsOrFlats, isMajor: isMajor)
         track.addTempo(bpm: bpm)
         track.endTrack()
         tracks.append(track)

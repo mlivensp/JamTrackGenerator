@@ -24,8 +24,8 @@ struct JamTrackMatrixView: View {
                     let _ = jamTrack.addSection(songSection: newSection)
                 }
                 Button("Add Part") {
-                    guard let family = instrumentFamilies.first,
-                          let newInstrument = family.instruments.first else { return }
+                    guard let family = instrumentFamilies.sorted(by: { $0.sortOrder < $1.sortOrder } ).first,
+                          let newInstrument = family.instruments.sorted(by: { $0.programNumber < $1.programNumber } ).first else { return }
                     let _ = jamTrack.addPart(instrument: newInstrument)
                 }
             }
@@ -43,14 +43,13 @@ struct JamTrackMatrixView: View {
                     ForEach(jamTrack.sortedParts, id: \.id) { part in
                         if let actualIndex = jamTrack.parts.firstIndex(where: { $0.id == part.id }) {
                             Picker("", selection: $jamTrack.parts[actualIndex].instrument) {
-                                ForEach(instruments) { instrument in
+                                ForEach(instruments.sorted(by: { $0.programNumber < $1.programNumber } )) { instrument in
                                     Text(instrument.name).tag(instrument)
                                 }
                             }
                             .frame(width: 150)
                         }
                     }
-                    
                     // Rows
                     ForEach(jamTrack.sortedSections, id: \.id) { section in
                         if let actualIndex = jamTrack.jamTrackSections.firstIndex(where: { $0.id == section.id }) {

@@ -24,6 +24,7 @@ struct InstrumentSeed: Codable {
 
 struct InstrumentFamilySeed: Codable {
     var name: String
+    var sortOrder: Int
 }
 
 struct ScaleDegreeSeed: Codable {
@@ -38,6 +39,8 @@ struct ScaledNoteSeed: Codable {
 
 struct KeySeed: Codable {
     var key: String
+    var sharpsOrFlats: Int8
+    var isMajor: Bool
     var notes: [ScaledNoteSeed]
 }
 

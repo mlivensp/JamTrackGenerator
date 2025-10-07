@@ -21,8 +21,9 @@ struct Song {
         var currentPulse: UInt = 0
         var drumPartId: PersistentIdentifier? = nil
         var partMap: [PersistentIdentifier: [EventDescriptor]] = [:]
-        var programMap: [PersistentIdentifier: UInt8] = [:]
+        var programMap: [PersistentIdentifier: (program: UInt8, name: String)] = [:]
         
+        dumpSectionParts(jamTrack.jamTrackSections)
         for section in jamTrack.jamTrackSections.sorted(by: { $0.order < $1.order } ) {
             for sectionPart in section.sectionParts.filter( { $0.patternName != "" } ) {
                 guard let part = sectionPart.part else {
@@ -44,7 +45,7 @@ struct Song {
                             fatalError("no key defined for song")
                         }
                         
-                        programMap[part.id] = instrument.programNumber
+                        programMap[part.id] = (instrument.programNumber, instrument.name)
                         eventBuilder = try HarmonicEventBuilder(modelContext: modelContext, key: key, patternName: sectionPart.patternName)
                     }
                 } catch {
@@ -63,113 +64,44 @@ struct Song {
         for (partId, events) in partMap {
             let channel: UInt8
             let program: UInt8?
+            let name: String
             
             if let drumPartId {
                 if partId == drumPartId {
                     channel = UInt8(9)
                     program = nil
+                    name = "Drum Track"
                 } else {
                     channel = nextChannel()
-                    program = programMap[partId]
+                    (program, name) = programMap[partId] ?? (nil, "unknown")
                 }
             } else {
                 channel = nextChannel()
-                program = programMap[partId]
+                (program, name) = programMap[partId] ?? (nil, "unknown")
             }
             
-            tracks.append(Track(channel: channel, program: program, events: events))
+            tracks.append(Track(channel: channel, program: program, name: name, events: events))
         }
     }
     
-//    func buildDrumEvents(modelContext: ModelContext, patternName: String, currentPulse: UInt) -> [EventDescriptor] {
-//    }
-//    
-//    func buildHarmonicEvents(modelContext: ModelContext, patternName: String, currentPulse: UInt) -> [EventDescriptor] {
-//        []
-//    }
-    
-//    mutating func buildDrumTrack(jamTrack: JamTrack) -> Track {
-//        var descriptors: [EventDescriptor] = []
-//        let drumPattern = DrumPattern(jamTrack: definition)
-//        let pattern = drumPattern.pattern05
-//        let maxPulse = pattern.chorus.last?.off ?? 0
-//        var currentOffset = UInt32(0)
-//        
-//        if definition.includeCountIn {
-//            let (countInDescriptors, lastPulse) = buildCountInDescriptors()
-//            currentOffset = lastPulse
-//            descriptors.append(contentsOf: countInDescriptors)
-//        }
-//        
-//        for _ in 0..<definition.numberOfChoruses {
-//            let copy = pattern.chorus.map { descriptor in
-//                var newDescriptor = descriptor
-//                newDescriptor.onOffOffset = currentOffset
-//                return newDescriptor
-//            }
-//            
-//            descriptors.append(contentsOf: copy)
-//            currentOffset += maxPulse
-//        }
-//        
-//        return Track(channel: 9, events: descriptors)
-//    }
-//    
-//    fileprivate func buildCountInDescriptors() -> ([EventDescriptor], UInt32) {
-//        var descriptors: [EventDescriptor] = []
-//        var currentPulse = UInt32(0)
-//        var offPulse = currentPulse + NoteDuration.quarter.value
-//        descriptors.append(DrumDescriptor(part: .sideStick, on: currentPulse, off: offPulse))
-//        currentPulse = offPulse
-//        offPulse = currentPulse + NoteDuration.quarter.value
-//        currentPulse = offPulse // rest
-//        offPulse = currentPulse + NoteDuration.quarter.value
-//        descriptors.append(DrumDescriptor(part: .sideStick, on: currentPulse, off: offPulse))
-//        currentPulse = offPulse
-//        offPulse = currentPulse + NoteDuration.quarter.value
-//        currentPulse = offPulse
-//        for _ in 0..<4 {
-//            offPulse = currentPulse + NoteDuration.quarter.value
-//            descriptors.append(DrumDescriptor(part: .sideStick, on: currentPulse, off: offPulse))
-//            currentPulse = offPulse
-//        }
-//        
-//        return (descriptors, offPulse)
-//    }
-//    
-//    mutating func buildBassTrack(jamTrack: JamTrack) -> Track {
-//        var descriptors: [EventDescriptor] = []
-//        let pattern = BassPattern(key: Key(definition.key)).pattern0
-//        let maxPulse = pattern.last?.off ?? 0
-//        var currentOffset = UInt32(0)
-//        
-//        if definition.includeCountIn {
-//            currentOffset += NoteDuration.whole.value * 2 // 2 measures of rest
-//        }
-//        
-//        for _ in 0..<definition.numberOfChoruses {
-//            let copy = pattern.map { descriptor in
-//                var newDescriptor = descriptor
-//                newDescriptor.onOffOffset = currentOffset
-//                return newDescriptor
-//            }
-//            
-//            descriptors.append(contentsOf: copy)
-//            currentOffset += maxPulse
-//        }
-//        
-//        let channel = nextChannel()
-//        return Track(channel: channel, program: .electricBassFinger, events: descriptors)
-//    }
-    
     mutating private func nextChannel() -> UInt8 {
-        channel += 1
-        
-        if channel == 9 {
+        defer {
             channel += 1
+            
+            if channel == 9 {
+                channel += 1
+            }
         }
         
         return channel
+    }
+    
+    private func dumpSectionParts(_ sections: [JamTrackSection]) {
+        for section in sections {
+            for sectionPart in section.sectionParts {
+                print("section: \(String(describing: section.songSection?.name)), part: \(String(describing: sectionPart.part?.instrument?.name ?? "unknown"))")
+            }
+        }
     }
 }
 

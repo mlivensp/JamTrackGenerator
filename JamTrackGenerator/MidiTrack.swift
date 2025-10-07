@@ -11,6 +11,12 @@ struct MidiTrack{
     let tag = "MTrk"
     var content: [UInt8] = []
     
+    mutating func addKeySignature(sharpsOrFlats: Int8, isMajor: Bool) {
+        content.append(contentsOf: [0x00, 0xff, 0x59, 0x02])
+        content.append(UInt8(bitPattern: sharpsOrFlats))
+        content.append(isMajor ? 0x00 : 0x01)
+    }
+    
     mutating func addTimeSignature(beat: UInt8, beatType: UInt8) {
         content.append(contentsOf: [0x00, 0xff, 0x58, 0x04])
         content.append(beat)

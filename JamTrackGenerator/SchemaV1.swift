@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI
 
 enum SchemaV1: VersionedSchema {
     static let versionIdentifier = Schema.Version(1, 0, 0)
@@ -59,13 +60,15 @@ enum SchemaV1: VersionedSchema {
 
     @Model class Key {
         var noteName: String
+        var sharpsOrFlats: Int8
         var isMajor: Bool
         
         @Relationship(deleteRule: .cascade, inverse: \JamTrack.key) var definitions: [JamTrack]
         @Relationship(deleteRule: .cascade, inverse: \NoteInKey.key) var notesInKey: [NoteInKey]
         
-        init(noteName: String, isMajor: Bool, definitions: [JamTrack] = [], notesInKey: [NoteInKey] = []) {
+        init(noteName: String, sharpsOrFlats: Int8, isMajor: Bool, definitions: [JamTrack] = [], notesInKey: [NoteInKey] = []) {
             self.noteName = noteName
+            self.sharpsOrFlats = sharpsOrFlats
             self.isMajor = isMajor
             self.definitions = definitions
             self.notesInKey = notesInKey
@@ -114,11 +117,13 @@ enum SchemaV1: VersionedSchema {
     
     @Model class InstrumentFamily {
         var name: String
+        var sortOrder: Int
         
         @Relationship(deleteRule: .nullify, inverse: \Instrument.instrumentFamily) var instruments: [Instrument]
         
-        init(name: String, instruments: [Instrument] = []) {
+        init(name: String, sortOrder: Int, instruments: [Instrument] = []) {
             self.name = name
+            self.sortOrder = sortOrder
             self.instruments = instruments
         }
     }
@@ -140,12 +145,18 @@ enum SchemaV1: VersionedSchema {
     
     @Model class Part {
         var jamTrack: JamTrack?
-        var instrument: Instrument?
+        var instrument: Instrument? {
+            didSet {
+                print("instrument changed to \(String(describing: instrument?.name ?? "nil"))")
+            }
+        }
+        var order: Int
         
         @Relationship(deleteRule: .cascade, inverse: \SectionPart.part) var sectionParts: [SectionPart]
         
-        init(jamTrack: JamTrack, instrument: Instrument, sectionParts: [SectionPart] = []) {
+        init(jamTrack: JamTrack, instrument: Instrument, order: Int = 0, sectionParts: [SectionPart] = []) {
             self.instrument = instrument
+            self.order = order
             self.jamTrack = jamTrack
             self.sectionParts = sectionParts
         }
@@ -160,6 +171,7 @@ enum SchemaV1: VersionedSchema {
         var includeCountIn: Bool
         
         @Relationship(deleteRule: .cascade, inverse: \JamTrackSection.jamTrack) var jamTrackSections: [JamTrackSection]
+        // TODO: I really want this to be private but I haven't found a way to make a binding to the parts array work
         @Relationship(deleteRule: .cascade, inverse: \Part.jamTrack) var parts: [Part]
         
         init(name: String = "", style: Style? = nil, key: Key? = nil, feel: Feel? = nil, bpm: UInt8 = 120, includeCountIn: Bool = true, jamTrackSections: [JamTrackSection] = [], parts: [Part] = [], sectionPartPatterns: [SectionPart] = []) {
@@ -171,6 +183,19 @@ enum SchemaV1: VersionedSchema {
             self.includeCountIn = includeCountIn
             self.jamTrackSections = jamTrackSections
             self.parts = parts
+        }
+        
+        func addPart(instrument: Instrument) -> Part {
+            let maxOrder = parts.map(\.order).max() ?? 0
+            let part = Part(jamTrack: self, instrument: instrument, order: maxOrder + 1)
+            parts.append(part)
+            return part
+        }
+
+        func deletePart(part: Part) {
+            if let partIndex = parts.firstIndex(of: part) {
+                parts.remove(at: partIndex)
+            }
         }
     }
     

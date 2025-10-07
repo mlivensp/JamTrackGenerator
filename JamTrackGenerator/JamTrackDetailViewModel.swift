@@ -46,9 +46,7 @@ extension JamTrackDetailView {
         }
         
         func deletePart(part: Part) {
-            if let partIndex = jamTrack.parts.firstIndex(of: part) {
-                jamTrack.parts.remove(at: partIndex)
-            }
+            jamTrack.deletePart(part: part)
         }
         
         func play(modelContext: ModelContext) {

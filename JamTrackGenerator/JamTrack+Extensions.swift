@@ -14,7 +14,7 @@ extension JamTrack {
     }
     
     var sortedParts: [Part] {
-        self.parts.sorted(by: { $0.instrument?.name ?? "" < $1.instrument?.name ?? "" })
+        self.parts.sorted(by: { $0.order < $1.order })
     }
     
     func addSection(songSection: SongSection) -> JamTrackSection {
@@ -23,13 +23,6 @@ extension JamTrack {
         jamTrackSections.append(section)
         songSection.sections.append(section)
         return section
-    }
-    
-    func addPart(instrument: Instrument) -> Part {
-        let part = Part(jamTrack: self, instrument: instrument)
-        parts.append(part)
-        instrument.parts.append(part)
-        return part
     }
     
     func addSectionPart(section: JamTrackSection, part: Part, patternName: String) {
@@ -157,7 +150,8 @@ extension JamTrack {
     func createMidiDocument(modelContext: ModelContext) -> MidiDocument {
         var song = Song(modelContext: modelContext)
         song.buildTracks(jamTrack: self)
-        var document = MidiDocument(song: song, bpm: bpm)
+        guard let key else { fatalError("No key set for track") }
+        var document = MidiDocument(song: song, sharpsOrFlats: key.sharpsOrFlats, isMajor: key.isMajor, bpm: bpm)
         document.encodeMidi()
         return document
     }

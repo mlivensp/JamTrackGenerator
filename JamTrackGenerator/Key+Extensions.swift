@@ -68,7 +68,7 @@ extension Key {
         let pitchedNote = PitchedNote(rawNote: newRawNote, octave: newOctave)
 //        print(#function, "root: \(root) halfSteps: \(halfSteps) signedHalfSteps: \(signedHalfSteps) rawHalfSteps: \(rawHalfSteps) noteNumber: \(noteNumber) relativeDistanceFromC: \(relativeDistanceFromC) octaveIncrementer: \(octaveIncrementer) newOctave: \(newOctave) newRawNote: \(newRawNote) pitchedNote: \(pitchedNote)")
 
-        print("octave: \(octave) octaveIncrementer: \(octaveIncrementer) note: \(pitchedNote.description)")
+//        print("octave: \(octave) octaveIncrementer: \(octaveIncrementer) note: \(pitchedNote.description)")
         return pitchedNote
     }
 }

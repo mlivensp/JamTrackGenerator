@@ -179,9 +179,7 @@ struct SeedImporter {
         
         var count = 0
         for seed in keySeeds {
-            let parts = seed.key.split(separator: " ")
-            assert(parts.count == 2)
-            let key = Key(noteName: String(parts[0]), isMajor: parts[1] == "Major")
+            let key = Key(noteName: seed.key, sharpsOrFlats: seed.sharpsOrFlats, isMajor: seed.isMajor)
             context.insert(key)
             count += 1
             
@@ -276,7 +274,7 @@ struct SeedImporter {
         // Insert families
         var familyMap: [String: InstrumentFamily] = [:]
         for seed in familySeeds {
-            let family = InstrumentFamily(name: seed.name)
+            let family = InstrumentFamily(name: seed.name, sortOrder: seed.sortOrder)
             context.insert(family)
             familyMap[seed.name] = family
         }
@@ -286,7 +284,7 @@ struct SeedImporter {
             guard let instrumentFamily = familyMap[seed.family] else {
                 fatalError("Unknown instrument family: \(seed.family)")
             }
-            let instrument = Instrument(name: seed.name, programNumber: seed.programNumber, instrumentFamily: instrumentFamily)
+            let instrument = Instrument(name: seed.name, programNumber: seed.programNumber - 1, instrumentFamily: instrumentFamily)
             context.insert(instrument)
         }
 
