@@ -79,10 +79,18 @@ struct MidiDocument: FileDocument {
             track.add([0x00, 0xc9, 0x00])
         }
         
-        // TODO: nothing plays in the player if i add these track names
-//        track.add([0xff, 0x03, 0x0b])
-//        let nameBytes: [UInt8] = Array(instrumentTrack.name.utf8)
-//        track.add(nameBytes)
+        let nameBytes: [UInt8] = Array(instrumentTrack.name.utf8)
+        let length = UInt(nameBytes.count).midiVLQ
+        
+        // MARK: Track Name
+        track.add([0x00, 0xff, 0x03])
+        track.add(length)
+        track.add(nameBytes)
+        
+        // MARK: Instrument Name
+        track.add([0x00, 0xff, 0x04])
+        track.add(length)
+        track.add(nameBytes)
 
         for event in events {
             let delay = event.pulse - lastPulse
