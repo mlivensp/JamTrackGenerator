@@ -12,18 +12,8 @@ struct HarmonicEventBuilder: EventBuilder {
     let pattern: HarmonicPattern
     let key: Key
     
-    init(modelContext: ModelContext, key: Key, patternName: String) throws {
-        let fetchDescriptor = FetchDescriptor<HarmonicPattern>(predicate: #Predicate { pattern in
-            pattern.name == patternName
-        })
-        
-        if let pattern = try modelContext.fetch(fetchDescriptor).first {
-            self.pattern = pattern
-        } else {
-            // TODO: get a better error
-            throw NSError(domain: "JamTrackGenerator", code: 1, userInfo: nil)
-        }
-        
+    init(pattern: HarmonicPattern, key: Key) {
+        self.pattern = pattern
         self.key = key
     }
     

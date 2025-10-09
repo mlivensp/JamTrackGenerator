@@ -23,7 +23,6 @@ struct Song {
         var partMap: [PersistentIdentifier: [EventDescriptor]] = [:]
         var programMap: [PersistentIdentifier: (program: UInt8, name: String)] = [:]
         
-        dumpSectionParts(jamTrack.jamTrackSections)
         for section in jamTrack.jamTrackSections.sorted(by: { $0.order < $1.order } ) {
             for sectionPart in section.sectionParts.filter( { $0.patternName != "" } ) {
                 guard let part = sectionPart.part else {
@@ -34,11 +33,15 @@ struct Song {
                     fatalError((#file as NSString).lastPathComponent + "#" + #function + ": no instrument for part")
                 }
                 
+                let styleName = jamTrack.style?.name ?? ""
+                let feelName = jamTrack.feel?.name ?? ""
+                
                 let eventBuilder: EventBuilder
                 do {
                     if instrument.name == "Drums" {
                         drumPartId = part.id
-                        eventBuilder = try DrumEventBuilder(modelContext: modelContext, styleName: jamTrack.style?.name ?? "", feelName: jamTrack.feel?.name ?? "", patternName: sectionPart.patternName)
+                        let pattern = try fetchDrumPattern(patternName: sectionPart.patternName, styleName: styleName, feelName: feelName)
+                        eventBuilder = DrumEventBuilder(pattern: pattern)
                     }
                     else {
                         guard let key = jamTrack.key else {
@@ -46,7 +49,8 @@ struct Song {
                         }
                         
                         programMap[part.id] = (instrument.programNumber, instrument.name)
-                        eventBuilder = try HarmonicEventBuilder(modelContext: modelContext, key: key, patternName: sectionPart.patternName)
+                        let pattern = try fetchHarmonicPattern(patternName: sectionPart.patternName, styleName: styleName, feelName: feelName)
+                        eventBuilder = HarmonicEventBuilder(pattern: pattern, key: key)
                     }
                 } catch {
                     fatalError(error.localizedDescription)
@@ -84,6 +88,42 @@ struct Song {
         }
     }
     
+    private func fetchDrumPattern(patternName: String, styleName: String, feelName: String) throws -> DrumPattern {
+        let fetchDescriptor = FetchDescriptor<DrumPattern>(predicate: #Predicate { pattern in
+            pattern.name == patternName
+        })
+        
+        let patterns = try modelContext.fetch(fetchDescriptor)
+        
+        guard let pattern = patterns.first(where: {
+            ($0.style?.name == nil || $0.style?.name == styleName)
+            && ($0.feel?.name == nil || $0.feel?.name == feelName)
+        } ) else {
+            // TODO: get a better error
+            throw NSError(domain: "JamTrackGenerator", code: 43, userInfo: nil)
+        }
+        
+        return pattern
+    }
+    
+    private func fetchHarmonicPattern(patternName: String, styleName: String, feelName: String) throws -> HarmonicPattern {
+        let fetchDescriptor = FetchDescriptor<HarmonicPattern>(predicate: #Predicate { pattern in
+            pattern.name == patternName
+        })
+        
+        let patterns = try modelContext.fetch(fetchDescriptor)
+        
+        guard let pattern = patterns.first(where: {
+            ($0.style?.name == nil || $0.style?.name == styleName)
+            && ($0.feel?.name == nil || $0.feel?.name == feelName)
+        } ) else {
+            // TODO: get a better error
+            throw NSError(domain: "JamTrackGenerator", code: 43, userInfo: nil)
+        }
+        
+        return pattern
+    }
+    
     mutating private func nextChannel() -> UInt8 {
         defer {
             channel += 1
@@ -94,14 +134,6 @@ struct Song {
         }
         
         return channel
-    }
-    
-    private func dumpSectionParts(_ sections: [JamTrackSection]) {
-        for section in sections {
-            for sectionPart in section.sectionParts {
-                print("section: \(String(describing: section.songSection?.name)), part: \(String(describing: sectionPart.part?.instrument?.name ?? "unknown"))")
-            }
-        }
     }
 }
 

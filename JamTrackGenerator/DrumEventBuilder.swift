@@ -11,21 +11,7 @@ import SwiftData
 struct DrumEventBuilder: EventBuilder {
     var pattern: DrumPattern
     
-    init(modelContext: ModelContext, styleName: String, feelName: String, patternName: String) throws {
-         let fetchDescriptor = FetchDescriptor<DrumPattern>(predicate: #Predicate { pattern in
-            pattern.name == patternName
-        })
-        
-        let patterns = try modelContext.fetch(fetchDescriptor)
-        
-        guard let pattern = patterns.first(where: {
-            ($0.style?.name == nil || $0.style?.name == styleName)
-            && ($0.feel?.name == nil || $0.feel?.name == feelName)
-        } ) else {
-            // TODO: get a better error
-            throw NSError(domain: "JamTrackGenerator", code: 43, userInfo: nil)
-        }
-        
+    init(pattern: DrumPattern) {
         self.pattern = pattern
     }
     

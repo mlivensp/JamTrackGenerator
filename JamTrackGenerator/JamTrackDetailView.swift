@@ -42,7 +42,7 @@ struct JamTrackDetailView: View {
 
             JamTrackMatrixView(jamTrack: jamTrack)
             
-            PlaybackControlsView(viewModel: viewModel)
+            PlaybackControlsView(jamTrack: jamTrack, modelContext: modelContext)
             
             if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage)

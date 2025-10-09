@@ -188,7 +188,7 @@ extension PatternImportView {
             
             for track in selected {
                 if let nameError = validatePatternName(for: track) {
-                    let trackName = track.name.isEmpty ? "Track \(trackNotes.firstIndex(of: track)! + 1)" : track.name
+//                    let trackName = track.name.isEmpty ? "Track \(trackNotes.firstIndex(of: track)! + 1)" : track.name
                     errorMessages[track] = nameError
 //                    validationErrors.append("Track '\(trackName)': \(nameError)")
                 } else {

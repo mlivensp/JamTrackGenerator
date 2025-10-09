@@ -1,13 +1,18 @@
+import SwiftData
 import SwiftUI
 
 struct PlaybackControlsView: View {
-    @Bindable var viewModel: JamTrackDetailView.ViewModel
-    @Environment(\.modelContext) var modelContext
+    
+    @State private var viewModel: ViewModel
 
     @State private var playIsPressed = false
     @State private var stopIsPressed = false
     @State private var loopIsPressed = false
 
+    init(jamTrack: JamTrack, modelContext: ModelContext) {
+        self._viewModel = .init(wrappedValue: .init(jamTrack: jamTrack, modelContext: modelContext))
+    }
+    
     var body: some View {
         VStack(spacing: 8) {
             HStack(spacing: 10) {
@@ -40,7 +45,7 @@ struct PlaybackControlsView: View {
                         .accessibilityLabel("Stop")
                         .clipShape(Circle())
                 }
-                .disabled(viewModel.midiPlayer?.playbackState == .stopped)
+                .disabled(viewModel.isStopped)
                 .buttonStyle(.plain)
                 .scaleEffect(stopIsPressed ? 0.95 : 1.0)
                 .animation(.easeOut(duration: 0.2), value: stopIsPressed)
@@ -53,10 +58,10 @@ struct PlaybackControlsView: View {
                 Spacer(minLength: 0)
 
                 // Loop toggle
-                Button(action: { viewModel.midiPlayer?.isLooping.toggle() }) {
-                    Image(systemName: viewModel.midiPlayer?.isLooping ?? false ? "repeat.1" : "repeat")
+                Button(action: { viewModel.toggleLooping() }) {
+                    Image(systemName: viewModel.isLooping ? "repeat.1" : "repeat")
                         .font(.title3)
-                        .foregroundStyle(viewModel.midiPlayer?.isLooping ?? false ? Color.accentColor : .primary)
+                        .foregroundStyle(viewModel.isLooping ? Color.accentColor : .primary)
                         .frame(width: 40, height: 40)
                         .clipShape(.circle)
                         .padding(8)
@@ -64,7 +69,7 @@ struct PlaybackControlsView: View {
                 .buttonStyle(.plain)
                 .scaleEffect(loopIsPressed ? 0.95 : 1.0)
                 .animation(.easeOut(duration: 0.2), value: loopIsPressed)
-                .accessibilityLabel(viewModel.midiPlayer?.isLooping ?? false ? "Disable Loop" : "Enable Loop")
+                .accessibilityLabel(viewModel.isLooping ? "Disable Loop" : "Enable Loop")
                 .gesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged { _ in loopIsPressed = true }
@@ -78,18 +83,18 @@ struct PlaybackControlsView: View {
     }
 
     private var playButtonIcon: String {
-        switch viewModel.midiPlayer?.playbackState {
-        case .playing: return "pause.fill"
-        case .paused, .stopped, .none: return "play.fill"
+        if viewModel.isPlaying {
+            return "pause.fill"
+        } else {
+            return "play.fill"
         }
     }
 
     private func togglePlayback() {
-        switch viewModel.midiPlayer?.playbackState {
-        case .stopped, .paused, .none:
-            viewModel.play(modelContext: modelContext)
-        case .playing:
-            viewModel.pause()
+        do {
+            try viewModel.togglePlayback()
+        } catch {
+            fatalError(error.localizedDescription)
         }
     }
 }
