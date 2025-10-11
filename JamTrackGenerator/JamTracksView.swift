@@ -1,10 +1,3 @@
-//
-//  JamTracksView.swift
-//  JamTrackGenerator
-//
-//  Created by Michael Livenspargar on 9/13/25.
-//
-
 import SwiftUI
 import SwiftData
 
@@ -16,11 +9,35 @@ struct JamTracksView: View {
     var body: some View {
         List {
             ForEach(jamTracks) { jamTrack in
+                #if os(iOS) && !targetEnvironment(macCatalyst)
+                if UIDevice.current.userInterfaceIdiom == .phone {
+                    // iPhone: NavigationLink without onTapGesture
+                    NavigationLink(value: jamTrack) {
+                        Text(jamTrack.name)
+                            .border(.blue, width: 1)
+                    }
+                } else {
+                    // iPad: NavigationLink with onTapGesture
+                    NavigationLink(value: jamTrack) {
+                        Text(jamTrack.name)
+                            .border(.blue, width: 1)
+                    }
+                    .onTapGesture {
+                        selectedJamTrack = jamTrack
+                        print("Selected JamTrack for iPad: \(jamTrack.name)")
+                    }
+                }
+                #else
+                // macOS: NavigationLink with onTapGesture
                 NavigationLink(value: jamTrack) {
                     Text(jamTrack.name)
                         .border(.blue, width: 1)
                 }
-                .onTapGesture { selectedJamTrack = jamTrack }
+                .onTapGesture {
+                    selectedJamTrack = jamTrack
+                    print("Selected JamTrack for macOS: \(jamTrack.name)")
+                }
+                #endif
             }
             .onDelete { indexSet in
                 for index in indexSet {
@@ -57,6 +74,3 @@ struct JamTracksView: View {
         }
     }
 }
-//#Preview {
-//    JamTracksView()
-//}

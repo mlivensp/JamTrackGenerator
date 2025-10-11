@@ -14,8 +14,8 @@
             filePath = "JamTrackGenerator/MidiPlayer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "112"
-            endingLineNumber = "112"
+            startingLineNumber = "103"
+            endingLineNumber = "103"
             landmarkName = "playMIDIFile(from:loop:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -415,6 +415,22 @@
             startingLineNumber = "93"
             endingLineNumber = "93"
             landmarkName = "buildMidiTrack(_:_:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "4C3616DA-A614-435B-8E33-FD445191469A"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "JamTrackGenerator/MidiPlayer.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "218"
+            endingLineNumber = "218"
+            landmarkName = "updatePlayback()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

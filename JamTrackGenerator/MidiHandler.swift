@@ -22,7 +22,6 @@ import SwiftData
         midiPlayer.onPlaybackEnded = {
             self.isPlaying = false
             self.isPaused = false
-            print("MidiHandler knows it's done")
         }
     }
     

@@ -26,7 +26,7 @@ struct CategoryContentView: View {
             }
         }
         .navigationTitle(category.rawValue)
-        .navigationDestination(for: JamTrack.self) { JamTrackDetailView(jamTrack: $0) }
+//        .navigationDestination(for: JamTrack.self) { JamTrackDetailView(jamTrack: $0) }
         .navigationDestination(for: Style.self) { Text($0.name) }
         .navigationDestination(for: Feel.self) { Text($0.name) }
         .navigationDestination(for: HarmonicPattern.self) { Text($0.name) }

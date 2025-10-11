@@ -14,9 +14,6 @@ struct JamTrackDetailView: View {
     @State private var viewModel: ViewModel
     @State private var export = false
     @State private var midiDocument: MidiDocument?
-    @State private var playIsPressed = false
-    @State private var stopIsPressed = false
-    @State private var loopIsPressed = false
 
     @Query var keys: [Key]
     @Query var feels: [Feel]

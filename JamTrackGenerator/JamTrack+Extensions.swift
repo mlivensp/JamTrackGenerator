@@ -8,6 +8,9 @@
 import Foundation
 import SwiftData
 
+extension JamTrack: Identifiable {}
+extension JamTrack: Hashable {}
+
 extension JamTrack {
     var sortedSections: [JamTrackSection] {
         self.jamTrackSections.sorted(by: { $0.order < $1.order })
