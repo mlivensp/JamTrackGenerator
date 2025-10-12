@@ -10,20 +10,16 @@ import SwiftData
 
 extension JamTracksView {
     @Observable class ViewModel {
-//        var jamTracks: [JamTrack] = []
+        var midiHandler: MidiHandler?
+        init() {}
         
-        init() {
+        func togglePlayJamTrack(jamTrack: JamTrack, modelContext: ModelContext) throws {
+            if midiHandler == nil {
+                midiHandler = try MidiHandler(jamTrack: jamTrack, modelContext: modelContext)
+            }
+
+            try midiHandler?.togglePlayback()
         }
-        
-//        fileprivate func fetchJamTracks(modelContext: ModelContext) -> [JamTrack] {
-//            let fetchDescriptor = FetchDescriptor<JamTrack>(sortBy: [SortDescriptor(\JamTrack.name)])
-//            
-//            do {
-//                return try modelContext.fetch(fetchDescriptor)
-//            } catch {
-//                fatalError(error.localizedDescription)
-//            }
-//        }
         
         func addJamTrack(modelContext: ModelContext) -> JamTrack {
             let newJamTrack = JamTrack.newJamTrack(modelContext: modelContext)

@@ -5,39 +5,50 @@ struct JamTracksView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \JamTrack.name) var jamTracks: [JamTrack]
     @Binding var selectedJamTrack: JamTrack?
+    @State var viewModel: ViewModel
+    
+    init(selectedJamTrack: Binding<JamTrack?>) {
+        self._selectedJamTrack = selectedJamTrack
+        let viewModel = ViewModel()
+        self._viewModel = .init(wrappedValue: viewModel)
+    }
     
     var body: some View {
         List {
             ForEach(jamTracks) { jamTrack in
-                #if os(iOS) && !targetEnvironment(macCatalyst)
-                if UIDevice.current.userInterfaceIdiom == .phone {
-                    // iPhone: NavigationLink without onTapGesture
-                    NavigationLink(value: jamTrack) {
-                        Text(jamTrack.name)
-                            .border(.blue, width: 1)
+                HStack {
+#if os(iOS) && !targetEnvironment(macCatalyst)
+                    if UIDevice.current.userInterfaceIdiom == .phone {
+                        // iPhone: NavigationLink without onTapGesture
+                        NavigationLink(value: jamTrack) {
+                            Text(jamTrack.name)
+                                .border(.blue, width: 1)
+                        }
+                    } else {
+                        // iPad: NavigationLink with onTapGesture
+                        NavigationLink(value: jamTrack) {
+                            Text(jamTrack.name)
+                                .border(.blue, width: 1)
+                        }
+                        .onTapGesture {
+                            selectedJamTrack = jamTrack
+                            print("Selected JamTrack for iPad: \(jamTrack.name)")
+                        }
                     }
-                } else {
-                    // iPad: NavigationLink with onTapGesture
+#else
+                    // macOS: NavigationLink with onTapGesture
                     NavigationLink(value: jamTrack) {
                         Text(jamTrack.name)
                             .border(.blue, width: 1)
                     }
                     .onTapGesture {
                         selectedJamTrack = jamTrack
-                        print("Selected JamTrack for iPad: \(jamTrack.name)")
+                        print("Selected JamTrack for macOS: \(jamTrack.name)")
                     }
+#endif
+                    Spacer()
+                    PlaybackControlsView(jamTrack: jamTrack, modelContext: modelContext, size: .small)
                 }
-                #else
-                // macOS: NavigationLink with onTapGesture
-                NavigationLink(value: jamTrack) {
-                    Text(jamTrack.name)
-                        .border(.blue, width: 1)
-                }
-                .onTapGesture {
-                    selectedJamTrack = jamTrack
-                    print("Selected JamTrack for macOS: \(jamTrack.name)")
-                }
-                #endif
             }
             .onDelete { indexSet in
                 for index in indexSet {
