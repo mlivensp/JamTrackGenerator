@@ -47,7 +47,9 @@ struct JamTracksView: View {
                     }
 #endif
                     Spacer()
-                    PlaybackControlsView(jamTrack: jamTrack, modelContext: modelContext, size: .small)
+                    PlaybackControlsView(size: .small) {
+                        return URL(string: "")
+                    }
                 }
             }
             .onDelete { indexSet in

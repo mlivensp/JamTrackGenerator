@@ -17,13 +17,14 @@ struct Song {
         self.modelContext = modelContext
     }
     
-    mutating func buildTracks(jamTrack: JamTrack) {
+//    mutating func buildTracks(jamTrack: JamTrack) {
+    mutating func buildTracks(style: Style, feel: Feel, key: Key, jamTrackSections: [JamTrackSection]) {
         var currentPulse: UInt = 0
         var drumPartId: PersistentIdentifier? = nil
         var partMap: [PersistentIdentifier: [EventDescriptor]] = [:]
         var programMap: [PersistentIdentifier: (program: UInt8, name: String)] = [:]
         
-        for section in jamTrack.jamTrackSections.sorted(by: { $0.order < $1.order } ) {
+        for section in jamTrackSections.sorted(by: { $0.order < $1.order } ) {
             for sectionPart in section.sectionParts.filter( { $0.patternName != "" } ) {
                 guard let part = sectionPart.part else {
                     fatalError("missing part in setionPart")
@@ -33,8 +34,8 @@ struct Song {
                     fatalError((#file as NSString).lastPathComponent + "#" + #function + ": no instrument for part")
                 }
                 
-                let styleName = jamTrack.style?.name ?? ""
-                let feelName = jamTrack.feel?.name ?? ""
+                let styleName = style.name
+                let feelName = feel.name
                 
                 let eventBuilder: EventBuilder
                 do {
@@ -44,10 +45,6 @@ struct Song {
                         eventBuilder = DrumEventBuilder(pattern: pattern)
                     }
                     else {
-                        guard let key = jamTrack.key else {
-                            fatalError("no key defined for song")
-                        }
-                        
                         programMap[part.id] = (instrument.programNumber, instrument.name)
                         let pattern = try fetchHarmonicPattern(patternName: sectionPart.patternName, styleName: styleName, feelName: feelName)
                         eventBuilder = HarmonicEventBuilder(pattern: pattern, key: key)

@@ -67,7 +67,6 @@ struct ContentView: View {
             )
             .frame(width: contentWidth > 0 ? contentWidth : nil)
             .onPreferenceChange(ContentWidthPreferenceKey.self) {
-                print("onPreferenceChange \($0)")
                 self.contentWidth = $0
             }
         } detail: {
@@ -81,14 +80,14 @@ struct ContentView: View {
                     }
                 case .styles:
                     if let style = selectedStyle {
-                        Text(style.name) // Replace with StyleDetailView
+                        StyleEditView(style: style)
                     } else {
                         Text("Select a Style")
                     }
                     
                 case .feels:
                     if let feel = selectedFeel {
-                        Text(feel.name) // Replace with FeelDetailView
+                        FeelEditView(feel: feel)
                     } else {
                         Text("Select a Feel")
                     }
@@ -123,53 +122,6 @@ struct ContentView: View {
 #endif
     }
     
-    //    private var stackView: some View {
-    //        NavigationStack {
-    //            List {
-    //                ForEach(SidebarCategory.allCases, id: \.self) { category in
-    //                    NavigationLink(value: category) {
-    //                        Text(category.rawValue)
-    //                    }
-    //                }
-    //            }
-    //            .navigationTitle("Categories")
-    //            .navigationDestination(for: SidebarCategory.self) { category in
-    //                CategoryContentView(
-    //                    category: category,
-    //                    selectedJamTrack: $selectedJamTrack,
-    //                    selectedStyle: $selectedStyle,
-    //                    selectedFeel: $selectedFeel,
-    //                    selectedDrumPatternNavigation: $selectedDrumPatternNavigation,
-    //                    selectedHarmonicPattern: $selectedHarmonicPattern
-    //                )
-    //                .onAppear {
-    //                    print("Navigated to CategoryContentView for category: \(category.rawValue)")
-    //                }
-    //            }
-    //            .navigationDestination(for: JamTrack.self) { jamTrack in
-    //                JamTrackDetailView(jamTrack: jamTrack)
-    //                    .onAppear {
-    //                        print("Navigated to JamTrackDetailView for track: \(jamTrack.name)")
-    //                    }
-    //            }
-    //            .navigationDestination(for: DrumPatternNavigation.self) { navigation in
-    //                switch navigation {
-    //                case .existing(let drumPattern):
-    //                    Text(drumPattern.name) // Replace with DrumPatternDetailView
-    //                    .onAppear { print("Navigated to DrumPatternDetailView for pattern: \(drumPattern.name)") }
-    //                case .importOptions(let trackNotes):
-    //                    PatternImportView(
-    //                        trackNotes: trackNotes,
-    //                        selectedDrumPatternNavigation: $selectedDrumPatternNavigation
-    //                    )
-    //                    .onAppear { print("Navigated to DrumPatternImportOptionsView with \(trackNotes.count) tracks") }
-    //                }
-    //            }
-    //            .onChange(of: selectedDrumPatternNavigation) { oldValue, newValue in
-    //                print("selectedDrumPatternNavigation changed from \(String(describing: oldValue)) to \(String(describing: newValue))")
-    //            }
-    //        }
-    //    }
     private var stackView: some View {
         NavigationStack {
             List {
@@ -177,10 +129,6 @@ struct ContentView: View {
                     NavigationLink(value: category) {
                         Text(category.rawValue)
                     }
-                }
-                // Temporary test navigation
-                NavigationLink("Test JamTracksView") {
-                    JamTracksView(selectedJamTrack: $selectedJamTrack)
                 }
             }
             .navigationTitle("Categories")
@@ -193,19 +141,17 @@ struct ContentView: View {
                     selectedDrumPatternNavigation: $selectedDrumPatternNavigation,
                     selectedHarmonicPattern: $selectedHarmonicPattern
                 )
-                .onAppear {
-                    print("Navigated to CategoryContentView for category: \(category.rawValue)")
-                }
             }
             .navigationDestination(for: JamTrack.self) { jamTrack in
                 JamTrackDetailView(jamTrack: jamTrack)
-                    .onAppear {
-                        print("Navigated to JamTrackDetailView for track: \(jamTrack.name)")
-                    }
             }
-            //            .navigationDestination(for: DrumPatternNavigation.self) { ... }
-            //            .onChange(of: selectedDrumPatternNavigation) { ... }
-        }
+            .navigationDestination(for: Style.self) { style in
+                StyleEditView(style: style)
+            }
+            .navigationDestination(for: Feel.self) { feel in
+                FeelEditView(feel: feel)
+            }
+      }
     }
 }
 

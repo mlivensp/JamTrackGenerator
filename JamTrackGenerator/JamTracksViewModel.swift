@@ -13,13 +13,13 @@ extension JamTracksView {
         var midiHandler: MidiHandler?
         init() {}
         
-        func togglePlayJamTrack(jamTrack: JamTrack, modelContext: ModelContext) throws {
-            if midiHandler == nil {
-                midiHandler = try MidiHandler(jamTrack: jamTrack, modelContext: modelContext)
-            }
-
-            try midiHandler?.togglePlayback()
-        }
+//        func togglePlayJamTrack(jamTrack: JamTrack, modelContext: ModelContext) throws {
+//            if midiHandler == nil {
+//                midiHandler = try MidiHandler(jamTrack: jamTrack, modelContext: modelContext)
+//            }
+//
+//            try midiHandler?.togglePlayback()
+//        }
         
         func addJamTrack(modelContext: ModelContext) -> JamTrack {
             let newJamTrack = JamTrack.newJamTrack(modelContext: modelContext)

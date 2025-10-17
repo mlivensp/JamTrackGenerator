@@ -103,8 +103,10 @@ enum SchemaV1: VersionedSchema {
     @Model class JamTrackSection {
         var jamTrack: JamTrack?
         var songSection: SongSection?
+        // TODO: add number of times to repeat
         var order: UInt8
-        
+        @Transient var uuid: UUID = UUID()
+
         @Relationship(deleteRule: .cascade, inverse: \SectionPart.section) var sectionParts: [SectionPart]
         
         init(jamTrack: JamTrack?, songSection: SongSection, order: UInt8, sectionParts: [SectionPart] = []) {
@@ -151,7 +153,8 @@ enum SchemaV1: VersionedSchema {
             }
         }
         var order: Int
-        
+        @Transient var uuid: UUID = UUID()
+
         @Relationship(deleteRule: .cascade, inverse: \SectionPart.part) var sectionParts: [SectionPart]
         
         init(jamTrack: JamTrack, instrument: Instrument, order: Int = 0, sectionParts: [SectionPart] = []) {

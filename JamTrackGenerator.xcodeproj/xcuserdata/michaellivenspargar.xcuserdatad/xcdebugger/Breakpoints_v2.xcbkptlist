@@ -94,10 +94,10 @@
             filePath = "JamTrackGenerator/Song.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "53"
-            endingLineNumber = "53"
-            landmarkName = "Song"
-            landmarkType = "14">
+            startingLineNumber = "50"
+            endingLineNumber = "50"
+            landmarkName = "buildTracks(style:feel:key:jamTrackSections:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -300,8 +300,8 @@
             filePath = "JamTrackGenerator/ContentView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "97"
-            endingLineNumber = "97"
+            startingLineNumber = "96"
+            endingLineNumber = "96"
             landmarkName = "splitView"
             landmarkType = "24">
          </BreakpointContent>
@@ -415,22 +415,6 @@
             startingLineNumber = "93"
             endingLineNumber = "93"
             landmarkName = "buildMidiTrack(_:_:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "4C3616DA-A614-435B-8E33-FD445191469A"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "JamTrackGenerator/MidiPlayer.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "218"
-            endingLineNumber = "218"
-            landmarkName = "updatePlayback()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

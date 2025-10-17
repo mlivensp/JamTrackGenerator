@@ -8,7 +8,7 @@ enum PatternSelection: Hashable {
 
 struct JamTrackMatrixView: View {
     @Environment(\.modelContext) var modelContext
-    @Bindable var jamTrack: JamTrack
+    @Bindable var viewModel: JamTrackDetailView.ViewModel
     @Query(sort: \SongSection.sortOrder) var songSections: [SongSection]
     @Query var instruments: [Instrument]
     @Query var drumPatterns: [DrumPattern]
@@ -20,13 +20,14 @@ struct JamTrackMatrixView: View {
             HStack {
                 Button("Add Section") {
                     let newSection = SongSection(name: "New Section", sortOrder: 5)
-                    modelContext.insert(newSection)
-                    let _ = jamTrack.addSection(songSection: newSection)
+                    //                    modelContext.insert(newSection)
+                    let _ = viewModel.addSection(songSection: newSection)
                 }
+                
                 Button("Add Part") {
                     guard let family = instrumentFamilies.sorted(by: { $0.sortOrder < $1.sortOrder } ).first,
                           let newInstrument = family.instruments.sorted(by: { $0.programNumber < $1.programNumber } ).first else { return }
-                    let _ = jamTrack.addPart(instrument: newInstrument)
+                    let _ = viewModel.addPart(instrument: newInstrument)
                 }
             }
             .padding()
@@ -40,9 +41,9 @@ struct JamTrackMatrixView: View {
                         .background(Color.gray.opacity(0.2))
                     
                     // Column headers (Parts)
-                    ForEach(jamTrack.sortedParts, id: \.id) { part in
-                        if let actualIndex = jamTrack.parts.firstIndex(where: { $0.id == part.id }) {
-                            Picker("", selection: $jamTrack.parts[actualIndex].instrument) {
+                    ForEach(viewModel.sortedParts, id: \.id) { part in
+                        if let actualIndex = viewModel.parts.firstIndex(where: { $0.id == part.id }) {
+                            Picker("", selection: $viewModel.parts[actualIndex].instrument) {
                                 ForEach(instruments.sorted(by: { $0.programNumber < $1.programNumber } )) { instrument in
                                     Text(instrument.name).tag(instrument)
                                 }
@@ -51,9 +52,9 @@ struct JamTrackMatrixView: View {
                         }
                     }
                     // Rows
-                    ForEach(jamTrack.sortedSections, id: \.id) { section in
-                        if let actualIndex = jamTrack.jamTrackSections.firstIndex(where: { $0.id == section.id }) {
-                            Picker("", selection: $jamTrack.jamTrackSections[actualIndex].songSection) {
+                    ForEach(viewModel.sortedSections, id: \.id) { section in
+                        if let actualIndex = viewModel.jamTrackSections.firstIndex(where: { $0.id == section.id }) {
+                            Picker("", selection: $viewModel.jamTrackSections[actualIndex].songSection) {
                                 ForEach(songSections) { section in
                                     Text(section.name).tag(section)
                                 }
@@ -61,8 +62,8 @@ struct JamTrackMatrixView: View {
                             .frame(height: 50)
                             
                             // Cells
-                            ForEach(jamTrack.sortedParts, id: \.id) { part in
-                                let cellID = "\(section.id)-\(part.id)"
+                            ForEach(viewModel.sortedParts, id: \.id) { part in
+                                let cellID = "\(section.uuid)-\(part.uuid)"
                                 patternPicker(section: section, part: part)
                                     .id(cellID)
                                     .frame(width: 150, height: 50)
@@ -79,12 +80,12 @@ struct JamTrackMatrixView: View {
     private var cellSelections: [String: PatternSelection] {
         var result: [String: PatternSelection] = [:]
         
-        for section in jamTrack.sortedSections {
+        for section in viewModel.sortedSections {
             for sectionPart in section.sectionParts {
                 guard let part = sectionPart.part,
                       let section = sectionPart.section else { continue }
                 
-                let cellKey = "\(section.id)-\(part.id)"
+                let cellKey = "\(section.uuid)-\(part.uuid)"
                 let patternName = sectionPart.patternName
                 
                 if part.instrument?.isDrums == true {
@@ -103,34 +104,34 @@ struct JamTrackMatrixView: View {
     }
     private var gridColumns: [GridItem] {
         var items: [GridItem] = [.init(.fixed(150))] // Row header
-        items += Array(repeating: GridItem(.fixed(150)), count: jamTrack.sortedParts.count)
+        items += Array(repeating: GridItem(.fixed(150)), count: viewModel.sortedParts.count)
         return items
     }
     
     func patternPicker(section: JamTrackSection, part: Part) -> some View {
-        let cellKey = "\(section.id)-\(part.id)"
+        let cellKey = "\(section.uuid)-\(part.uuid)"
         let selected = cellSelections[cellKey]
-
+        
         let isDrums = part.instrument?.isDrums == true
-
+        
         let filtered: [PatternSelection] = isDrums
-            ? drumPatterns
-                .filter { ($0.style == nil || $0.style == jamTrack.style) && ($0.feel == nil || $0.feel == jamTrack.feel) }
-                .map { .drum(id: $0.id) }
-            : harmonicPatterns
-                .filter { ($0.style == nil || $0.style == jamTrack.style) && ($0.feel == nil || $0.feel == jamTrack.feel) }
-                .map { .harmonic(id: $0.id) }
-
+        ? drumPatterns
+            .filter { ($0.style == nil || $0.style == viewModel.style) && ($0.feel == nil || $0.feel == viewModel.feel) }
+            .map { .drum(id: $0.id) }
+        : harmonicPatterns
+            .filter { ($0.style == nil || $0.style == viewModel.style) && ($0.feel == nil || $0.feel == viewModel.feel) }
+            .map { .harmonic(id: $0.id) }
+        
         let patterns: [PatternSelection] = {
             guard let selected, !filtered.contains(selected) else { return filtered }
             return [selected] + filtered
         }()
-
+        
         let binding = Binding<PatternSelection?>(
             get: { selected },
             set: { newValue in
                 guard let newValue else { return }
-
+                
                 let patternName: String
                 switch newValue {
                 case .drum(let id):
@@ -144,7 +145,7 @@ struct JamTrackMatrixView: View {
                     }
                     patternName = pattern.name
                 }
-
+                
                 if let existing = section.sectionParts.first(where: { $0.part == part }) {
                     existing.patternName = patternName
                 } else {
@@ -153,7 +154,7 @@ struct JamTrackMatrixView: View {
                 }
             }
         )
-
+        
         return Group {
             if part.instrument != nil {
                 Picker("", selection: binding) {
@@ -171,7 +172,7 @@ struct JamTrackMatrixView: View {
             }
         }
     }
-
+    
     private func patternName(_ pattern: PatternSelection) -> String {
         switch pattern {
         case .drum(let id):
@@ -185,4 +186,5 @@ struct JamTrackMatrixView: View {
             }
             return label
         }
-    }}
+    }
+}

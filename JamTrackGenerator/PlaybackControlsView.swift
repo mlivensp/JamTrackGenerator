@@ -28,22 +28,22 @@ enum ButtonSize {
 
     var playFrame: CGFloat {
         switch self {
-        case .small: return 40
-        case .large: return 50
+        case .small: return 20
+        case .large: return 30
         }
     }
 
     var stopFrame: CGFloat {
         switch self {
-        case .small: return 40
-        case .large: return 50
+        case .small: return 20
+        case .large: return 30
         }
     }
 
     var loopFrame: CGFloat {
         switch self {
-        case .small: return 30
-        case .large: return 40
+        case .small: return 20
+        case .large: return 30
         }
     }
 
@@ -66,16 +66,14 @@ struct PlaybackControlsView: View {
     @State private var showingError = false
     @State private var errorMessage = ""
 
-    init(jamTrack: JamTrack, modelContext: ModelContext, size: ButtonSize) {
-        self._viewModel = .init(wrappedValue: ViewModel(jamTrack: jamTrack, modelContext: modelContext))
+    init(size: ButtonSize, createURL: @escaping () -> URL?) {
+        self._viewModel = .init(wrappedValue: ViewModel(createURL: createURL))
         self.size = size
     }
 
     var body: some View {
         VStack(spacing: 8) {
-            HStack(spacing: 10) {
-                Spacer()
-
+            HStack(spacing: 5) {
                 // Play/Pause button
                 Button(action: togglePlayback) {
                     Image(systemName: playButtonIcon)
@@ -113,8 +111,6 @@ struct PlaybackControlsView: View {
                         .onEnded { _ in stopIsPressed = false }
                 )
 
-                Spacer(minLength: 0)
-
                 // Loop toggle
                 Button(action: { viewModel.toggleLooping() }) {
                     Image(systemName: viewModel.isLooping ? "repeat.1" : "repeat")
@@ -122,7 +118,6 @@ struct PlaybackControlsView: View {
                         .foregroundStyle(viewModel.isLooping ? Color.accentColor : .primary)
                         .frame(width: size.loopFrame, height: size.loopFrame)
                         .clipShape(Circle())
-                        .padding(size.loopPadding)
                 }
                 .buttonStyle(.plain)
                 .scaleEffect(loopIsPressed ? 0.95 : 1.0)
@@ -133,11 +128,8 @@ struct PlaybackControlsView: View {
                         .onChanged { _ in loopIsPressed = true }
                         .onEnded { _ in loopIsPressed = false }
                 )
-                .padding()
             }
         }
-//        .border(.primary, width: 1)
-//        .padding()
         .alert(isPresented: $showingError) {
             Alert(title: Text("Playback Error"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
         }
@@ -157,4 +149,21 @@ struct PlaybackControlsView: View {
             }
         }
     }
+}
+
+#Preview {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: JamTrack.self, configurations: config)
+
+    let jamTrack = JamTrack(name: "Test", style: nil, key: nil, feel: nil, bpm: 120, includeCountIn: true, jamTrackSections: [], parts: [], sectionPartPatterns: [])
+    
+    PlaybackControlsView(size: .large) {
+        URL(string: "")!
+    }
+        .modelContainer(container)
+    
+    PlaybackControlsView(size: .small) {
+        URL(string: "")!
+    }
+        .modelContainer(container)
 }

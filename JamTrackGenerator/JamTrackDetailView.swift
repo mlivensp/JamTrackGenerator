@@ -37,9 +37,9 @@ struct JamTrackDetailView: View {
                 .alignmentGuide(.top) { _ in 0 }
                 .padding()
 
-            JamTrackMatrixView(jamTrack: jamTrack)
+            JamTrackMatrixView(viewModel: viewModel)
             
-            PlaybackControlsView(jamTrack: jamTrack, modelContext: modelContext, size: .large)
+            PlaybackControlsView(size: .large, createURL: viewModel.createURL)
             
             if let errorMessage = viewModel.errorMessage {
                 Text(errorMessage)
@@ -48,16 +48,42 @@ struct JamTrackDetailView: View {
             }
         }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button(action: {
-                    midiDocument = buildMidiDocument()
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        viewModel.errorMessage = "Failed to save: \(error.localizedDescription)"
+                    }
+                }) {
+                    Label("Save", systemImage: "tray.and.arrow.down")
+                }
+
+                Button(role: .destructive, action: {
+                    modelContext.delete(jamTrack)
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        viewModel.errorMessage = "Failed to delete: \(error.localizedDescription)"
+                    }
+                }) {
+                    Label("Delete", systemImage: "trash")
+                }
+
+                Button(action: {
+                    midiDocument = viewModel.createMidiDocument(modelContext: modelContext)
                     export = true
                 }) {
                     Label("Export", systemImage: "square.and.arrow.up")
                 }
+                
+                Button(action: viewModel.dumpSectionParts) {
+                    Label("Dump", systemImage: "arrow.2.circlepath.circle")
+                }
             }
-        }
-        .fileExporter(
+        } .onAppear {
+            viewModel.modelContext = modelContext
+        } .fileExporter(
             isPresented: $export,
             document: midiDocument,
             contentType: .midi
@@ -75,12 +101,12 @@ struct JamTrackDetailView: View {
         HStack {
             VStack(spacing: 0) {
                 LabeledContent {
-                    TextField("", text: $jamTrack.name)
+                    TextField("", text: $viewModel.name)
                 }
                 label: { Text("Name") }
 
                 LabeledContent {
-                    Picker("", selection: $jamTrack.key) {
+                    Picker("", selection: $viewModel.key) {
                         ForEach(keys) { key in
                             Text(key.noteName).tag(key)
                         }
@@ -89,7 +115,7 @@ struct JamTrackDetailView: View {
                 label: { Text("Key") }
                 
                 LabeledContent {
-                    Picker("", selection: $jamTrack.feel) {
+                    Picker("", selection: $viewModel.feel) {
                         ForEach(feels, id: \.self) { feel in
                             Text(feel.name).tag(feel)
                         }
@@ -106,7 +132,8 @@ struct JamTrackDetailView: View {
                         f.allowsFloats = false
                         return f
                     }()
-                    TextField("", value: $jamTrack.bpm, formatter: formatter)
+                    
+                    TextField("", value: $viewModel.bpm, formatter: formatter)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 60)
                 }
@@ -125,9 +152,13 @@ struct JamTrackDetailView: View {
         return String(format: "%d:%02d", minutes, seconds)
     }
     
-    private func buildMidiDocument() -> MidiDocument? {
-        return jamTrack.createMidiDocument(modelContext: modelContext)
+    private func fetchModelContext() -> ModelContext {
+        modelContext
     }
+    
+//    private func buildMidiDocument() -> MidiDocument? {
+//        return jamTrack.createMidiDocument(modelContext: modelContext)
+//    }
 }
 
 //#Preview {

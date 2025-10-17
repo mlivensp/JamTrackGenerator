@@ -149,20 +149,23 @@ extension JamTrack {
 
         return jamTrack
     }
-    
-    func createMidiDocument(modelContext: ModelContext) -> MidiDocument {
-        var song = Song(modelContext: modelContext)
-        song.buildTracks(jamTrack: self)
-        guard let key else { fatalError("No key set for track") }
-        var document = MidiDocument(song: song, sharpsOrFlats: key.sharpsOrFlats, isMajor: key.isMajor, bpm: bpm)
-        document.encodeMidi()
-        return document
-    }
-    
-
-    func encodeToMidi(modelContext: ModelContext) -> Data {
-        let document = createMidiDocument(modelContext: modelContext)
-        let midiData = document.encodeMidiToData()
-        return Data(midiData)
-    }
+//    
+//    func createMidiDocument(modelContext: ModelContext) -> MidiDocument {
+//        var song = Song(modelContext: modelContext)
+//        guard let style = style, let feel = feel, let key = key else {
+//            fatalError("No style, feel or key set for track")
+//        }
+//        
+//        song.buildTracks(style: style, feel: feel, key: key, jamTrackSections: jamTrackSections)
+//        var document = MidiDocument(song: song, sharpsOrFlats: key.sharpsOrFlats, isMajor: key.isMajor, bpm: bpm)
+//        document.encodeMidi()
+//        return document
+//    }
+//    
+//
+//    func encodeToMidi(modelContext: ModelContext) -> Data {
+//        let document = createMidiDocument(modelContext: modelContext)
+//        let midiData = document.encodeMidiToData()
+//        return Data(midiData)
+//    }
 }

@@ -10,19 +10,23 @@ import SwiftData
 
 extension PlaybackControlsView {
     @Observable class ViewModel {
-        let jamTrack: JamTrack
-        let modelContext: ModelContext
+//        let jamTrack: JamTrack
+//        let modelContext: ModelContext
+        let createURL: () -> URL?
         var midiHandler: MidiHandler?
         
-        init(jamTrack: JamTrack, modelContext: ModelContext) {
-            self.jamTrack = jamTrack
-            self.modelContext = modelContext
+        init(createURL: @escaping () -> URL?) {
+//            self.jamTrack = jamTrack
+//            self.modelContext = modelContext
+            self.createURL = createURL
             midiHandler = nil
         }
         
         func togglePlayback() throws {
             if midiHandler == nil {
-                midiHandler = try MidiHandler(jamTrack: jamTrack, modelContext: modelContext)
+                if let url = createURL() {
+                    midiHandler = try MidiHandler(url: url)
+                }
             }
             
             try midiHandler?.togglePlayback()
