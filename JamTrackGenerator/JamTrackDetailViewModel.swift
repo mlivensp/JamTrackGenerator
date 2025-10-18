@@ -195,7 +195,7 @@ extension JamTrackDetailView {
             guard let modelContext else { return nil }
             let document = createMidiDocument(modelContext: modelContext)
             let midiData = document.encodeMidiToData()
-            let url = saveToDocuments(data: midiData)
+            let url = midiData.saveToDocuments()
             return url
         }
         
@@ -209,18 +209,6 @@ extension JamTrackDetailView {
             var document = MidiDocument(song: song, sharpsOrFlats: key.sharpsOrFlats, isMajor: key.isMajor, bpm: bpm)
             document.encodeMidi()
             return document
-        }
-
-        private func saveToDocuments(data: Data) -> URL? {
-            guard let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return nil }
-            let midiURL = documentsURL.appendingPathComponent("test.midi")
-            do {
-                try data.write(to: midiURL)
-                return midiURL
-            } catch {
-                print("Failed to write MIDI file: \(error)")
-                return nil
-            }
         }
     }
 }

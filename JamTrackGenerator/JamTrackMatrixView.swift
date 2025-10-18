@@ -14,49 +14,93 @@ struct JamTrackMatrixView: View {
     @Query var drumPatterns: [DrumPattern]
     @Query var harmonicPatterns: [HarmonicPattern]
     @Query var instrumentFamilies: [InstrumentFamily]
+
+    @State private var pendingPartDeletion: Part?
+    @State private var pendingSectionDeletion: JamTrackSection?
     
     var body: some View {
         VStack {
-            HStack {
-                Button("Add Section") {
-                    let newSection = SongSection(name: "New Section", sortOrder: 5)
-                    //                    modelContext.insert(newSection)
-                    let _ = viewModel.addSection(songSection: newSection)
-                }
-                
-                Button("Add Part") {
-                    guard let family = instrumentFamilies.sorted(by: { $0.sortOrder < $1.sortOrder } ).first,
-                          let newInstrument = family.instruments.sorted(by: { $0.programNumber < $1.programNumber } ).first else { return }
-                    let _ = viewModel.addPart(instrument: newInstrument)
-                }
-            }
-            .padding()
+//            HStack {
+//                
+//            }
+//            .padding()
             
             ScrollView([.horizontal, .vertical]) {
                 LazyVGrid(columns: gridColumns, spacing: 8) {
                     // Top-left corner cell
-                    Text("JamTrack Matrix")
-                        .font(.headline)
-                        .frame(width: 150, height: 50)
-                        .background(Color.gray.opacity(0.2))
+                    ZStack {
+                        // Diagonal line
+                        Path { path in
+                            path.move(to: .zero)
+                            path.addLine(to: CGPoint(x: 150, y: 50))
+                            path.move(to: CGPoint(x: 0, y: 50))
+                            path.addLine(to: CGPoint(x: 150, y: 50))
+                            path.move(to: CGPoint(x: 150, y: 0))
+                            path.addLine(to: CGPoint(x: 150, y: 50))
+                        }
+                        .stroke(Color.gray, lineWidth: 1)
+                        Button(action: {
+                            let newSection = SongSection(name: "New Section", sortOrder: 5)
+                            viewModel.addSection(songSection: newSection)
+                        }) {
+                            Image(systemName: "plus.circle")
+                                .resizable()
+                                .frame(width: 16, height: 16)
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(.plain)
+                        .background(Color.clear)
+                        .position(x: 40, y: 35)
+
+                        Button(action: {
+                            guard let family = instrumentFamilies.sorted(by: { $0.sortOrder < $1.sortOrder } ).first,
+                                  let newInstrument = family.instruments.sorted(by: { $0.programNumber < $1.programNumber } ).first else { return }
+                            viewModel.addPart(instrument: newInstrument)
+                        }) {
+                            Image(systemName: "plus.circle")
+                                .resizable()
+                                .frame(width: 16, height: 16)
+                                .foregroundColor(.blue)
+                        }
+                        .position(x: 110, y: 15)
+                    }
+                    .buttonStyle(.plain)
+                    .background(Color.clear)
+                    .frame(width: 150, height: 50)
                     
                     // Column headers (Parts)
                     ForEach(viewModel.sortedParts, id: \.id) { part in
                         if let actualIndex = viewModel.parts.firstIndex(where: { $0.id == part.id }) {
-                            Picker("", selection: $viewModel.parts[actualIndex].instrument) {
-                                ForEach(instruments.sorted(by: { $0.programNumber < $1.programNumber } )) { instrument in
-                                    Text(instrument.name).tag(instrument)
+                            HStack {
+                                Picker("", selection: $viewModel.parts[actualIndex].instrument) {
+                                    ForEach(instruments.sorted(by: { $0.programNumber < $1.programNumber } )) { instrument in
+                                        Text(instrument.name).tag(instrument)
+                                    }
+                                }
+                                .frame(width: 150)
+                                
+                                Button(role: .destructive) {
+                                    pendingPartDeletion = part
+                                } label: {
+                                    Image(systemName: "trash")
                                 }
                             }
-                            .frame(width: 150)
                         }
                     }
                     // Rows
                     ForEach(viewModel.sortedSections, id: \.id) { section in
                         if let actualIndex = viewModel.jamTrackSections.firstIndex(where: { $0.id == section.id }) {
-                            Picker("", selection: $viewModel.jamTrackSections[actualIndex].songSection) {
-                                ForEach(songSections) { section in
-                                    Text(section.name).tag(section)
+                            HStack {
+                                Picker("", selection: $viewModel.jamTrackSections[actualIndex].songSection) {
+                                    ForEach(songSections) { section in
+                                        Text(section.name).tag(section)
+                                    }
+                                }
+                                
+                                Button(role: .destructive) {
+                                    pendingSectionDeletion = section
+                                } label: {
+                                    Image(systemName: "trash")
                                 }
                             }
                             .frame(height: 50)
@@ -74,6 +118,39 @@ struct JamTrackMatrixView: View {
                 }
                 .padding()
             }
+        }
+        .alert("Delete Instrument?", isPresented: Binding<Bool>(
+            get: { pendingPartDeletion != nil },
+            set: { if !$0 { pendingPartDeletion = nil } }
+        )) {
+            Button("Delete", role: .destructive) {
+                if let part = pendingPartDeletion {
+                    viewModel.removePart(part)
+                    pendingPartDeletion = nil
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                pendingPartDeletion = nil
+            }
+        } message: {
+            Text("This will remove the instrument.")
+        }
+
+        .alert("Delete Section?", isPresented: Binding<Bool>(
+            get: { pendingSectionDeletion != nil },
+            set: { if !$0 { pendingSectionDeletion = nil } }
+        )) {
+            Button("Delete", role: .destructive) {
+                if let section = pendingSectionDeletion {
+                    viewModel.removeSection(section)
+                    pendingSectionDeletion = nil
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                pendingSectionDeletion = nil
+            }
+        } message: {
+            Text("This will remove the section.")
         }
     }
     
@@ -103,8 +180,8 @@ struct JamTrackMatrixView: View {
         return result
     }
     private var gridColumns: [GridItem] {
-        var items: [GridItem] = [.init(.fixed(150))] // Row header
-        items += Array(repeating: GridItem(.fixed(150)), count: viewModel.sortedParts.count)
+        var items: [GridItem] = [.init(.fixed(180))] // Row header
+        items += Array(repeating: GridItem(.fixed(180)), count: viewModel.sortedParts.count)
         return items
     }
     
