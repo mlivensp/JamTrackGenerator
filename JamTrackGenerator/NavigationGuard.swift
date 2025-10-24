@@ -38,8 +38,19 @@ extension View {
     func navigationGuard(_ canNavigateBack: @escaping () -> Bool) -> some View {
         self.background(NavigationGuard(canNavigateBack: canNavigateBack))
     }
-}
+
+    @ViewBuilder func navigationGuardIfPhone(_ canNavigateBack: @escaping () -> Bool) -> some View {
+#if os(iOS)
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            self.navigationGuard(canNavigateBack)
+        } else {
+            self
+        }
+#else
+        self
 #endif
+    }
+}#endif
 // Usage Example
 
 //struct DetailView: View {

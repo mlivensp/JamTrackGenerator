@@ -59,11 +59,12 @@ struct ContentView: View {
         } content: {
             CategoryContentView(
                 category: selectedCategory,
+                navPath: $navPath,
                 selectedJamTrack: $selectedJamTrack,
                 selectedStyle: $selectedStyle,
                 selectedFeel: $selectedFeel,
                 selectedDrumPatternNavigation: $selectedDrumPatternNavigation,
-                selectedHarmonicPattern: $selectedHarmonicPattern
+                selectedHarmonicPattern: $selectedHarmonicPattern,
             )
             .frame(width: contentWidth > 0 ? contentWidth : nil)
             .onPreferenceChange(ContentWidthPreferenceKey.self) {
@@ -80,7 +81,7 @@ struct ContentView: View {
                     }
                 case .styles:
                     if let style = selectedStyle {
-                        StyleEditView(style: style)
+                        StyleEditView(style: style, navPath: $navPath)
                     } else {
                         Text("Select a Style")
                     }
@@ -122,8 +123,10 @@ struct ContentView: View {
 #endif
     }
     
+    @State private var navPath = NavigationPath()
+
     private var stackView: some View {
-        NavigationStack {
+        NavigationStack(path: $navPath) {
             List {
                 ForEach(SidebarCategory.allCases, id: \.self) { category in
                     NavigationLink(value: category) {
@@ -135,24 +138,56 @@ struct ContentView: View {
             .navigationDestination(for: SidebarCategory.self) { category in
                 CategoryContentView(
                     category: category,
-                    selectedJamTrack: $selectedJamTrack,
+                    navPath: $navPath, selectedJamTrack: $selectedJamTrack,
                     selectedStyle: $selectedStyle,
                     selectedFeel: $selectedFeel,
                     selectedDrumPatternNavigation: $selectedDrumPatternNavigation,
-                    selectedHarmonicPattern: $selectedHarmonicPattern
+                    selectedHarmonicPattern: $selectedHarmonicPattern // 🔑 Pass path down
                 )
             }
             .navigationDestination(for: JamTrack.self) { jamTrack in
                 JamTrackDetailView(jamTrack: jamTrack)
             }
             .navigationDestination(for: Style.self) { style in
-                StyleEditView(style: style)
+                StyleEditView(style: style, navPath: $navPath) // 🔑 Pass path down
             }
             .navigationDestination(for: Feel.self) { feel in
                 FeelEditView(feel: feel)
             }
-      }
+            // Add other destinations as needed
+        }
     }
+//    private var stackView: some View {
+//        NavigationStack {
+//            List {
+//                ForEach(SidebarCategory.allCases, id: \.self) { category in
+//                    NavigationLink(value: category) {
+//                        Text(category.rawValue)
+//                    }
+//                }
+//            }
+//            .navigationTitle("Categories")
+//            .navigationDestination(for: SidebarCategory.self) { category in
+//                CategoryContentView(
+//                    category: category,
+//                    selectedJamTrack: $selectedJamTrack,
+//                    selectedStyle: $selectedStyle,
+//                    selectedFeel: $selectedFeel,
+//                    selectedDrumPatternNavigation: $selectedDrumPatternNavigation,
+//                    selectedHarmonicPattern: $selectedHarmonicPattern
+//                )
+//            }
+//            .navigationDestination(for: JamTrack.self) { jamTrack in
+//                JamTrackDetailView(jamTrack: jamTrack)
+//            }
+//            .navigationDestination(for: Style.self) { style in
+//                StyleEditView(style: style)
+//            }
+//            .navigationDestination(for: Feel.self) { feel in
+//                FeelEditView(feel: feel)
+//            }
+//      }
+//    }
 }
 
 #Preview {

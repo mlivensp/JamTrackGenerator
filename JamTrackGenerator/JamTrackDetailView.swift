@@ -1,22 +1,18 @@
-//
-//  JamTrackDetailView.swift
-//  JamTrackGenerator
-//
-//  Created by Michael Livenspargar on 8/30/25.
-//
-
 import SwiftData
 import SwiftUI
 
-
-// usage:
 struct JamTrackDetailView: View {
     @Environment(\.modelContext) var modelContext
+    @Environment(\.dismiss) private var dismiss
     @Bindable var jamTrack: JamTrack
+    
+    // Use @State (not @StateObject) because ViewModel uses @Observable
     @State private var viewModel: ViewModel
+    
     @State private var export = false
     @State private var midiDocument: MidiDocument?
-    @State private var showAlert: Bool = false
+    @State private var showUnsavedChangesAlert = false
+    @State private var pendingNavigation: (() -> Void)?
     
     @Query var keys: [Key]
     @Query var feels: [Feel]
@@ -35,7 +31,7 @@ struct JamTrackDetailView: View {
     
     init(jamTrack: JamTrack) {
         self.jamTrack = jamTrack
-        self._viewModel = .init(wrappedValue: .init(jamTrack: jamTrack))
+        self._viewModel = State(wrappedValue: ViewModel(jamTrack: jamTrack))
     }
     
     var body: some View {
@@ -58,51 +54,47 @@ struct JamTrackDetailView: View {
         }
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button(action: {
-//                    do {
-                        viewModel.save(modelContext: modelContext)
-//                        try modelContext.save()
-//                    } catch {
-//                        viewModel.errorMessage = "Failed to save: \(error.localizedDescription)"
-//                    }
-                }) {
-                    Label("Save", systemImage: "tray.and.arrow.down")
+                Button("Save") {
+                    viewModel.save(modelContext: modelContext)
                 }
+                .keyboardShortcut(.defaultAction)
             }
             
             ToolbarItem(placement: .cancellationAction) {
-                Button(role: .cancel, action: viewModel.reset) {
-                    Label("Cancel", systemImage: "xmark.circle")
+                Button("Cancel", role: .cancel) {
+                    attemptNavigation { dismiss() }
                 }
             }
             
             ToolbarItem(placement: .automatic) {
                 Menu {
-                    Button(role: .destructive) {
-                        //                            confirmDelete()
-                        modelContext.delete(jamTrack)
-                        do {
-                            try modelContext.save()
-                        } catch {
-                            viewModel.errorMessage = "Failed to delete: \(error.localizedDescription)"
+                    Button("Delete", role: .destructive) {
+                        attemptNavigation {
+                            modelContext.delete(jamTrack)
+                            try? modelContext.save()
+                            dismiss()
                         }
-                    } label: {
-                        Label("Delete", systemImage: "trash")
                     }
                     
-                    Button(action: {
+                    Button("Export") {
                         midiDocument = viewModel.createMidiDocument(modelContext: modelContext)
                         export = true
-                    }) {
-                        Label("Export", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Button("Reset Changes") {
+                        attemptNavigation {
+                            viewModel.reset()
+                        }
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
             }
-        } .onAppear {
+        }
+        .onAppear {
             viewModel.modelContext = modelContext
-        } .fileExporter(
+        }
+        .fileExporter(
             isPresented: $export,
             document: midiDocument,
             contentType: .midi
@@ -114,117 +106,93 @@ struct JamTrackDetailView: View {
                 viewModel.errorMessage = error.localizedDescription
             }
         }
+        .alert("Unsaved Changes", isPresented: $showUnsavedChangesAlert) {
+            Button("Discard", role: .destructive) {
+                viewModel.reset()
+                pendingNavigation?()
+                pendingNavigation = nil
+            }
+            Button("Keep Editing", role: .cancel) {
+                pendingNavigation = nil
+            }
+        } message: {
+            Text("You have unsaved changes. Do you want to discard them or keep editing?")
+        }
+        // Handle split view selection change (macOS/iPad)
+        .onChange(of: jamTrack) { oldJamTrack, newJamTrack in
+            guard oldJamTrack !== newJamTrack else { return }
+            
+            if viewModel.hasUnsavedChanges {
+                showUnsavedChangesAlert = true
+                pendingNavigation = {
+                    // Recreate ViewModel with the *new* JamTrack
+                    viewModel = ViewModel(jamTrack: newJamTrack)
+                    viewModel.modelContext = modelContext
+                }
+            } else {
+                // No unsaved changes → switch immediately
+                viewModel = ViewModel(jamTrack: newJamTrack)
+                viewModel.modelContext = modelContext
+            }
+        }
+    }
+    
+    // Helper: Centralize navigation attempts
+    private func attemptNavigation(_ action: @escaping () -> Void) {
+        if viewModel.hasUnsavedChanges {
+            pendingNavigation = action
+            showUnsavedChangesAlert = true
+        } else {
+            action()
+        }
     }
     
     private var keyFeelTempo: some View {
-#if os(macOS)
         VStack(spacing: 0) {
-            HStack {
-                LabeledContent {
-                    TextField("", text: $viewModel.name)
-                }
-                label: { Text("Name") }
-                
-                LabeledContent {
-                    Picker("", selection: $viewModel.key) {
-                        ForEach(keys) { key in
-                            Text(key.noteName).tag(key)
-                        }
-                    }
-                }
-                label: { Text("Key") }
+            LabeledContent("Name") {
+                TextField("Jam Track Name", text: $viewModel.name)
             }
             
-            HStack {
-                LabeledContent {
-                    Picker("", selection: $viewModel.feel) {
-                        ForEach(feels, id: \.self) { feel in
-                            Text(feel.name).tag(feel)
-                        }
-                    }
-                }
-                label: { Text("Feel") }
-                
-                Picker("BPM", selection: $viewModel.bpm) {
-                    ForEach(45...180, id: \.self) { value in
-                        Text("\(value)").tag(UInt8(value))
-                    }
-                }
-                
-                Spacer()
-            }
-        }
-        .frame(maxHeight: .infinity, alignment: .top)
-#else
-        VStack(spacing: 0) {
-            LabeledContent {
-                TextField("", text: $viewModel.name)
-            }
-            label: { Text("Name") }
-            
-            LabeledContent {
+            LabeledContent("Key") {
                 Picker("", selection: $viewModel.key) {
+                    Text("Select Key").tag(nil as Key?)
                     ForEach(keys) { key in
-                        Text(key.noteName).tag(key)
+                        Text(key.noteName).tag(key as Key?)
                     }
                 }
+                .pickerStyle(.menu)               // works everywhere
+#if os(iOS)
+                .pickerStyle(.wheel)              // iOS-only wheel
+#endif
             }
-            label: { Text("Key") }
             
-            LabeledContent {
+            LabeledContent("Feel") {
                 Picker("", selection: $viewModel.feel) {
+                    Text("Select Feel").tag(nil as Feel?)
                     ForEach(feels, id: \.self) { feel in
-                        Text(feel.name).tag(feel)
+                        Text(feel.name).tag(feel as Feel?)
                     }
                 }
+                .pickerStyle(.menu)
+#if os(iOS)
+                .pickerStyle(.wheel)
+#endif
             }
-            label: { Text("Feel") }
             
-            LabeledContent {
+            LabeledContent("BPM") {
                 Picker("BPM", selection: $viewModel.bpm) {
                     ForEach(UInt8(45)...UInt8(180), id: \.self) { value in
-                        Text("\(value)").tag(UInt8(value))
+                        Text("\(value)").tag(value)
                     }
                 }
+                .pickerStyle(.menu)
+#if os(iOS)
+                .pickerStyle(.wheel)
+#endif
             }
-            label: { Text("BPM") }
             
             Spacer()
         }
-        .frame(maxHeight: .infinity, alignment: .top)
-        // TODO: this isn't working
-        .navigationGuard {
-            if viewModel.hasUnsavedChanges {
-                showAlert = true
-                return false
-            }
-            return true
-        }
-        .alert("Discard changes?", isPresented: $showAlert) {
-            Button("Discard", role: .destructive) {
-                viewModel.reset()
-                // Optionally trigger manual pop
-            }
-            Button("Cancel", role: .cancel) {}
-        }
-#endif
+        .padding(.horizontal)
     }
-    
-    private func formatTime(_ time: TimeInterval) -> String {
-        let minutes = Int(time) / 60
-        let seconds = Int(time) % 60
-        return String(format: "%d:%02d", minutes, seconds)
-    }
-    
-    private func fetchModelContext() -> ModelContext {
-        modelContext
-    }
-    
-    //    private func buildMidiDocument() -> MidiDocument? {
-    //        return jamTrack.createMidiDocument(modelContext: modelContext)
-    //    }
 }
-
-//#Preview {
-//    JamTrackDetailView()
-//}

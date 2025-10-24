@@ -17,7 +17,7 @@ extension JamTrackDetailView {
         var errorMessage: String?
         var didSave: Bool = false
         
-        let original: JamTrack
+        var original: JamTrack
         var modelContext: ModelContext?
         
         init(jamTrack: JamTrack) {

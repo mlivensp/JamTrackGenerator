@@ -20,13 +20,13 @@ enum SchemaV1: VersionedSchema {
         
         @Relationship(deleteRule: .cascade, inverse: \DrumPattern.style) var drumPatterns: [DrumPattern]
         @Relationship(deleteRule: .cascade, inverse: \HarmonicPattern.style) var harmonicPatterns: [HarmonicPattern]
-        @Relationship(deleteRule: .cascade, inverse: \JamTrack.style) var definitions: [JamTrack]
+        @Relationship(deleteRule: .cascade, inverse: \JamTrack.style) var jamTracks: [JamTrack]
         
-        init(name: String, drumPatterns: [DrumPattern] = [], harmonicPatterns: [HarmonicPattern] = [], definitions: [JamTrack] = []) {
+        init(name: String, drumPatterns: [DrumPattern] = [], harmonicPatterns: [HarmonicPattern] = [], jamTracks: [JamTrack] = []) {
             self.name = name
             self.drumPatterns = drumPatterns
             self.harmonicPatterns = harmonicPatterns
-            self.definitions = definitions
+            self.jamTracks = jamTracks
         }
     }
 
