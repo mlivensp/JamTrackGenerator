@@ -1,10 +1,15 @@
-import SwiftData
+//
+//  CategoryContentView.swift
+//  JamTrackGenerator
+//
+
 import SwiftUI
 
 struct CategoryContentView: View {
-    @Environment(\.modelContext) private var modelContext
     let category: SidebarCategory
     @Binding var navPath: NavigationPath
+    
+    // Use @Binding — NOT @Bindable
     @Binding var selectedJamTrack: JamTrack?
     @Binding var selectedStyle: Style?
     @Binding var selectedFeel: Feel?
@@ -16,20 +21,32 @@ struct CategoryContentView: View {
             switch category {
             case .jamTracks:
                 JamTracksView(selectedJamTrack: $selectedJamTrack)
+                
             case .styles:
-                StylesView(
-                    selectedStyle: $selectedStyle,
-                    navPath: $navPath
-                )
+                StylesView(selectedStyle: $selectedStyle, navPath: $navPath)
+                
             case .feels:
                 FeelsView(selectedFeel: $selectedFeel)
-            
+                
             case .drumPatterns:
                 DrumPatternsView(selectedDrumPatternNavigation: $selectedDrumPatternNavigation)
-            default:
-                Text("This is category \(category.rawValue)")
+                
+            case .harmonicPatterns:
+                // Placeholder or future view
+                Text("Harmonic Patterns coming soon")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(backgroundColor)   // Cross-platform
+                    .foregroundColor(.secondary)
             }
         }
         .navigationTitle(category.rawValue)
+    }
+    
+    private var backgroundColor: Color {
+#if os(iOS)
+        Color(.systemBackground)
+#else
+        Color(.windowBackgroundColor) // macOS
+#endif
     }
 }
