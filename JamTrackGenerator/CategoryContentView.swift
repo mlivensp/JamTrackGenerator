@@ -20,10 +20,12 @@ struct CategoryContentView: View {
         Group {
             switch category {
             case .jamTracks:
-                JamTracksView(selectedJamTrack: $selectedJamTrack)
+                Text("Waffle0")
+//                JamTracksView(selectedJamTrack: $selectedJamTrack)
                 
             case .styles:
-                StylesView(selectedStyle: $selectedStyle, navPath: $navPath)
+                Text("Waffle1")
+//                StylesView(selectedStyle: $selectedStyle, navPath: $navPath)
                 
             case .feels:
                 FeelsView(selectedFeel: $selectedFeel)

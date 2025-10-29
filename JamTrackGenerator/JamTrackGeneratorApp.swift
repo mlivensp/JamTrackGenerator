@@ -1,17 +1,9 @@
-//
-//  JamTrackGeneratorApp.swift
-//  JamTrackGenerator
-//
-//  Created by Michael Livenspargar on 8/18/25.
-//
-
 import SwiftUI
 import SwiftData
 
 @main
 struct JamTrackGeneratorApp: App {
     var sharedModelContainer: ModelContainer = {
-//        let schema = Schema(versionedSchema: currentSchema)
         let schema = Schema([
             Style.self,
             RawNote.self,
@@ -31,7 +23,6 @@ struct JamTrackGeneratorApp: App {
             DrumNote.self,
             DrumNoteInPattern.self,
             DrumPattern.self,
-            
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
 
@@ -44,9 +35,13 @@ struct JamTrackGeneratorApp: App {
         }
     }()
 
+    // ✅ Add this: shared navigation state manager
+    var navManager = NavigationStateManager()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(navManager) // ✅ Inject the navigation manager
         }
         .modelContainer(sharedModelContainer)
     }

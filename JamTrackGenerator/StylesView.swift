@@ -2,9 +2,13 @@ import SwiftData
 import SwiftUI
 
 struct StylesView: View {
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var navManager: NavigationStateManager
+    
     @Query(sort: \SchemaV1.Style.name) private var styles: [SchemaV1.Style]
-    @Binding var selectedStyle: SchemaV1.Style?
-    @Binding var navPath: NavigationPath
+    @Binding var selectedStyleID: Style.ID?
+//    @Binding var selectedStyle: SchemaV1.Style?
+//    @Binding var navPath: NavigationPath
     
     var body: some View {
         List {
@@ -18,14 +22,14 @@ struct StylesView: View {
                     Text(style.name)
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            selectedStyle = style
+                            selectedStyleID = style.id
                         }
                 }
 #else
                 Text(style.name)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        selectedStyle = style
+                        selectedStyleID = style.id
                     }
 #endif
             }

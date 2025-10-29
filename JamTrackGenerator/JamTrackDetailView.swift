@@ -1,27 +1,19 @@
-import SwiftData
 import SwiftUI
+import SwiftData
 
 struct JamTrackDetailView: View {
-    @Environment(\.modelContext) var modelContext
-    @Environment(\.dismiss) private var dismiss
-    @Bindable var jamTrack: JamTrack
-    
-    // Use @State (not @StateObject) because ViewModel uses @Observable
-    @State private var viewModel: ViewModel
-    
-    @State private var export = false
-    @State private var midiDocument: MidiDocument?
-    @State private var showUnsavedChangesAlert = false
-    @State private var pendingNavigation: (() -> Void)?
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var navManager: NavigationStateManager
     
     @Query var keys: [Key]
+    @Query var styles: [Style]
     @Query var feels: [Feel]
-    @Query private var instrumentFamilies: [InstrumentFamily]
-    @Query var instruments: [Instrument]
-    @Query var songSections: [SongSection]
     
-    @State private var selectedFamily: InstrumentFamily?
-    @State private var selectedInstrument: Instrument?
+    /// Source-of-truth binding to the live model instance (provided by ContentView)
+    @Binding var jamTrack: JamTrack
+    
+    /// Local editable draft
+    @State private var viewModel: ViewModel
     
 #if canImport(UIKit)
     let systemSeparator = Color(UIColor.separator)
@@ -29,122 +21,48 @@ struct JamTrackDetailView: View {
     let systemSeparator = Color(NSColor.separatorColor)
 #endif
     
-    init(jamTrack: JamTrack) {
-        self.jamTrack = jamTrack
-        self._viewModel = State(wrappedValue: ViewModel(jamTrack: jamTrack))
+    init(jamTrack: Binding<JamTrack>) {
+        self._jamTrack = jamTrack
+        self.viewModel = .init(jamTrack: jamTrack.wrappedValue)
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        Section("Track Info") {
             keyFeelTempo
-                .fixedSize(horizontal: false, vertical: true)
-                .alignmentGuide(.top) { _ in 0 }
-                .padding()
-            
-            JamTrackMatrixView(viewModel: viewModel)
-                .border(systemSeparator, width: 1)
-            
-            PlaybackControlsView(size: .large, createURL: viewModel.createURL)
-            
-            if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-                    .multilineTextAlignment(.center)
-            }
         }
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Save") {
-                    viewModel.save(modelContext: modelContext)
-                }
-                .keyboardShortcut(.defaultAction)
+        
+        JamTrackMatrixView(viewModel: viewModel)
+            .border(systemSeparator, width: 1)
+        PlaybackControlsView(size: .large, createURL: viewModel.createURL)
+        
+            .navigationTitle(viewModel.name.isEmpty ? "Untitled Jam Track" : viewModel.name)
+            .onAppear {
+                viewModel.modelContext = self.modelContext
+                viewModel.navManager = self.navManager
             }
-            
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel", role: .cancel) {
-                    attemptNavigation { dismiss() }
-                }
-            }
-            
-            ToolbarItem(placement: .automatic) {
-                Menu {
-                    Button("Delete", role: .destructive) {
-                        attemptNavigation {
-                            modelContext.delete(jamTrack)
-                            try? modelContext.save()
-                            dismiss()
-                        }
+            .toolbar {
+                ToolbarItemGroup {
+                    Button("Revert") {
+                        viewModel.reset()
                     }
+                    .disabled(!viewModel.hasUnsavedChanges)
                     
-                    Button("Export") {
-                        midiDocument = viewModel.createMidiDocument(modelContext: modelContext)
-                        export = true
+                    Button("Save") {
+                        viewModel.save(modelContext: self.modelContext)
                     }
-                    
-                    Button("Reset Changes") {
-                        attemptNavigation {
-                            viewModel.reset()
-                        }
-                    }
-                } label: {
-                    Image(systemName: "ellipsis.circle")
+                    .disabled(!viewModel.hasUnsavedChanges)
                 }
             }
-        }
-        .onAppear {
-            viewModel.modelContext = modelContext
-        }
-        .fileExporter(
-            isPresented: $export,
-            document: midiDocument,
-            contentType: .midi
-        ) { result in
-            switch result {
-            case .success(let url):
-                print("Exported to \(url)")
-            case .failure(let error):
-                viewModel.errorMessage = error.localizedDescription
+            .onChange(of: jamTrack) {
+                // If the bound model instance changed underneath us, reset draft and clear dirty
+                viewModel = .init(jamTrack: jamTrack)
+                viewModel.navManager = self.navManager
+                navManager.isDirty = false
             }
-        }
-        .alert("Unsaved Changes", isPresented: $showUnsavedChangesAlert) {
-            Button("Discard", role: .destructive) {
-                viewModel.reset()
-                pendingNavigation?()
-                pendingNavigation = nil
+            .onDisappear {
+                // Ensure global dirty state is cleared when editor is removed
+                navManager.isDirty = false
             }
-            Button("Keep Editing", role: .cancel) {
-                pendingNavigation = nil
-            }
-        } message: {
-            Text("You have unsaved changes. Do you want to discard them or keep editing?")
-        }
-        // Handle split view selection change (macOS/iPad)
-        .onChange(of: jamTrack) { oldJamTrack, newJamTrack in
-            guard oldJamTrack !== newJamTrack else { return }
-            
-            if viewModel.hasUnsavedChanges {
-                showUnsavedChangesAlert = true
-                pendingNavigation = {
-                    // Recreate ViewModel with the *new* JamTrack
-                    viewModel = ViewModel(jamTrack: newJamTrack)
-                    viewModel.modelContext = modelContext
-                }
-            } else {
-                // No unsaved changes → switch immediately
-                viewModel = ViewModel(jamTrack: newJamTrack)
-                viewModel.modelContext = modelContext
-            }
-        }
-    }
-    
-    // Helper: Centralize navigation attempts
-    private func attemptNavigation(_ action: @escaping () -> Void) {
-        if viewModel.hasUnsavedChanges {
-            pendingNavigation = action
-            showUnsavedChangesAlert = true
-        } else {
-            action()
-        }
     }
     
     private var keyFeelTempo: some View {
@@ -163,6 +81,19 @@ struct JamTrackDetailView: View {
                 .pickerStyle(.menu)               // works everywhere
 #if os(iOS)
                 .pickerStyle(.wheel)              // iOS-only wheel
+#endif
+            }
+            
+            LabeledContent("Style") {
+                Picker("", selection: $viewModel.style) {
+                    Text("Select Style").tag(nil as Style?)
+                    ForEach(styles, id: \.self) { style in
+                        Text(style.name).tag(style as Style?)
+                    }
+                }
+                .pickerStyle(.menu)
+#if os(iOS)
+                .pickerStyle(.wheel)
 #endif
             }
             
@@ -195,4 +126,6 @@ struct JamTrackDetailView: View {
         }
         .padding(.horizontal)
     }
+    
+    // MARK: - Helpers
 }

@@ -4,12 +4,36 @@ import SwiftUI
 extension JamTrackDetailView {
     @Observable
     class ViewModel {
-        var name: String
-        var style: Style?
-        var feel: Feel?
-        var key: Key?
-        var bpm: UInt8
-        var includeCountIn: Bool
+        var name: String {
+            didSet {
+                navManager?.isDirty = hasUnsavedChanges
+            }
+        }
+        var style: Style?{
+            didSet {
+                navManager?.isDirty = hasUnsavedChanges
+            }
+        }
+        var feel: Feel?{
+            didSet {
+                navManager?.isDirty = hasUnsavedChanges
+            }
+        }
+        var key: Key?{
+            didSet {
+                navManager?.isDirty = hasUnsavedChanges
+            }
+        }
+        var bpm: UInt8{
+            didSet {
+                navManager?.isDirty = hasUnsavedChanges
+            }
+        }
+        var includeCountIn: Bool{
+            didSet {
+                navManager?.isDirty = hasUnsavedChanges
+            }
+        }
         
         var parts: [Part]
         var jamTrackSections: [JamTrackSection]
@@ -19,6 +43,8 @@ extension JamTrackDetailView {
         
         var original: JamTrack
         var modelContext: ModelContext?
+        
+        var navManager: NavigationStateManager?
         
         init(jamTrack: JamTrack) {
             self.original = jamTrack
@@ -163,7 +189,6 @@ extension JamTrackDetailView {
             }
         }
         
-        // TODO: add a button to invoke this
         func reset() {
             let fresh = ViewModel(jamTrack: original)
             self.name = fresh.name

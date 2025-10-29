@@ -75,8 +75,8 @@ extension JamTrack {
             pattern.name == "Basic Beat"
         })
         
-        let walkingBassFetchDescriptor = FetchDescriptor<HarmonicPattern>(predicate: #Predicate { pattern in
-            pattern.name == "Walking Bass"
+        let bassLineFetchDescriptor = FetchDescriptor<HarmonicPattern>(predicate: #Predicate { pattern in
+            pattern.name == "Bass Line"
         })
         
         var sectionMap: [String: JamTrackSection] = [:]
@@ -133,14 +133,14 @@ extension JamTrack {
                 }
             }
             
-            let walkingBassPatterns = try modelContext.fetch(walkingBassFetchDescriptor)
+            let bassLinePatterns = try modelContext.fetch(bassLineFetchDescriptor)
             
-            if let walkingBassPattern = walkingBassPatterns.first(where: {
+            if let bassLinePattern = bassLinePatterns.first(where: {
                 $0.style?.name == "12 Bar Blues" && $0.feel?.name == "Shuffle"
             }) {
                 if let section = sectionMap["Chorus"],
                    let part = partMap["Bass"] {
-                    jamTrack.addSectionPart(section: section, part: part, patternName: walkingBassPattern.name)
+                    jamTrack.addSectionPart(section: section, part: part, patternName: bassLinePattern.name)
                 }
             }
         } catch {

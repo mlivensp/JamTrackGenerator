@@ -3,42 +3,16 @@ import SwiftUI
 
 struct JamTracksView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var navManager: NavigationStateManager
+    
     @Query(sort: \JamTrack.name) private var jamTracks: [JamTrack]
 
-    // Use @Binding — NOT @Bindable
-    @Binding var selectedJamTrack: JamTrack?
+    @Binding var selectedJamTrackID: JamTrack.ID?
 
     var body: some View {
-        List {
-            ForEach(jamTracks) { jamTrack in
-                HStack {
-#if os(iOS) && !targetEnvironment(macCatalyst)
-                    if UIDevice.current.userInterfaceIdiom == .phone {
-                        NavigationLink(value: jamTrack) {
-                            Text(jamTrack.name)
-                                .border(.blue, width: 1)
-                        }
-                    } else {
-                        Text(jamTrack.name)
-                            .border(.blue, width: 1)
-                            .onTapGesture {
-                                selectedJamTrack = jamTrack
-                            }
-                    }
-#else
-                    Text(jamTrack.name)
-                        .border(.blue, width: 1)
-                        .onTapGesture {
-                            selectedJamTrack = jamTrack
-                        }
-#endif
-                    Spacer()
-                    PlaybackControlsView(size: .small, createURL: jamTrack.createURL)
-                }
-            }
-            .onDelete { indexSet in
-                // ... deletion logic
-            }
+        List(jamTracks, id: \.id, selection: proxyJamTrackId) { jamTrack in
+            Text(jamTrack.name)
+                .tag(jamTrack.id)
         }
         .navigationTitle("Jam Tracks")
         .toolbar {
@@ -50,12 +24,24 @@ struct JamTracksView: View {
         }
         .background(Color.clear.preference(key: ContentWidthPreferenceKey.self, value: 300))
     }
+    
+    var proxyJamTrackId: Binding<JamTrack.ID?> {
+        Binding(
+        get: { selectedJamTrackID },
+        set: { newJamTrackID in
+            navManager.requestNavigation {
+                selectedJamTrackID = newJamTrackID
+            }
+        }
+        )
+    }
 
     private func addJamTrack() {
+        // TODO: need to check for unsaved changes in current thang first
         withAnimation {
             let newJamTrack = JamTrack.newJamTrack(modelContext: modelContext)
             modelContext.insert(newJamTrack)
-            selectedJamTrack = newJamTrack
+            selectedJamTrackID = newJamTrack.id
             try? modelContext.save()
         }
     }

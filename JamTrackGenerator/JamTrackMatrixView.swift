@@ -36,31 +36,6 @@ struct JamTrackMatrixView: View {
                 path.addLine(to: CGPoint(x: 180, y: 50))
             }
             .stroke(Color(.clear), lineWidth: 1)
-            
-//            Button(action: {
-//                let newSection = SongSection(name: "New Section", sortOrder: 5)
-//                viewModel.addSection(songSection: newSection)
-//            }) {
-//                Image(systemName: "plus.circle")
-//                    .resizable()
-//                    .frame(width: 16, height: 16)
-//                    .foregroundColor(.blue)
-//            }
-//            .buttonStyle(.plain)
-//            .background(Color.clear)
-//            .position(x: 20, y: 35)
-//            
-//            Button(action: {
-//                guard let family = instrumentFamilies.sorted(by: { $0.sortOrder < $1.sortOrder } ).first,
-//                      let newInstrument = family.instruments.sorted(by: { $0.programNumber < $1.programNumber } ).first else { return }
-//                viewModel.addPart(instrument: newInstrument)
-//            }) {
-//                Image(systemName: "plus.circle")
-//                    .resizable()
-//                    .frame(width: 16, height: 16)
-//                    .foregroundColor(.blue)
-//            }
-//            .position(x: 160, y: 15)
         }
         .buttonStyle(.plain)
         .background(Color.clear)
