@@ -19,26 +19,28 @@ struct CategoryContentView: View {
     var body: some View {
         Group {
             switch category {
-            case .jamTracks:
-                Text("Waffle0")
-//                JamTracksView(selectedJamTrack: $selectedJamTrack)
-                
-            case .styles:
-                Text("Waffle1")
-//                StylesView(selectedStyle: $selectedStyle, navPath: $navPath)
-                
-            case .feels:
-                FeelsView(selectedFeel: $selectedFeel)
-                
-            case .drumPatterns:
-                DrumPatternsView(selectedDrumPatternNavigation: $selectedDrumPatternNavigation)
-                
-            case .harmonicPatterns:
-                // Placeholder or future view
-                Text("Harmonic Patterns coming soon")
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(backgroundColor)   // Cross-platform
-                    .foregroundColor(.secondary)
+//            case .jamTracks:
+//                Text("Waffle0")
+////                JamTracksView(selectedJamTrack: $selectedJamTrack)
+//                
+//            case .styles:
+//                Text("Waffle1")
+////                StylesView(selectedStyle: $selectedStyle, navPath: $navPath)
+//                
+//            case .feels:
+//                FeelsView(selectedFeel: $selectedFeel)
+//                
+//            case .drumPatterns:
+//                DrumPatternsView(selectedDrumPatternNavigation: $selectedDrumPatternNavigation)
+//                
+//            case .harmonicPatterns:
+//                // Placeholder or future view
+//                Text("Harmonic Patterns coming soon")
+//                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+//                    .background(backgroundColor)   // Cross-platform
+//                    .foregroundColor(.secondary)
+            default:
+                Text("Default Category")
             }
         }
         .navigationTitle(category.rawValue)

@@ -10,9 +10,51 @@ struct JamTracksView: View {
     @Binding var selectedJamTrackID: JamTrack.ID?
 
     var body: some View {
-        List(jamTracks, id: \.id, selection: proxyJamTrackId) { jamTrack in
-            Text(jamTrack.name)
-                .tag(jamTrack.id)
+        List {
+            ForEach(jamTracks) { jamTrack in
+                HStack {
+#if os(iOS) && !targetEnvironment(macCatalyst)
+                    if UIDevice.current.userInterfaceIdiom == .phone {
+                        // iPhone: NavigationLink without onTapGesture
+                        NavigationLink(value: jamTrack) {
+                            Text(jamTrack.name)
+                        }
+                    } else {
+                        // iPad: NavigationLink with onTapGesture
+                        NavigationLink(value: jamTrack) {
+                            Text(jamTrack.name)
+                                .border(.blue, width: 1)
+                        }
+                        .onTapGesture {
+                            proxyJamTrackID.wrappedValue = jamTrack.id
+                            print("Selected JamTrack for iPad: \(jamTrack.name)")
+                        }
+                    }
+#else
+                    // macOS: NavigationLink with onTapGesture
+                    NavigationLink(value: jamTrack) {
+                        Text(jamTrack.name)
+                            .border(.blue, width: 1)
+                    }
+                    .onTapGesture {
+                        proxyJamTrackID.wrappedValue = jamTrack.id
+                        print("Selected JamTrack for macOS: \(jamTrack.name)")
+                    }
+#endif
+                    Spacer()
+                    PlaybackControlsView(size: .small, createURL: jamTrack.createURL)
+                }
+            }
+            .onDelete { indexSet in
+                for index in indexSet {
+                    modelContext.delete(jamTracks[index])
+                }
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("Failed to delete JamTrack: \(error)")
+                }
+            }
         }
         .navigationTitle("Jam Tracks")
         .toolbar {
@@ -25,24 +67,31 @@ struct JamTracksView: View {
         .background(Color.clear.preference(key: ContentWidthPreferenceKey.self, value: 300))
     }
     
-    var proxyJamTrackId: Binding<JamTrack.ID?> {
+    var proxyJamTrackID: Binding<JamTrack.ID?> {
         Binding(
-        get: { selectedJamTrackID },
-        set: { newJamTrackID in
-            navManager.requestNavigation {
-                selectedJamTrackID = newJamTrackID
+            get: { selectedJamTrackID },
+            set: { newJamTrackID in
+                navManager.requestNavigation {
+                    selectedJamTrackID = newJamTrackID
+                }
             }
-        }
         )
     }
 
     private func addJamTrack() {
-        // TODO: need to check for unsaved changes in current thang first
         withAnimation {
-            let newJamTrack = JamTrack.newJamTrack(modelContext: modelContext)
-            modelContext.insert(newJamTrack)
-            selectedJamTrackID = newJamTrack.id
-            try? modelContext.save()
+            navManager.requestNavigation {
+                let newJamTrack = JamTrack.newJamTrack(modelContext: modelContext)
+                modelContext.insert(newJamTrack)
+                
+                do {
+                    try modelContext.save()
+                } catch {
+                    fatalError(error.localizedDescription)
+                }
+                
+                selectedJamTrackID = newJamTrack.id
+            }
         }
     }
 }

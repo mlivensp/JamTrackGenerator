@@ -3,13 +3,18 @@ import SwiftData
 
 struct StyleEditView: View {
     @Environment(\.modelContext) var modelContext
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @EnvironmentObject var navManager: NavigationStateManager
+    
     @Binding var navPath: NavigationPath
     @State private var viewModel: ViewModel
-    @State private var showingDiscardAlert = false // New state for the alert
     
-    init(style: Style, navPath: Binding<NavigationPath>) {
-        self._viewModel = .init(wrappedValue: .init(style: style))
+    @Binding var style: Style
+    
+    init(style: Binding<Style>, navPath: Binding<NavigationPath>) {
+        self._style = style
         self._navPath = navPath
+        self.viewModel = .init(style: style.wrappedValue)
     }
     
     var body: some View {
@@ -50,91 +55,70 @@ struct StyleEditView: View {
                     }
                 }
             }
-            
-            //            Section {
-            //                Button(role: .destructive) {
-            //                    showAlert = true
-            //                } label: {
-            //                    Label("Delete Style", systemImage: "trash")
-            //                }
-            //            }
         }
         .navigationTitle(viewModel.name.isEmpty ? "New Style" : viewModel.name)
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
 #endif
-        // 1. **Crucial:** Hide the native back button
-//        .navigationBarBackButtonHidden(true)
-#if os(iOS)
-.navigationBarBackButtonHidden(UIDevice.current.userInterfaceIdiom == .phone)
-#endif
-        // 2. Disable the interactive dismissal (swipe gesture) if there are unsaved changes
         .interactiveDismissDisabled(viewModel.hasUnsavedChanges)
-        
-        // 3. Override the back button with custom logic
+        .onAppear {
+            viewModel.modelContext = self.modelContext
+            viewModel.navManager = self.navManager
+        }
+#if os(iOS)
+        .navigationBarBackButtonHidden(true)
+#endif
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button {
-                    // Custom logic for the back action
-                    if viewModel.hasUnsavedChanges {
-                        showingDiscardAlert = true // Show prompt if unsaved changes exist
-                    } else {
-                        navPath.removeLast() // Go back immediately
+            // Check if we are likely in a NavigationStack (i.e., not a wide master-detail layout).
+            // `horizontalSizeClass == .compact` is generally true on iPhone and half-screen iPads,
+            // which usually means we are pushed in a stack and need a back button.
+            if horizontalSizeClass == .compact {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        navManager.requestNavigation {
+                            navPath.removeLast() // Go back
+                        }
+                    } label: {
+                        // Use a system icon that looks like the native back button
+                        Image(systemName: "chevron.backward")
+                            .accessibilityLabel("Back")
                     }
-                } label: {
-                    // Use a system icon that looks like the native back button
-                    Image(systemName: "chevron.backward")
-                        .accessibilityLabel("Back")
                 }
             }
             
-            ToolbarItem(placement: .confirmationAction) {
+            ToolbarItemGroup {
+                Button("Revert") {
+                    viewModel.reset()
+                }
+                .disabled(!viewModel.hasUnsavedChanges)
+                
                 Button("Save") {
-                    viewModel.save(modelContext: modelContext)
-                    navPath.removeLast() // Go back after saving
+                    viewModel.save(modelContext: self.modelContext)
                 }
                 .disabled(!viewModel.hasUnsavedChanges)
             }
         }
-        
-        // 4. Alert to prompt the user to discard changes
-        .alert("Discard changes?", isPresented: $showingDiscardAlert) {
-            Button("Discard", role: .destructive) {
-                // Discard changes (by not saving them) and navigate back
-                navPath.removeLast()
-            }
-            Button("Cancel", role: .cancel) {} // Stay on the view
-        } message: {
-            Text("You have unsaved changes. Are you sure you want to discard them?")
+        .onChange(of: style) {
+            // If the bound model instance changed underneath us, reset draft and clear dirty
+            viewModel = .init(style: style)
+            viewModel.navManager = self.navManager
+            navManager.isDirty = false
         }
-        //         .toolbar {
-        //             ToolbarItem(placement: .navigationBarLeading) {
-        //                 Button("Back") {
-        //                     if viewModel.hasUnsavedChanges {
-        //                         showAlert = true
-        //                     } else {
-        //                         navPath.removeLast()
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //         .alert("Discard changes?", isPresented: $showAlert) {
-        //             Button("Discard", role: .destructive) {
-        //                 viewModel.reset()
-        //                 navPath.removeLast()
-        //             }
-        //             Button("Cancel", role: .cancel) {}
-        //         }
+        .onDisappear {
+            // Ensure global dirty state is cleared when editor is removed
+            navManager.isDirty = false
+        }
     }
 }
 
 #Preview {
-    @Previewable @State var navPath: NavigationPath = NavigationPath()
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: JamTrack.self, configurations: config)
+    let container = try! ModelContainer(for: Style.self, configurations: config)
     
-    let style = Style(name: "Test Style")
+    let style = Style(name: "Preview Style")
+    container.mainContext.insert(style)
     
-    StyleEditView(style: style, navPath: $navPath)
+    return StyleEditView(style: .constant(style), navPath: .constant(NavigationPath()))
         .modelContainer(container)
+        .environmentObject(NavigationStateManager())
 }

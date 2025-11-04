@@ -27,42 +27,43 @@ struct JamTrackDetailView: View {
     }
     
     var body: some View {
-        Section("Track Info") {
+        VStack(spacing: 0) {
             keyFeelTempo
+            
+            JamTrackMatrixView(viewModel: viewModel)
+                .frame(maxHeight: .infinity)
+                .layoutPriority(1)
+                .border(systemSeparator, width: 1)
+            PlaybackControlsView(size: .large, createURL: viewModel.createURL)
         }
-        
-        JamTrackMatrixView(viewModel: viewModel)
-            .border(systemSeparator, width: 1)
-        PlaybackControlsView(size: .large, createURL: viewModel.createURL)
-        
-            .navigationTitle(viewModel.name.isEmpty ? "Untitled Jam Track" : viewModel.name)
-            .onAppear {
-                viewModel.modelContext = self.modelContext
-                viewModel.navManager = self.navManager
-            }
-            .toolbar {
-                ToolbarItemGroup {
-                    Button("Revert") {
-                        viewModel.reset()
-                    }
-                    .disabled(!viewModel.hasUnsavedChanges)
-                    
-                    Button("Save") {
-                        viewModel.save(modelContext: self.modelContext)
-                    }
-                    .disabled(!viewModel.hasUnsavedChanges)
+        .navigationTitle(viewModel.name.isEmpty ? "Untitled Jam Track" : viewModel.name)
+        .onAppear {
+            viewModel.modelContext = self.modelContext
+            viewModel.navManager = self.navManager
+        }
+        .toolbar {
+            ToolbarItemGroup {
+                Button("Revert") {
+                    viewModel.reset()
                 }
+                .disabled(!viewModel.hasUnsavedChanges)
+                
+                Button("Save") {
+                    viewModel.save(modelContext: self.modelContext)
+                }
+                .disabled(!viewModel.hasUnsavedChanges)
             }
-            .onChange(of: jamTrack) {
-                // If the bound model instance changed underneath us, reset draft and clear dirty
-                viewModel = .init(jamTrack: jamTrack)
-                viewModel.navManager = self.navManager
-                navManager.isDirty = false
-            }
-            .onDisappear {
-                // Ensure global dirty state is cleared when editor is removed
-                navManager.isDirty = false
-            }
+        }
+        .onChange(of: jamTrack) {
+            // If the bound model instance changed underneath us, reset draft and clear dirty
+            viewModel = .init(jamTrack: jamTrack)
+            viewModel.navManager = self.navManager
+            navManager.isDirty = false
+        }
+        .onDisappear {
+            // Ensure global dirty state is cleared when editor is removed
+            navManager.isDirty = false
+        }
     }
     
     private var keyFeelTempo: some View {

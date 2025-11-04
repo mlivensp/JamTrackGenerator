@@ -5,6 +5,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var navManager: NavigationStateManager
     @Query(sort: \JamTrack.name) private var jamTracks: [JamTrack]
+    @Query(sort: \Style.name) private var styles: [Style]
 
     // Sidebar selection (first column)
     @State private var selectedCategory: SidebarCategory? = .jamTracks
@@ -12,6 +13,9 @@ struct ContentView: View {
     // Content list selection (second column) — ID-based
     @State private var selectedJamTrackID: JamTrack.ID?
     @State private var selectedStyleID: Style.ID?
+    @State private var selectedFeelID: Feel.ID?
+    
+    @State private var navPath: NavigationPath = NavigationPath()
 
     var body: some View {
 #if os(iOS)
@@ -38,6 +42,8 @@ struct ContentView: View {
                 JamTracksView(selectedJamTrackID: $selectedJamTrackID)
             case .styles:
                 StylesView(selectedStyleID: $selectedStyleID)
+            case .feels:
+                FeelsView(selectedFeelID: $selectedFeelID)
             default:
                 Text("Select a category")
             }
@@ -56,6 +62,18 @@ struct ContentView: View {
                         }
                     } else {
                         Text("Select a Jam Track")
+                    }
+                case .styles:
+                    if let id = selectedStyleID,
+                       let index = styles.firstIndex(where: { $0.id == id }) {
+                        if let binding = styleBinding(for: styles[index]) {
+                            StyleEditView(style: binding, navPath: $navPath)
+                                .id(id)
+                        } else {
+                            Text("Select a Style")
+                        }
+                    } else {
+                        Text("Select a Style")
                     }
                 default:
                     Text("Select a category")
@@ -79,7 +97,7 @@ struct ContentView: View {
 
     // MARK: - Stack View (iPhone)
     private var stackView: some View {
-        NavigationStack {
+        NavigationStack(path: $navPath) {
             List(SidebarCategory.allCases, id: \.self) { category in
                 NavigationLink(value: category) { Text(category.rawValue) }
             }
@@ -87,6 +105,8 @@ struct ContentView: View {
                 switch category {
                 case .jamTracks:
                     JamTracksView(selectedJamTrackID: $selectedJamTrackID)
+                case .styles:
+                    StylesView(selectedStyleID: $selectedStyleID)
                 default:
                     Text("Select a category")
                 }
@@ -100,6 +120,16 @@ struct ContentView: View {
                         .id(id)
                 } else {
                     Text("Track not found")
+                }
+            }
+            .navigationDestination(for: Style.self) { style in
+                let id = style.id
+                if let index = styles.firstIndex(where: { $0.id == id }),
+                   let binding = styleBinding(for: styles[index]) {
+                    StyleEditView(style: binding, navPath: $navPath)
+                        .id(id)
+                } else {
+                    
                 }
             }
             .navigationTitle("Categories")
@@ -143,6 +173,18 @@ struct ContentView: View {
                 target.includeCountIn = newValue.includeCountIn
                 target.parts = newValue.parts
                 target.jamTrackSections = newValue.jamTrackSections
+                try? modelContext.save()
+            }
+        )
+    }
+    
+    private func styleBinding(for style: Style) -> Binding<Style>? {
+        guard let index = styles.firstIndex(where: { $0.id == style.id }) else { return nil }
+        return Binding(
+            get: { styles[index] },
+            set: { newValue in
+                let target = styles[index]
+                target.name = newValue.name
                 try? modelContext.save()
             }
         )

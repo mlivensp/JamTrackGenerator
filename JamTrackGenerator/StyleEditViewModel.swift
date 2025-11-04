@@ -10,7 +10,11 @@ import SwiftData
 
 extension StyleEditView {
     @Observable class ViewModel {
-        var name: String
+        var name: String {
+            didSet {
+                navManager?.isDirty = hasUnsavedChanges
+            }
+        }
         
         var errorMessage: String?
         var didSave: Bool = false
@@ -18,6 +22,8 @@ extension StyleEditView {
         let original: Style
         var modelContext: ModelContext?
         
+        var navManager: NavigationStateManager?
+
         init(style: Style) {
             self.original = style
             self.name = style.name
@@ -55,18 +61,19 @@ extension StyleEditView {
             do {
                 try modelContext.save()
                 didSave = true
+                navManager?.isDirty = false
             } catch {
                 errorMessage = "Save failed: \(error.localizedDescription)"
                 didSave = false
             }
         }
         
-        // TODO: add a button to invoke this
         func reset() {
             let fresh = ViewModel(style: original)
             self.name = fresh.name
             self.didSave = false
             self.errorMessage = nil
+            navManager?.isDirty = false
         }
         
         func discardChanges() {
