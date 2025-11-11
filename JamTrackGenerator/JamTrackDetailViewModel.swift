@@ -182,6 +182,7 @@ extension JamTrackDetailView {
             
             do {
                 try modelContext.save()
+                navManager?.isDirty = false
                 didSave = true
             } catch {
                 errorMessage = "Save failed: \(error.localizedDescription)"

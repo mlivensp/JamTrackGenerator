@@ -6,6 +6,7 @@ struct ContentView: View {
     @EnvironmentObject var navManager: NavigationStateManager
     @Query(sort: \JamTrack.name) private var jamTracks: [JamTrack]
     @Query(sort: \Style.name) private var styles: [Style]
+    @Query(sort: \Feel.name) private var feels: [Feel]
 
     // Sidebar selection (first column)
     @State private var selectedCategory: SidebarCategory? = .jamTracks
@@ -16,17 +17,25 @@ struct ContentView: View {
     @State private var selectedFeelID: Feel.ID?
     
     @State private var navPath: NavigationPath = NavigationPath()
+    @State private var showUnsavedAlert: Bool = false
 
     var body: some View {
+        VStack {
 #if os(iOS)
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            splitView
-        } else {
-            stackView
-        }
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                splitView
+            } else {
+                stackView
+            }
 #else
-        splitView
+            splitView
 #endif
+        }
+        .onAppear {
+            navManager.showUnsavedAlert = {
+                self.showUnsavedAlert = true
+            }
+        }
     }
 
     // MARK: - Split View (macOS / iPad)
@@ -55,7 +64,7 @@ struct ContentView: View {
                        let index = jamTracks.firstIndex(where: { $0.id == id }) {
                         // Pass a live property-proxy binding into the editor and use the ID as identity
                         if let binding = jamTrackBinding(for: jamTracks[index]) {
-                            JamTrackDetailView(jamTrack: binding)
+                            JamTrackDetailView(jamTrack: binding, navPath: $navPath)
                                 .id(id)
                         } else {
                             Text("Select a Jam Track")
@@ -75,14 +84,26 @@ struct ContentView: View {
                     } else {
                         Text("Select a Style")
                     }
-                default:
+                case .feels:
+                    if let id = selectedFeelID,
+                       let index = feels.firstIndex(where: { $0.id == id }) {
+                        if let binding = feelBinding(for: feels[index]) {
+                            FeelEditView(feel: binding, navPath: $navPath)
+                                .id(id)
+                        } else {
+                            Text("Select a Feel")
+                        }
+                    } else {
+                        Text("Select a Feel")
+                    }
+               default:
                     Text("Select a category")
                 }
             }
             .frame(minWidth: 300)
         }
         .alert("Unsaved Changes",
-               isPresented: $navManager.showingUnsavedAlert,
+               isPresented: $showUnsavedAlert,
                presenting: navManager) { _ in
             Button("Discard Changes", role: .destructive) {
                 navManager.discardChangesAndNavigate()
@@ -107,6 +128,8 @@ struct ContentView: View {
                     JamTracksView(selectedJamTrackID: $selectedJamTrackID)
                 case .styles:
                     StylesView(selectedStyleID: $selectedStyleID)
+                case .feels:
+                    FeelsView(selectedFeelID: $selectedFeelID)
                 default:
                     Text("Select a category")
                 }
@@ -116,7 +139,7 @@ struct ContentView: View {
                 let id = track.id
                 if let index = jamTracks.firstIndex(where: { $0.id == id }),
                    let binding = jamTrackBinding(for: jamTracks[index]) {
-                    JamTrackDetailView(jamTrack: binding)
+                    JamTrackDetailView(jamTrack: binding, navPath: $navPath)
                         .id(id)
                 } else {
                     Text("Track not found")
@@ -132,10 +155,20 @@ struct ContentView: View {
                     
                 }
             }
+            .navigationDestination(for: Feel.self) { feel in
+                let id = feel.id
+                if let index = feels.firstIndex(where: { $0.id == id }),
+                   let binding = feelBinding(for: feels[index]) {
+                    FeelEditView(feel: binding, navPath: $navPath)
+                        .id(id)
+                } else {
+                    
+                }
+            }
             .navigationTitle("Categories")
         }
         .alert("Unsaved Changes",
-               isPresented: $navManager.showingUnsavedAlert,
+               isPresented: $showUnsavedAlert,
                presenting: navManager) { _ in
             Button("Discard Changes", role: .destructive) {
                 navManager.discardChangesAndNavigate()
@@ -184,6 +217,18 @@ struct ContentView: View {
             get: { styles[index] },
             set: { newValue in
                 let target = styles[index]
+                target.name = newValue.name
+                try? modelContext.save()
+            }
+        )
+    }
+    
+    private func feelBinding(for feel: Feel) -> Binding<Feel>? {
+        guard let index = feels.firstIndex(where: { $0.id == feel.id }) else { return nil }
+        return Binding(
+            get: { feels[index] },
+            set: { newValue in
+                let target = feels[index]
                 target.name = newValue.name
                 try? modelContext.save()
             }

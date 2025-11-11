@@ -7,8 +7,10 @@ class NavigationStateManager: ObservableObject {
     @Published var isDirty: Bool = false
     
     /// The alert toggle
-    @Published var showingUnsavedAlert: Bool = false
+//    @Published var showingUnsavedAlert: Bool = false
     
+    var showUnsavedAlert: (() -> Void)? = nil
+
     /// A closure holding the navigation action (e.g., changing selection)
     /// that was interrupted by the alert.
     private var pendingNavigation: (() -> Void)? = nil
@@ -19,7 +21,8 @@ class NavigationStateManager: ObservableObject {
         if isDirty {
             // We have unsaved changes. Store the action and show the alert.
             self.pendingNavigation = action
-            self.showingUnsavedAlert = true
+            showUnsavedAlert?()
+//            self.showingUnsavedAlert = true
         } else {
             // No unsaved changes, proceed immediately.
             action()

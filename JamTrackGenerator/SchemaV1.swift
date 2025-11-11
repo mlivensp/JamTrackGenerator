@@ -35,13 +35,13 @@ enum SchemaV1: VersionedSchema {
         
         @Relationship(deleteRule: .nullify, inverse: \DrumPattern.feel) var drumPatterns: [DrumPattern]
         @Relationship(deleteRule: .nullify, inverse: \HarmonicPattern.feel) var harmonicPatterns: [HarmonicPattern]
-        @Relationship(deleteRule: .nullify, inverse: \JamTrack.feel) var definitions: [JamTrack]
+        @Relationship(deleteRule: .nullify, inverse: \JamTrack.feel) var jamTracks: [JamTrack]
         
-        init(name: String, drumPatterns: [DrumPattern] = [], harmonicPatterns: [HarmonicPattern] = [], definitions: [JamTrack] = []) {
+        init(name: String, drumPatterns: [DrumPattern] = [], harmonicPatterns: [HarmonicPattern] = [], jamTracks: [JamTrack] = []) {
             self.name = name
             self.drumPatterns = drumPatterns
             self.harmonicPatterns = harmonicPatterns
-            self.definitions = definitions
+            self.jamTracks = jamTracks
         }
     }
 

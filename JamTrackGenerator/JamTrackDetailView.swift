@@ -3,13 +3,14 @@ import SwiftData
 
 struct JamTrackDetailView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.horizontalSizeClass) var horizontalSizeClass
     @EnvironmentObject var navManager: NavigationStateManager
     
     @Query var keys: [Key]
     @Query var styles: [Style]
     @Query var feels: [Feel]
     
-    /// Source-of-truth binding to the live model instance (provided by ContentView)
+    @Binding var navPath: NavigationPath
     @Binding var jamTrack: JamTrack
     
     /// Local editable draft
@@ -21,8 +22,9 @@ struct JamTrackDetailView: View {
     let systemSeparator = Color(NSColor.separatorColor)
 #endif
     
-    init(jamTrack: Binding<JamTrack>) {
+    init(jamTrack: Binding<JamTrack>, navPath: Binding<NavigationPath>) {
         self._jamTrack = jamTrack
+        self._navPath = navPath
         self.viewModel = .init(jamTrack: jamTrack.wrappedValue)
     }
     
@@ -36,12 +38,63 @@ struct JamTrackDetailView: View {
                 .border(systemSeparator, width: 1)
             PlaybackControlsView(size: .large, createURL: viewModel.createURL)
         }
-        .navigationTitle(viewModel.name.isEmpty ? "Untitled Jam Track" : viewModel.name)
+//        .navigationTitle(viewModel.name.isEmpty ? "Untitled Jam Track" : viewModel.name)
+//        .onAppear {
+//            viewModel.modelContext = self.modelContext
+//            viewModel.navManager = self.navManager
+//        }
+//        .toolbar {
+//            ToolbarItemGroup {
+//                Button("Revert") {
+//                    viewModel.reset()
+//                }
+//                .disabled(!viewModel.hasUnsavedChanges)
+//                
+//                Button("Save") {
+//                    viewModel.save(modelContext: self.modelContext)
+//                }
+//                .disabled(!viewModel.hasUnsavedChanges)
+//            }
+//        }
+//        .onChange(of: jamTrack) {
+//            // If the bound model instance changed underneath us, reset draft and clear dirty
+//            viewModel = .init(jamTrack: jamTrack)
+//            viewModel.navManager = self.navManager
+//            navManager.isDirty = false
+//        }
+//        .onDisappear {
+//            // Ensure global dirty state is cleared when editor is removed
+//            navManager.isDirty = false
+//        }
+#if os(iOS)
+        .navigationBarTitleDisplayMode(.inline)
+#endif
+        .interactiveDismissDisabled(viewModel.hasUnsavedChanges)
         .onAppear {
             viewModel.modelContext = self.modelContext
             viewModel.navManager = self.navManager
         }
+#if os(iOS)
+        .navigationBarBackButtonHidden(true)
+#endif
         .toolbar {
+            // Check if we are likely in a NavigationStack (i.e., not a wide master-detail layout).
+            // `horizontalSizeClass == .compact` is generally true on iPhone and half-screen iPads,
+            // which usually means we are pushed in a stack and need a back button.
+            if horizontalSizeClass == .compact {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button {
+                        navManager.requestNavigation {
+                            navPath.removeLast() // Go back
+                        }
+                    } label: {
+                        // Use a system icon that looks like the native back button
+                        Image(systemName: "chevron.backward")
+                            .accessibilityLabel("Back")
+                    }
+                }
+            }
+            
             ToolbarItemGroup {
                 Button("Revert") {
                     viewModel.reset()
