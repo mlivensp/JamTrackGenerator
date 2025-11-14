@@ -111,14 +111,14 @@ struct FeelEditView: View {
     }
 }
 
-//#Preview {
-//    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-//    let container = try! ModelContainer(for: Feel.self, configurations: config)
-//    
-//    let feel = Feel(name: "Preview Feel")
-//    container.mainContext.insert(feel)
-//    
-//    return FeelEditView(style: .constant(feel), navPath: .constant(NavigationPath()))
-//        .modelContainer(container)
-//        .environmentObject(NavigationStateManager())
-//}
+#Preview {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: Feel.self, configurations: config)
+    
+    let feel = Feel(name: "Preview Feel")
+    container.mainContext.insert(feel)
+    
+    return FeelEditView(feel: .constant(feel), navPath: .constant(NavigationPath()))
+        .modelContainer(container)
+        .environmentObject(NavigationStateManager())
+}

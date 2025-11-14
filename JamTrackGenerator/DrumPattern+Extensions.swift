@@ -8,6 +8,8 @@
 import Foundation
 import SwiftData
 
+extension DrumPattern: Identifiable { }
+
 extension DrumPattern {
     var sortedNotes: [DrumNoteInPattern] {
         drumNotesInPattern.sorted(by: { $0.timestampOn < $1.timestampOn })

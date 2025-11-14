@@ -12,7 +12,7 @@ struct FeelsView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var navManager: NavigationStateManager
     
-    @Query(sort: \SchemaV1.Feel.name) private var feels: [SchemaV1.Feel]
+    @Query(sort: \Feel.name) private var feels: [Feel]
     @Binding var selectedFeelID: Feel.ID?
 
     var body: some View {

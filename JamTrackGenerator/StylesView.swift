@@ -5,7 +5,7 @@ struct StylesView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var navManager: NavigationStateManager
     
-    @Query(sort: \SchemaV1.Style.name) private var styles: [SchemaV1.Style]
+    @Query(sort: \Style.name) private var styles: [Style]
     @Binding var selectedStyleID: Style.ID?
     
     var body: some View {

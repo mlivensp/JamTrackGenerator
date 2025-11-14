@@ -3,10 +3,14 @@ import SwiftUI
 
 struct DrumPatternsView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var navManager: NavigationStateManager
+    
     @Query(sort: \DrumPattern.name) private var drumPatterns: [DrumPattern]
+    @Binding var selectedDrumPatternID: DrumPattern.ID?
+
     @Query(sort: \Style.name) private var styles: [Style]
     @Query(sort: \Feel.name) private var feels: [Feel]
-    @Binding var selectedDrumPatternNavigation: DrumPatternNavigation?
+    @State var selectedDrumPatternNavigation: DrumPatternNavigation?
     @State private var importMidi = false
     @State private var importError: String?
     @State private var showImportOptions = false
@@ -39,9 +43,28 @@ struct DrumPatternsView: View {
                 List {
                     Section(header: Text("Drum Patterns")) {
                          ForEach(filteredDrumPatterns) { drumPattern in
-                             NavigationLink(value: DrumPatternNavigation.existing(drumPattern)) {
-                                 Text(drumPattern.name)
-                             }
+//                             NavigationLink(value: DrumPatternNavigation.existing(drumPattern)) {
+//                                 Text(drumPattern.name)
+//                             }
+#if os(iOS)
+                if UIDevice.current.userInterfaceIdiom == .phone {
+                    NavigationLink(value: drumPattern) {
+                        Text(drumPattern.name)
+                    }
+                } else {
+                    Text(drumPattern.name)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            proxyDrumPatternID.wrappedValue = drumPattern.id
+                        }
+                }
+#else
+                Text(drumPattern.name)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        proxyDrumPatternID.wrappedValue = drumPattern.id
+                    }
+#endif
                          }
                          .onDelete { indexSet in
                              for index in indexSet {
@@ -107,6 +130,17 @@ struct DrumPatternsView: View {
         }
     }
     
+    var proxyDrumPatternID: Binding<DrumPattern.ID?> {
+        Binding(
+            get: { selectedDrumPatternID },
+            set: { newDrumPatternID in
+                navManager.requestNavigation {
+                    selectedDrumPatternID = newDrumPatternID
+                }
+            }
+        )
+    }
+
     private var filteredDrumPatterns: [DrumPattern] {
         drumPatterns.filter { pattern in
             (selectedStyle == nil || pattern.style == selectedStyle) &&

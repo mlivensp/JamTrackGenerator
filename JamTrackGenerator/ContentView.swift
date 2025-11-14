@@ -7,6 +7,7 @@ struct ContentView: View {
     @Query(sort: \JamTrack.name) private var jamTracks: [JamTrack]
     @Query(sort: \Style.name) private var styles: [Style]
     @Query(sort: \Feel.name) private var feels: [Feel]
+    @Query(sort: \DrumPattern.name) private var drumPatterns: [DrumPattern]
 
     // Sidebar selection (first column)
     @State private var selectedCategory: SidebarCategory? = .jamTracks
@@ -15,6 +16,7 @@ struct ContentView: View {
     @State private var selectedJamTrackID: JamTrack.ID?
     @State private var selectedStyleID: Style.ID?
     @State private var selectedFeelID: Feel.ID?
+    @State private var selectedDrumPatternID: DrumPattern.ID?
     
     @State private var navPath: NavigationPath = NavigationPath()
     @State private var showUnsavedAlert: Bool = false
@@ -53,6 +55,8 @@ struct ContentView: View {
                 StylesView(selectedStyleID: $selectedStyleID)
             case .feels:
                 FeelsView(selectedFeelID: $selectedFeelID)
+            case .drumPatterns:
+                DrumPatternsView(selectedDrumPatternID: $selectedDrumPatternID)
             default:
                 Text("Select a category")
             }
@@ -95,6 +99,18 @@ struct ContentView: View {
                         }
                     } else {
                         Text("Select a Feel")
+                    }
+                case .drumPatterns:
+                    if let id = selectedDrumPatternID,
+                       let index = drumPatterns.firstIndex(where: { $0.id == id }) {
+                        if let binding = drumPatternBinding(for: drumPatterns[index]) {
+                            DrumPatternEditView(drumPattern: binding, navPath: $navPath)
+                                .id(id)
+                        } else {
+                            Text("Select a Drum Pattern")
+                        }
+                    } else {
+                        Text("Select a Drum Pattern")
                     }
                default:
                     Text("Select a category")
@@ -152,7 +168,7 @@ struct ContentView: View {
                     StyleEditView(style: binding, navPath: $navPath)
                         .id(id)
                 } else {
-                    
+                    Text("Style not found")
                 }
             }
             .navigationDestination(for: Feel.self) { feel in
@@ -162,7 +178,17 @@ struct ContentView: View {
                     FeelEditView(feel: binding, navPath: $navPath)
                         .id(id)
                 } else {
-                    
+                    Text("Feel not found")
+                }
+            }
+            .navigationDestination(for: DrumPattern.self) { drumPattern in
+                let id = drumPattern.id
+                if let index = drumPatterns.firstIndex(where: { $0.id == id }),
+                   let binding = drumPatternBinding(for: drumPatterns[index]) {
+                    DrumPatternEditView(drumPattern: binding, navPath: $navPath)
+                        .id(id)
+                } else {
+                    Text("DrumPattern not found")
                 }
             }
             .navigationTitle("Categories")
@@ -230,6 +256,21 @@ struct ContentView: View {
             set: { newValue in
                 let target = feels[index]
                 target.name = newValue.name
+                try? modelContext.save()
+            }
+        )
+    }
+    
+    private func drumPatternBinding(for drumPattern: DrumPattern) -> Binding<DrumPattern>? {
+        guard let index = drumPatterns.firstIndex(where: { $0.id == drumPattern.id }) else { return nil }
+        return Binding(
+            get: { drumPatterns[index] },
+            set: { newValue in
+                let target = drumPatterns[index]
+                target.name = newValue.name
+                target.style = newValue.style
+                target.feel = newValue.feel
+                target.drumNotesInPattern = newValue.drumNotesInPattern
                 try? modelContext.save()
             }
         )
