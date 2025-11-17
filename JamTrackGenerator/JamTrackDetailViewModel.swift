@@ -219,6 +219,7 @@ extension JamTrackDetailView {
         
         func createURL() -> URL? {
             guard let modelContext else { return nil }
+            save(modelContext: modelContext)
             let document = createMidiDocument(modelContext: modelContext)
             let midiData = document.encodeMidiToData()
             let url = midiData.saveToDocuments()

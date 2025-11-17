@@ -8,6 +8,7 @@ struct ContentView: View {
     @Query(sort: \Style.name) private var styles: [Style]
     @Query(sort: \Feel.name) private var feels: [Feel]
     @Query(sort: \DrumPattern.name) private var drumPatterns: [DrumPattern]
+    @Query(sort: \HarmonicPattern.name) private var harmonicPatterns: [HarmonicPattern]
 
     // Sidebar selection (first column)
     @State private var selectedCategory: SidebarCategory? = .jamTracks
@@ -17,6 +18,7 @@ struct ContentView: View {
     @State private var selectedStyleID: Style.ID?
     @State private var selectedFeelID: Feel.ID?
     @State private var selectedDrumPatternID: DrumPattern.ID?
+    @State private var selectedHarmonicPatternID: HarmonicPattern.ID?
     
     @State private var navPath: NavigationPath = NavigationPath()
     @State private var showUnsavedAlert: Bool = false
@@ -57,6 +59,8 @@ struct ContentView: View {
                 FeelsView(selectedFeelID: $selectedFeelID)
             case .drumPatterns:
                 DrumPatternsView(selectedDrumPatternID: $selectedDrumPatternID)
+            case .harmonicPatterns:
+                HarmonicPatternsView(selectedHarmonicPatternID: $selectedHarmonicPatternID)
             default:
                 Text("Select a category")
             }
@@ -112,6 +116,18 @@ struct ContentView: View {
                     } else {
                         Text("Select a Drum Pattern")
                     }
+                case .harmonicPatterns:
+                    if let id = selectedHarmonicPatternID,
+                       let index = harmonicPatterns.firstIndex(where: { $0.id == id }) {
+                        if let binding = harmonicPatternBinding(for: harmonicPatterns[index]) {
+                            HarmonicPatternEditView(harmonicPattern: binding, navPath: $navPath)
+                                .id(id)
+                        } else {
+                            Text("Select an Harmonic Pattern")
+                        }
+                    } else {
+                        Text("Select an Harmonic Pattern")
+                    }
                default:
                     Text("Select a category")
                 }
@@ -146,8 +162,10 @@ struct ContentView: View {
                     StylesView(selectedStyleID: $selectedStyleID)
                 case .feels:
                     FeelsView(selectedFeelID: $selectedFeelID)
-                default:
-                    Text("Select a category")
+                case .drumPatterns:
+                    DrumPatternsView(selectedDrumPatternID: $selectedDrumPatternID)
+                case .harmonicPatterns:
+                    HarmonicPatternsView(selectedHarmonicPatternID: $selectedHarmonicPatternID)
                 }
             }
             .navigationDestination(for: JamTrack.self) { track in
@@ -188,7 +206,17 @@ struct ContentView: View {
                     DrumPatternEditView(drumPattern: binding, navPath: $navPath)
                         .id(id)
                 } else {
-                    Text("DrumPattern not found")
+                    Text("Drum Pattern not found")
+                }
+            }
+            .navigationDestination(for: HarmonicPattern.self) { harmonicPattern in
+                let id = harmonicPattern.id
+                if let index = harmonicPatterns.firstIndex(where: { $0.id == id }),
+                   let binding = harmonicPatternBinding(for: harmonicPatterns[index]) {
+                    HarmonicPatternEditView(harmonicPattern: binding, navPath: $navPath)
+                        .id(id)
+                } else {
+                    Text("Harmonic Pattern not found")
                 }
             }
             .navigationTitle("Categories")
@@ -271,6 +299,22 @@ struct ContentView: View {
                 target.style = newValue.style
                 target.feel = newValue.feel
                 target.drumNotesInPattern = newValue.drumNotesInPattern
+                try? modelContext.save()
+            }
+        )
+    }
+    
+    private func harmonicPatternBinding(for harmonicPattern: HarmonicPattern) -> Binding<HarmonicPattern>? {
+        guard let index = harmonicPatterns.firstIndex(where: { $0.id == harmonicPattern.id }) else { return nil }
+        return Binding(
+            get: { harmonicPatterns[index] },
+            set: { newValue in
+                let target = harmonicPatterns[index]
+                target.name = newValue.name
+                target.style = newValue.style
+                target.feel = newValue.feel
+                target.baseOctave = newValue.baseOctave
+                target.harmonicNotesInPattern = newValue.harmonicNotesInPattern
                 try? modelContext.save()
             }
         )

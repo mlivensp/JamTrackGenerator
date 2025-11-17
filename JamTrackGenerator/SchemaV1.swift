@@ -268,7 +268,7 @@ enum SchemaV1: VersionedSchema {
         
         @Relationship(deleteRule: .cascade, inverse: \HarmonicNoteInPattern.pattern) var harmonicNotesInPattern: [HarmonicNoteInPattern]
         
-        init(name: String, style: Style?, feel: Feel?, baseOctave: UInt8, harmonicNotesInPattern: [HarmonicNoteInPattern] = []) {
+        init(name: String, style: Style? = nil, feel: Feel? = nil, baseOctave: UInt8 = 1, harmonicNotesInPattern: [HarmonicNoteInPattern] = []) {
             self.name = name
             self.style = style
             self.feel = feel

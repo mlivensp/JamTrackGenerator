@@ -8,7 +8,7 @@ struct PatternImportView: View {
     @Query(sort: \Style.name) private var styles: [Style]
     @Query(sort: \Feel.name) private var feels: [Feel]
     let trackNotes: [MidiTrackData]
-    @Binding var selectedDrumPatternNavigation: DrumPatternNavigation?
+//    @Binding var selectedDrumPatternNavigation: DrumPatternNavigation?
     @State private var viewModel: ViewModel
     
     private let gridColumns = [
@@ -20,12 +20,8 @@ struct PatternImportView: View {
         GridItem(.fixed(80), alignment: .leading) // Use Feel Checkbox
     ]
     
-    init(
-        trackNotes: [MidiTrackData],
-        selectedDrumPatternNavigation: Binding<DrumPatternNavigation?>
-    ) {
+    init(trackNotes: [MidiTrackData]) {
         self.trackNotes = trackNotes
-        self._selectedDrumPatternNavigation = selectedDrumPatternNavigation
         self._viewModel = State(wrappedValue: ViewModel(
             drumNotes: [],
             styles: [],

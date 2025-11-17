@@ -10,7 +10,7 @@ struct DrumPatternsView: View {
 
     @Query(sort: \Style.name) private var styles: [Style]
     @Query(sort: \Feel.name) private var feels: [Feel]
-    @State var selectedDrumPatternNavigation: DrumPatternNavigation?
+//    @State var selectedDrumPatternNavigation: DrumPatternNavigation?
     @State private var importMidi = false
     @State private var importError: String?
     @State private var showImportOptions = false
@@ -43,9 +43,6 @@ struct DrumPatternsView: View {
                 List {
                     Section(header: Text("Drum Patterns")) {
                          ForEach(filteredDrumPatterns) { drumPattern in
-//                             NavigationLink(value: DrumPatternNavigation.existing(drumPattern)) {
-//                                 Text(drumPattern.name)
-//                             }
 #if os(iOS)
                 if UIDevice.current.userInterfaceIdiom == .phone {
                     NavigationLink(value: drumPattern) {
@@ -105,10 +102,7 @@ struct DrumPatternsView: View {
             }
         }
         .sheet(isPresented: $showImportOptions) {
-            PatternImportView(
-                trackNotes: trackNotes,
-                selectedDrumPatternNavigation: $selectedDrumPatternNavigation
-            )
+            PatternImportView(trackNotes: trackNotes)
             .environment(\.modelContext, modelContext)
             #if os(macOS)
             .frame(minWidth: 600, idealWidth: 800, minHeight: 500, idealHeight: 600)
