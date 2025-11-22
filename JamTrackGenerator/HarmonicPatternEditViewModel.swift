@@ -28,6 +28,12 @@ extension HarmonicPatternEditView {
             }
         }
         
+        var baseOctave: UInt8 {
+            didSet {
+                navManager?.isDirty = hasUnsavedChanges
+            }
+        }
+        
         var errorMessage: String?
         var didSave: Bool = false
         
@@ -41,15 +47,24 @@ extension HarmonicPatternEditView {
             self.name = harmonicPattern.name
             self.style = harmonicPattern.style
             self.feel = harmonicPattern.feel
+            self.baseOctave = harmonicPattern.baseOctave
         }
         
         var hasUnsavedChanges: Bool {
             return !didSave &&
-                (name != original.name)
+            (
+                name != original.name ||
+                style != original.style ||
+                feel != original.feel ||
+                baseOctave != original.baseOctave
+            )
         }
         
         func commit() {
             original.name = name
+            original.style = style
+            original.feel = feel
+            original.baseOctave = baseOctave
         }
         
         func prepareForSave(modelContext: ModelContext) {
@@ -74,6 +89,7 @@ extension HarmonicPatternEditView {
             self.name = fresh.name
             self.style = fresh.style
             self.feel = fresh.feel
+            self.baseOctave = fresh.baseOctave
             self.didSave = false
             self.errorMessage = nil
             navManager?.isDirty = false

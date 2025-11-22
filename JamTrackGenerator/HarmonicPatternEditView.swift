@@ -47,6 +47,12 @@ struct HarmonicPatternEditView: View {
                         }
                     }
                     .pickerStyle(MenuPickerStyle())
+                    
+                    LabeledContent {
+                        TextField("", value: $viewModel.baseOctave, formatter: NumberFormatter())
+                    } label: {
+                        Text("Base Octave")
+                    }
                 }
                 
                 // TODO: add base octave
