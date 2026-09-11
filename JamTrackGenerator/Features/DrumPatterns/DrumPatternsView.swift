@@ -10,7 +10,6 @@ struct DrumPatternsView: View {
 
     @Query(sort: \Style.name) private var styles: [Style]
     @Query(sort: \Feel.name) private var feels: [Feel]
-//    @State var selectedDrumPatternNavigation: DrumPatternNavigation?
     @State private var importMidi = false
     @State private var importError: String?
     @State private var showImportOptions = false

@@ -9,17 +9,12 @@ import Foundation
 import SwiftData
 
 @Observable class MidiHandler {
-//    let jamTrack: JamTrack
-//    let modelContext: ModelContext
     let url: URL
     var midiPlayer: MIDIPlayer
     var isPlaying = false
     var isPaused = false
 
-//    init(jamTrack: JamTrack, modelContext: ModelContext) throws {
     init(url: URL) throws {
-//        self.jamTrack = jamTrack
-//        self.modelContext = modelContext
         self.url = url
         midiPlayer = try MIDIPlayer()
         midiPlayer.onPlaybackEnded = {
@@ -29,11 +24,6 @@ import SwiftData
     }
     
     func play() throws {
-//        let data = jamTrack.encodeToMidi(modelContext: modelContext)
-//        guard let url = saveToDocuments(data: data) else {
-//            fatalError("Failed to save MIDI file")
-//        }
-//
         if isPaused {
             midiPlayer.resumeMIDIFile()
             

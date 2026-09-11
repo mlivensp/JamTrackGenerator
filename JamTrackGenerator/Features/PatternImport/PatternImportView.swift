@@ -8,7 +8,6 @@ struct PatternImportView: View {
     @Query(sort: \Style.name) private var styles: [Style]
     @Query(sort: \Feel.name) private var feels: [Feel]
     let trackNotes: [MidiTrackData]
-//    @Binding var selectedDrumPatternNavigation: DrumPatternNavigation?
     @State private var viewModel: ViewModel
     
     private let gridColumns = [

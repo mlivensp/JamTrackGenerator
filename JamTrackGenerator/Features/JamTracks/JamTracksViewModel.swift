@@ -22,7 +22,7 @@ extension JamTracksView {
 //        }
         
         func addJamTrack(modelContext: ModelContext) -> JamTrack {
-            let newJamTrack = JamTrack.newJamTrack(modelContext: modelContext)
+            let newJamTrack = JamTrackTemplateService.makeDefaultJamTrack(in: modelContext)
             modelContext.insert(newJamTrack)
             do {
                 try modelContext.save()

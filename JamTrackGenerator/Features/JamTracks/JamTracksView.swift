@@ -42,7 +42,9 @@ struct JamTracksView: View {
                     }
 #endif
                     Spacer()
-                    PlaybackControlsView(size: .small, createURL: jamTrack.createURL)
+                    PlaybackControlsView(size: .small) {
+                        JamTrackExportService.createURL(for: jamTrack)
+                    }
                 }
             }
             .onDelete { indexSet in
@@ -81,7 +83,7 @@ struct JamTracksView: View {
     private func addJamTrack() {
         withAnimation {
             navManager.requestNavigation {
-                let newJamTrack = JamTrack.newJamTrack(modelContext: modelContext)
+                let newJamTrack = JamTrackTemplateService.makeDefaultJamTrack(in: modelContext)
                 modelContext.insert(newJamTrack)
                 
                 do {

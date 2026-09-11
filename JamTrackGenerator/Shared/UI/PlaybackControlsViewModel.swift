@@ -22,7 +22,7 @@ extension PlaybackControlsView {
             midiHandler = nil
         }
         
-        func togglePlayback() throws {
+        func togglePlayback() async throws {
             if midiHandler == nil {
                 if let url = createURL() {
                     midiHandler = try MidiHandler(url: url)

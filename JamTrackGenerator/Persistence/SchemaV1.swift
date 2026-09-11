@@ -12,8 +12,27 @@ import SwiftUI
 enum SchemaV1: VersionedSchema {
     static let versionIdentifier = Schema.Version(1, 0, 0)
     static var models: [any PersistentModel.Type] = [
-        
+        Style.self,
+        RawNote.self,
+        Key.self,
+        NoteInKey.self,
+        Feel.self,
+        SongSection.self,
+        JamTrackSection.self,
+        InstrumentFamily.self,
+        Instrument.self,
+        Part.self,
+        JamTrack.self,
+        ScaleDegree.self,
+        HarmonicNoteInPattern.self,
+        HarmonicPattern.self,
+        SectionPart.self,
+        DrumNote.self,
+        DrumNoteInPattern.self,
+        DrumPattern.self,
     ]
+    
+    static let schema = Schema(models)
     
     @Model class Style {
         var name: String
