@@ -126,9 +126,11 @@ struct PatternImportView: View {
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button("Done") {
-                        viewModel.importSelectedTracks { success in
-                            if success {
-                                dismiss()
+                        Task {
+                            await viewModel.importSelectedTracks { success in
+                                if success {
+                                    dismiss()
+                                }
                             }
                         }
                     }
@@ -203,11 +205,13 @@ struct TrackRowView: View {
                     get: { viewModel.patternNames[track] ?? "" },
                     set: {
                         viewModel.patternNames[track] = $0
-                        if let error = viewModel.validatePatternName(for: track) {
-                            viewModel.errorMessages[track] = error
-//                            viewModel.showError = true
-                        } else {
-                            viewModel.errorMessages[track] = nil
+                        Task {
+                            if let error = await viewModel.validatePatternName(for: track) {
+                                viewModel.errorMessages[track] = error
+                                //                            viewModel.showError = true
+                            } else {
+                                viewModel.errorMessages[track] = nil
+                            }
                         }
                     }
                 ))

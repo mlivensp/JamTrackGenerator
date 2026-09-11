@@ -55,12 +55,12 @@ extension PatternImportView {
             }
         }
         
-        func validatePatternName(for track: MidiTrackData) -> String? {
+        func validatePatternName(for track: MidiTrackData) async -> String? {
             guard let importService else {
                 return "Pattern import is not ready."
             }
             
-            return importService.validatePatternName(
+            return await importService.validatePatternName(
                 for: track,
                 selections: selections,
                 selectedStyle: selectedStyle,
@@ -78,7 +78,7 @@ extension PatternImportView {
             return nil
         }
         
-        func importSelectedTracks(completion: @escaping (Bool) -> Void) {
+        func importSelectedTracks(completion: @escaping (Bool) -> Void) async {
             let selected = Array(selectedTracks.filter { $0.value }.keys)
             
             if selected.isEmpty {
@@ -92,7 +92,7 @@ extension PatternImportView {
             var validationErrors: [String] = []
             
             for track in selected {
-                if let nameError = validatePatternName(for: track) {
+                if let nameError = await validatePatternName(for: track) {
                     errorMessages[track] = nameError
                 } else {
                     errorMessages[track] = nil
