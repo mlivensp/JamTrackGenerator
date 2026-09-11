@@ -7,6 +7,7 @@ enum PlaybackState {
     case paused
 }
 
+@MainActor
 @Observable class MIDIPlayer {
     @ObservationIgnored private let audioEngine = AVAudioEngine()
     @ObservationIgnored private let sampler = AVAudioUnitSampler()
@@ -195,7 +196,7 @@ enum PlaybackState {
         isLooping = false // Reset looping state
     }
     
-    private func startPlaybackTimer() {
+    private func startPlaybackTimer()  {
         playbackTimer = Timer.scheduledTimer(withTimeInterval: 0.01, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.updatePlayback()

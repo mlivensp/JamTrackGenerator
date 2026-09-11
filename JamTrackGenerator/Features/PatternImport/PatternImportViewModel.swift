@@ -78,6 +78,7 @@ extension PatternImportView {
             return nil
         }
         
+        @MainActor
         func importSelectedTracks(completion: @escaping (Bool) -> Void) async {
             let selected = Array(selectedTracks.filter { $0.value }.keys)
             
