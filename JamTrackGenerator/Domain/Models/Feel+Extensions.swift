@@ -7,5 +7,3 @@
 
 import Foundation
 
-extension Feel: Identifiable {}
-

@@ -7,8 +7,6 @@
 
 import Foundation
 
-extension HarmonicPattern: Identifiable { }
-
 extension HarmonicPattern {
     var sortedNotes: [SchemaV1.HarmonicNoteInPattern] {
         harmonicNotesInPattern.sorted { $0.timestampOn < $1.timestampOn }

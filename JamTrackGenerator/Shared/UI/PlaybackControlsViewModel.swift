@@ -9,6 +9,7 @@ import Foundation
 import SwiftData
 
 extension PlaybackControlsView {
+    @MainActor
     @Observable class ViewModel {
 //        let jamTrack: JamTrack
 //        let modelContext: ModelContext

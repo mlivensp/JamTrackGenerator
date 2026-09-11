@@ -2,6 +2,7 @@ import SwiftData
 import Foundation
 
 extension PatternImportView {
+    @MainActor
     @Observable class ViewModel {
         private var modelContext: ModelContext!
         private let drumNotes: [DrumNote]

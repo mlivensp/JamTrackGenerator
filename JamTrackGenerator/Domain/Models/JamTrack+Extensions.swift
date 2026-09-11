@@ -7,7 +7,6 @@
 
 import Foundation
 
-extension JamTrack: Identifiable {}
 extension JamTrack: Equatable {
     static func == (lhs: SchemaV1.JamTrack, rhs: SchemaV1.JamTrack) -> Bool {
         lhs.name == rhs.name

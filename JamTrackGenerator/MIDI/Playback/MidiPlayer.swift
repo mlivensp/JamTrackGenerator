@@ -72,20 +72,26 @@ enum PlaybackState {
         }
     }
     
-    deinit {
-        // Synchronously stop timer and audio
-        playbackTimer?.invalidate()
-        playbackTimer = nil
-        
-        // Stop audio engine synchronously
-        audioEngine.stop()
-        
-        // Clean up MIDI resources
-//        if midiClient != 0 {
-//            MIDIClientDispose(midiClient)
-//        }
-    }
-
+//    deinit {
+//        // Synchronously stop timer and audio
+//        playbackTimer?.invalidate()
+//        playbackTimer = nil
+//        
+//        // Stop audio engine synchronously
+//        audioEngine.stop()
+//        
+//        // Clean up MIDI resources
+////        if midiClient != 0 {
+////            MIDIClientDispose(midiClient)
+////        }
+//    }
+    
+    func shutdown() {
+            playbackTimer?.invalidate()
+            playbackTimer = nil
+            audioEngine.stop()
+            // other teardown
+        }
 //    func playNote() {
 //        print("Playing single note: MIDI 60")
 //        sampler.startNote(60, withVelocity: 100, onChannel: 0)
