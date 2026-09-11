@@ -220,22 +220,19 @@ extension JamTrackDetailView {
         func createURL() -> URL? {
             guard let modelContext else { return nil }
             save(modelContext: modelContext)
-            let document = createMidiDocument(modelContext: modelContext)
-            let midiData = document.encodeMidiToData()
-            let url = midiData.saveToDocuments()
-            return url
+            guard let exportRequest = createExportRequest() else { return nil }
+            return JamTrackExportService.createURL(for: exportRequest, modelContext: modelContext)
         }
         
-        func createMidiDocument(modelContext: ModelContext) -> MidiDocument {
-            var song = Song(modelContext: modelContext)
-            guard let style = style, let feel = feel, let key = key else {
-                fatalError("No style, feel or key set for track")
-            }
-            
-            song.buildTracks(style: style, feel: feel, key: key, jamTrackSections: jamTrackSections)
-            var document = MidiDocument(song: song, sharpsOrFlats: key.sharpsOrFlats, isMajor: key.isMajor, bpm: bpm)
-            document.encodeMidi()
-            return document
+        private func createExportRequest() -> JamTrackExportRequest? {
+            guard let style, let feel, let key else { return nil }
+            return JamTrackExportRequest(
+                style: style,
+                feel: feel,
+                key: key,
+                bpm: bpm,
+                jamTrackSections: jamTrackSections
+            )
         }
     }
 }

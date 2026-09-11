@@ -4,26 +4,7 @@ import SwiftData
 @main
 struct JamTrackGeneratorApp: App {
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Style.self,
-            RawNote.self,
-            Key.self,
-            NoteInKey.self,
-            Feel.self,
-            SongSection.self,
-            JamTrackSection.self,
-            InstrumentFamily.self,
-            Instrument.self,
-            Part.self,
-            JamTrack.self,
-            ScaleDegree.self,
-            HarmonicNoteInPattern.self,
-            HarmonicPattern.self,
-            SectionPart.self,
-            DrumNote.self,
-            DrumNoteInPattern.self,
-            DrumPattern.self,
-        ])
+        let schema = SchemaV1.schema
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
 
         do {

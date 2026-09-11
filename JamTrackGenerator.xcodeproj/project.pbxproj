@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		DD367F362E8D8B7D00AF05E9 /* MIDIKitSMF in Frameworks */ = {isa = PBXBuildFile; productRef = DD64E2722E883785005312BE /* MIDIKitSMF */; };
-		DD367FD92E8ED5D000AF05E9 /* ContentWidthPreferenceKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD367FD82E8ED5D000AF05E9 /* ContentWidthPreferenceKey.swift */; };
 		DD64E26B2E883451005312BE /* MIDIKit in Frameworks */ = {isa = PBXBuildFile; productRef = DD64E26A2E883451005312BE /* MIDIKit */; };
 		DD74C8A22E752EF200B213C1 /* SwiftData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD74C8A12E752EF200B213C1 /* SwiftData.framework */; };
 /* End PBXBuildFile section */
@@ -44,7 +43,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		DD367FD82E8ED5D000AF05E9 /* ContentWidthPreferenceKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentWidthPreferenceKey.swift; sourceTree = "<group>"; };
 		DD74C8A12E752EF200B213C1 /* SwiftData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftData.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.5.sdk/System/Library/Frameworks/SwiftData.framework; sourceTree = DEVELOPER_DIR; };
 		DD9941712E5394A0001AB0E7 /* JamTrackGenerator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JamTrackGenerator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD9941812E5394A1001AB0E7 /* JamTrackGeneratorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = JamTrackGeneratorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -119,7 +117,6 @@
 				DD99418E2E5394A1001AB0E7 /* JamTrackGeneratorUITests */,
 				DD74C8A02E752EF200B213C1 /* Frameworks */,
 				DD9941722E5394A0001AB0E7 /* Products */,
-				DD367FD82E8ED5D000AF05E9 /* ContentWidthPreferenceKey.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -286,7 +283,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DD367FD92E8ED5D000AF05E9 /* ContentWidthPreferenceKey.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
