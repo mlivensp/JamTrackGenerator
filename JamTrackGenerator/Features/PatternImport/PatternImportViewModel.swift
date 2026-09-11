@@ -37,6 +37,8 @@ extension PatternImportView {
         ) {
             self.drumNotes = drumNotes
             self.trackNotes = trackNotes
+            _ = styles
+            _ = feels
             initializeTrackData()
         }
         
@@ -106,7 +108,9 @@ extension PatternImportView {
             }
             
             if !validationErrors.isEmpty || !errorMessages.isEmpty {
-                singleErrorMessage = validationErrors.joined(separator: "\n")
+                singleErrorMessage = validationErrors.isEmpty
+                    ? "Resolve track validation errors before importing."
+                    : validationErrors.joined(separator: "\n")
                 showError = true
                 completion(false)
                 return
