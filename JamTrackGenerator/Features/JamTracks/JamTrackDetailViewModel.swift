@@ -76,18 +76,12 @@ extension JamTrackDetailView {
     @MainActor
     @Observable
     final class ViewModel {
-        var draft: Draft {
-            didSet {
-                updateDirtyState()
-            }
-        }
+        var draft: Draft
 
         private(set) var initialDraft: Draft
         var errorMessage: String?
 
         let jamTrack: JamTrack
-        var modelContext: ModelContext?
-        var navManager: NavigationStateManager?
 
         init(jamTrack: JamTrack) {
             let draft = Draft(jamTrack: jamTrack)
@@ -198,11 +192,9 @@ extension JamTrackDetailView {
                 draft = savedDraft
                 initialDraft = savedDraft
                 errorMessage = nil
-                navManager?.isDirty = false
                 return true
             } catch {
                 errorMessage = "Save failed: \(error.localizedDescription)"
-                updateDirtyState()
                 return false
             }
         }
@@ -210,11 +202,10 @@ extension JamTrackDetailView {
         func reset() {
             draft = initialDraft
             errorMessage = nil
-            navManager?.isDirty = false
         }
 
-        func createURL() -> URL? {
-            guard let modelContext, save(modelContext: modelContext) else { return nil }
+        func createURL(modelContext: ModelContext) -> URL? {
+            guard save(modelContext: modelContext) else { return nil }
             return JamTrackExportService.createURL(for: jamTrack)
         }
 
@@ -226,10 +217,6 @@ extension JamTrackDetailView {
         private func updateSongSection(for sectionID: UUID, songSection: SongSection?) {
             guard let index = draft.sections.firstIndex(where: { $0.id == sectionID }) else { return }
             draft.sections[index].songSectionID = songSection?.persistentModelID
-        }
-
-        private func updateDirtyState() {
-            navManager?.isDirty = hasUnsavedChanges
         }
 
         private func catalogBinding<Model: PersistentModel>(

@@ -36,43 +36,16 @@ struct JamTrackDetailView: View {
                 .frame(maxHeight: .infinity)
                 .layoutPriority(1)
                 .border(systemSeparator, width: 1)
-            PlaybackControlsView(size: .large, createURL: viewModel.createURL)
+            PlaybackControlsView(size: .large) {
+                viewModel.createURL(modelContext: modelContext)
+            }
         }
-//        .navigationTitle(viewModel.name.isEmpty ? "Untitled Jam Track" : viewModel.name)
-//        .onAppear {
-//            viewModel.modelContext = self.modelContext
-//            viewModel.navManager = self.navManager
-//        }
-//        .toolbar {
-//            ToolbarItemGroup {
-//                Button("Revert") {
-//                    viewModel.reset()
-//                }
-//                .disabled(!viewModel.hasUnsavedChanges)
-//                
-//                Button("Save") {
-//                    viewModel.save(modelContext: self.modelContext)
-//                }
-//                .disabled(!viewModel.hasUnsavedChanges)
-//            }
-//        }
-//        .onChange(of: jamTrack) {
-//            // If the bound model instance changed underneath us, reset draft and clear dirty
-//            viewModel = .init(jamTrack: jamTrack)
-//            viewModel.navManager = self.navManager
-//            navManager.isDirty = false
-//        }
-//        .onDisappear {
-//            // Ensure global dirty state is cleared when editor is removed
-//            navManager.isDirty = false
-//        }
 #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
 #endif
         .interactiveDismissDisabled(viewModel.hasUnsavedChanges)
         .onAppear {
-            viewModel.modelContext = self.modelContext
-            viewModel.navManager = self.navManager
+            navManager.isDirty = viewModel.hasUnsavedChanges
         }
 #if os(iOS)
         .navigationBarBackButtonHidden(true)
@@ -110,8 +83,10 @@ struct JamTrackDetailView: View {
         .onChange(of: jamTrack.id) {
             // If the persistent model instance changed underneath us, reset draft and clear dirty
             viewModel = .init(jamTrack: jamTrack)
-            viewModel.navManager = self.navManager
             navManager.isDirty = false
+        }
+        .onChange(of: viewModel.hasUnsavedChanges) { _, hasUnsavedChanges in
+            navManager.isDirty = hasUnsavedChanges
         }
         .onDisappear {
             // Ensure global dirty state is cleared when editor is removed
