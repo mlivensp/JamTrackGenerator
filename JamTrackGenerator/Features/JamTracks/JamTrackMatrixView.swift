@@ -1,10 +1,7 @@
 import SwiftData
 import SwiftUI
 
-enum PatternSelection: Hashable {
-    case drum(id: UUID)
-    case harmonic(id: UUID)
-}
+typealias PatternSelection = JamTrackDetailView.Draft.PatternReference
 
 struct JamTrackMatrixView: View {
     @Environment(\.modelContext) var modelContext
@@ -179,20 +176,9 @@ struct JamTrackMatrixView: View {
         
         for section in viewModel.sortedSections {
             for sectionPart in section.sectionParts {
-                guard let part = viewModel.draft.parts.first(where: { $0.id == sectionPart.partID }),
-                      let instrument = instruments.first(where: { $0.persistentModelID == part.instrumentID }) else {
-                    continue
-                }
-
-                let cellKey = "\(section.id)-\(part.id)"
-                if instrument.isDrums {
-                    if let pattern = drumPatterns.first(where: { $0.name == sectionPart.patternName }) {
-                        result[cellKey] = .drum(id: pattern.id)
-                    }
-                } else {
-                    if let pattern = harmonicPatterns.first(where: { $0.name == sectionPart.patternName }) {
-                        result[cellKey] = .harmonic(id: pattern.id)
-                    }
+                let cellKey = "\(section.id)-\(sectionPart.partID)"
+                if let patternReference = sectionPart.patternReference {
+                    result[cellKey] = patternReference
                 }
             }
         }
@@ -218,13 +204,13 @@ struct JamTrackMatrixView: View {
                 ($0.style == nil || $0.style?.persistentModelID == viewModel.draft.styleID)
                     && ($0.feel == nil || $0.feel?.persistentModelID == viewModel.draft.feelID)
             }
-            .map { .drum(id: $0.id) }
+            .map { .drum($0.persistentModelID) }
         : harmonicPatterns
             .filter {
                 ($0.style == nil || $0.style?.persistentModelID == viewModel.draft.styleID)
                     && ($0.feel == nil || $0.feel?.persistentModelID == viewModel.draft.feelID)
             }
-            .map { .harmonic(id: $0.id) }
+            .map { .harmonic($0.persistentModelID) }
         
         let patterns: [PatternSelection] = {
             guard let selected, !filtered.contains(selected) else { return filtered }
@@ -234,23 +220,7 @@ struct JamTrackMatrixView: View {
         let binding = Binding<PatternSelection?>(
             get: { selected },
             set: { newValue in
-                guard let newValue else { return }
-                
-                let patternName: String
-                switch newValue {
-                case .drum(let id):
-                    guard let pattern = drumPatterns.first(where: { $0.id == id }) else {
-                        fatalError("Drum pattern with id \(id) not found in drumPatterns")
-                    }
-                    patternName = pattern.name
-                case .harmonic(let id):
-                    guard let pattern = harmonicPatterns.first(where: { $0.id == id }) else {
-                        fatalError("Harmonic pattern with id \(id) not found in harmonicPatterns")
-                    }
-                    patternName = pattern.name
-                }
-                
-                viewModel.setPatternName(patternName, for: section.id, partID: part.id)
+                viewModel.setPatternReference(newValue, for: section.id, partID: part.id)
             }
         )
         
@@ -275,15 +245,9 @@ struct JamTrackMatrixView: View {
     private func patternName(_ pattern: PatternSelection) -> String {
         switch pattern {
         case .drum(let id):
-            guard let label = drumPatterns.first(where: { $0.id == id })?.name else {
-                fatalError("Drum pattern with id \(id) not found in drumPatterns")
-            }
-            return label
+            return drumPatterns.first(where: { $0.persistentModelID == id })?.name ?? "Missing drum pattern"
         case .harmonic(let id):
-            guard let label = harmonicPatterns.first(where: { $0.id == id })?.name else {
-                fatalError("Harmonic pattern with id \(id) not found in harmonicPatterns")
-            }
-            return label
+            return harmonicPatterns.first(where: { $0.persistentModelID == id })?.name ?? "Missing harmonic pattern"
         }
     }
 }
