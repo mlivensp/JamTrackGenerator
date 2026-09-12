@@ -2,237 +2,343 @@ import SwiftData
 import SwiftUI
 
 extension JamTrackDetailView {
+    struct Draft: Equatable {
+        struct Part: Identifiable, Equatable {
+            let id: UUID
+            let persistentID: PersistentIdentifier?
+            var instrumentID: PersistentIdentifier?
+            var order: Int
+        }
+
+        struct SectionPart: Equatable {
+            let persistentID: PersistentIdentifier?
+            var partID: UUID
+            var patternName: String
+        }
+
+        struct Section: Identifiable, Equatable {
+            let id: UUID
+            let persistentID: PersistentIdentifier?
+            var songSectionID: PersistentIdentifier?
+            var order: UInt8
+            var sectionParts: [SectionPart]
+        }
+
+        var name: String
+        var styleID: PersistentIdentifier?
+        var feelID: PersistentIdentifier?
+        var keyID: PersistentIdentifier?
+        var bpm: UInt8
+        var includeCountIn: Bool
+        var parts: [Part]
+        var sections: [Section]
+
+        init(jamTrack: JamTrack) {
+            name = jamTrack.name
+            styleID = jamTrack.style?.persistentModelID
+            feelID = jamTrack.feel?.persistentModelID
+            keyID = jamTrack.key?.persistentModelID
+            bpm = jamTrack.bpm
+            includeCountIn = jamTrack.includeCountIn
+
+            let partsByPersistentID = Dictionary(
+                uniqueKeysWithValues: jamTrack.parts.map { ($0.persistentModelID, UUID()) }
+            )
+            parts = jamTrack.parts.map {
+                Part(
+                    id: partsByPersistentID[$0.persistentModelID]!,
+                    persistentID: $0.persistentModelID,
+                    instrumentID: $0.instrument?.persistentModelID,
+                    order: $0.order
+                )
+            }
+            sections = jamTrack.jamTrackSections.map { section in
+                Section(
+                    id: UUID(),
+                    persistentID: section.persistentModelID,
+                    songSectionID: section.songSection?.persistentModelID,
+                    order: section.order,
+                    sectionParts: section.sectionParts.compactMap { sectionPart in
+                        guard let partID = sectionPart.part.flatMap({ partsByPersistentID[$0.persistentModelID] }) else {
+                            return nil
+                        }
+                        return SectionPart(
+                            persistentID: sectionPart.persistentModelID,
+                            partID: partID,
+                            patternName: sectionPart.patternName
+                        )
+                    }
+                )
+            }
+        }
+    }
+
     @Observable
     class ViewModel {
-        var name: String {
+        var draft: Draft {
             didSet {
-                navManager?.isDirty = hasUnsavedChanges
+                updateDirtyState()
             }
         }
-        var style: Style?{
-            didSet {
-                navManager?.isDirty = hasUnsavedChanges
-            }
-        }
-        var feel: Feel?{
-            didSet {
-                navManager?.isDirty = hasUnsavedChanges
-            }
-        }
-        var key: Key?{
-            didSet {
-                navManager?.isDirty = hasUnsavedChanges
-            }
-        }
-        var bpm: UInt8{
-            didSet {
-                navManager?.isDirty = hasUnsavedChanges
-            }
-        }
-        var includeCountIn: Bool{
-            didSet {
-                navManager?.isDirty = hasUnsavedChanges
-            }
-        }
-        
-        var parts: [Part]
-        var jamTrackSections: [JamTrackSection]
-        
+
+        private(set) var initialDraft: Draft
         var errorMessage: String?
-        var didSave: Bool = false
-        
+
         let jamTrack: JamTrack
         var modelContext: ModelContext?
-        
         var navManager: NavigationStateManager?
-        
+
         init(jamTrack: JamTrack) {
+            let draft = Draft(jamTrack: jamTrack)
             self.jamTrack = jamTrack
-            
-            self.name = jamTrack.name
-            self.style = jamTrack.style
-            self.feel = jamTrack.feel
-            self.key = jamTrack.key
-            self.bpm = jamTrack.bpm
-            self.includeCountIn = jamTrack.includeCountIn
-            
-            // Step 1: Build parts first
-            let clonedParts: [Part] = jamTrack.parts.compactMap { original in
-                guard let instrument = original.instrument else { return nil }
-                return Part(jamTrack: jamTrack, instrument: instrument, order: original.order)
-            }
-            self.parts = clonedParts
-            
-            // Step 2: Now build sections using clonedParts
-            self.jamTrackSections = jamTrack.jamTrackSections.map { section in
-                let newSection = JamTrackSection(
-                    jamTrack: jamTrack,
-                    songSection: section.songSection!,
-                    order: section.order
-                )
-                newSection.sectionParts = section.sectionParts.compactMap { sp in
-                    guard let originalPart = sp.part,
-                          let matchingPart = clonedParts.first(where: { $0.instrument == originalPart.instrument }) else {
-                        return nil
-                    }
-                    
-                    return SectionPart(
-                        section: newSection,
-                        part: matchingPart,
-                        patternName: sp.patternName
-                    )
-                }
-                
-                return newSection
-            }
+            self.draft = draft
+            self.initialDraft = draft
         }
-        
-        var sortedParts: [Part] {
-            self.parts.sorted(by: { $0.order < $1.order })
+
+        var name: String {
+            get { draft.name }
+            set { draft.name = newValue }
         }
-        
-        var sortedSections: [JamTrackSection] {
-            self.jamTrackSections.sorted(by: { $0.order < $1.order })
+
+        var bpm: UInt8 {
+            get { draft.bpm }
+            set { draft.bpm = newValue }
+        }
+
+        var hasUnsavedChanges: Bool {
+            draft != initialDraft
+        }
+
+        var sortedParts: [Draft.Part] {
+            draft.parts.sorted { $0.order < $1.order }
+        }
+
+        var sortedSections: [Draft.Section] {
+            draft.sections.sorted { $0.order < $1.order }
+        }
+
+        func styleBinding(_ styles: [Style]) -> Binding<Style?> {
+            catalogBinding(\.styleID, in: styles)
+        }
+
+        func feelBinding(_ feels: [Feel]) -> Binding<Feel?> {
+            catalogBinding(\.feelID, in: feels)
+        }
+
+        func keyBinding(_ keys: [Key]) -> Binding<Key?> {
+            catalogBinding(\.keyID, in: keys)
+        }
+
+        func instrumentBinding(for partID: UUID, instruments: [Instrument]) -> Binding<Instrument?> {
+            Binding(
+                get: {
+                    guard let part = self.draft.parts.first(where: { $0.id == partID }) else { return nil }
+                    return instruments.first { $0.persistentModelID == part.instrumentID }
+                },
+                set: { self.updateInstrument(for: partID, instrument: $0) }
+            )
+        }
+
+        func songSectionBinding(for sectionID: UUID, songSections: [SongSection]) -> Binding<SongSection?> {
+            Binding(
+                get: {
+                    guard let section = self.draft.sections.first(where: { $0.id == sectionID }) else { return nil }
+                    return songSections.first { $0.persistentModelID == section.songSectionID }
+                },
+                set: { self.updateSongSection(for: sectionID, songSection: $0) }
+            )
         }
 
         func addPart(instrument: Instrument) {
-            let maxOrder = parts.map(\.order).max() ?? -1
-            let newPart = Part(jamTrack: jamTrack, instrument: instrument, order: maxOrder + 1)
-            parts.append(newPart)
+            let order = (draft.parts.map(\.order).max() ?? -1) + 1
+            draft.parts.append(.init(id: UUID(), persistentID: nil, instrumentID: instrument.persistentModelID, order: order))
         }
 
-        func removePart(_ part: Part) {
-            parts.removeAll { $0 == part }
-            jamTrackSections.forEach { section in
-                section.sectionParts.removeAll { $0.part == part }
+        func removePart(id: UUID) {
+            draft.parts.removeAll { $0.id == id }
+            for index in draft.sections.indices {
+                draft.sections[index].sectionParts.removeAll { $0.partID == id }
             }
         }
-        
+
         func addSection(songSection: SongSection) {
-            let maxOrder = jamTrackSections.map(\.order).max() ?? 0
-            let newSection = JamTrackSection(jamTrack: jamTrack, songSection: songSection, order: maxOrder + 1)
-            jamTrackSections.append(newSection)
+            let order = (draft.sections.map(\.order).max() ?? 0) + 1
+            draft.sections.append(.init(id: UUID(), persistentID: nil, songSectionID: songSection.persistentModelID, order: order, sectionParts: []))
         }
 
-        func removeSection(_ section: JamTrackSection) {
-            jamTrackSections.removeAll { $0 == section }
+        func removeSection(id: UUID) {
+            draft.sections.removeAll { $0.id == id }
         }
-        
-        func addSectionPart(to section: JamTrackSection, part: Part, patternName: String) {
-            guard let index = jamTrackSections.firstIndex(where: { $0 === section }) else { return }
-            let newSectionPart = SectionPart(section: section, part: part, patternName: patternName)
-            jamTrackSections[index].sectionParts.append(newSectionPart)
-        }
-        
-        var hasUnsavedChanges: Bool {
-            return !didSave &&
-                (name != jamTrack.name ||
-                 key != jamTrack.key ||
-                 style != jamTrack.style ||
-                 feel != jamTrack.feel ||
-                 bpm != jamTrack.bpm ||
-                 includeCountIn != jamTrack.includeCountIn ||
-                 parts != jamTrack.parts ||
-                 jamTrackSections != jamTrack.jamTrackSections)
-        }
-        
-        func commit() {
-            jamTrack.name = name
-            jamTrack.key = key
-            jamTrack.style = style
-            jamTrack.feel = feel
-            jamTrack.bpm = bpm
-            jamTrack.includeCountIn = includeCountIn
 
-            for part in parts {
-                part.jamTrack = jamTrack
+        func patternName(for sectionID: UUID, partID: UUID) -> String? {
+            draft.sections
+                .first { $0.id == sectionID }?
+                .sectionParts
+                .first { $0.partID == partID }?
+                .patternName
+        }
+
+        func setPatternName(_ patternName: String, for sectionID: UUID, partID: UUID) {
+            guard let sectionIndex = draft.sections.firstIndex(where: { $0.id == sectionID }) else { return }
+            if let partIndex = draft.sections[sectionIndex].sectionParts.firstIndex(where: { $0.partID == partID }) {
+                draft.sections[sectionIndex].sectionParts[partIndex].patternName = patternName
+            } else {
+                draft.sections[sectionIndex].sectionParts.append(.init(persistentID: nil, partID: partID, patternName: patternName))
+            }
+        }
+
+        @discardableResult
+        func save(modelContext: ModelContext) -> Bool {
+            guard reconcileDraft(into: modelContext) else { return false }
+
+            do {
+                try modelContext.save()
+                let savedDraft = Draft(jamTrack: jamTrack)
+                draft = savedDraft
+                initialDraft = savedDraft
+                errorMessage = nil
+                navManager?.isDirty = false
+                return true
+            } catch {
+                errorMessage = "Save failed: \(error.localizedDescription)"
+                updateDirtyState()
+                return false
+            }
+        }
+
+        func reset() {
+            draft = initialDraft
+            errorMessage = nil
+            navManager?.isDirty = false
+        }
+
+        func createURL() -> URL? {
+            guard let modelContext, save(modelContext: modelContext) else { return nil }
+            return JamTrackExportService.createURL(for: jamTrack)
+        }
+
+        private func updateInstrument(for partID: UUID, instrument: Instrument?) {
+            guard let index = draft.parts.firstIndex(where: { $0.id == partID }) else { return }
+            draft.parts[index].instrumentID = instrument?.persistentModelID
+        }
+
+        private func updateSongSection(for sectionID: UUID, songSection: SongSection?) {
+            guard let index = draft.sections.firstIndex(where: { $0.id == sectionID }) else { return }
+            draft.sections[index].songSectionID = songSection?.persistentModelID
+        }
+
+        private func updateDirtyState() {
+            navManager?.isDirty = hasUnsavedChanges
+        }
+
+        private func catalogBinding<Model: PersistentModel>(
+            _ keyPath: WritableKeyPath<Draft, PersistentIdentifier?>,
+            in models: [Model]
+        ) -> Binding<Model?> {
+            Binding(
+                get: { models.first { $0.persistentModelID == self.draft[keyPath: keyPath] } },
+                set: { self.draft[keyPath: keyPath] = $0?.persistentModelID }
+            )
+        }
+
+        private func reconcileDraft(into modelContext: ModelContext) -> Bool {
+            guard let style = model(for: draft.styleID, in: modelContext, as: Style.self),
+                  let feel = model(for: draft.feelID, in: modelContext, as: Feel.self),
+                  let key = model(for: draft.keyID, in: modelContext, as: Key.self) else {
+                errorMessage = "Save failed: select a key, style, and feel."
+                return false
             }
 
-            for section in jamTrackSections {
-                section.jamTrack = jamTrack
-                for sp in section.sectionParts {
-                    sp.section = section
+            let oldParts = jamTrack.parts
+            let oldSections = jamTrack.jamTrackSections
+            var partsByDraftID: [UUID: Part] = [:]
+            var sectionsByDraftID: [UUID: JamTrackSection] = [:]
+
+            for partDraft in draft.parts {
+                guard let instrument = model(for: partDraft.instrumentID, in: modelContext, as: Instrument.self) else {
+                    errorMessage = "Save failed: each part needs an instrument."
+                    return false
                 }
+
+                let part = oldParts.first { $0.persistentModelID == partDraft.persistentID }
+                    ?? Part(jamTrack: jamTrack, instrument: instrument, order: partDraft.order)
+                if part.modelContext == nil {
+                    modelContext.insert(part)
+                }
+                part.instrument = instrument
+                part.order = partDraft.order
+                part.jamTrack = jamTrack
+                partsByDraftID[partDraft.id] = part
             }
 
-            jamTrack.parts = parts.sorted(by: { $0.order < $1.order })
-            jamTrack.jamTrackSections = jamTrackSections.sorted(by: { $0.order < $1.order })
-        }
-        
-        func prepareForSave(modelContext: ModelContext) {
-            for part in parts where part.modelContext == nil {
-                modelContext.insert(part)
-            }
-            
-            for section in jamTrackSections {
+            for sectionDraft in draft.sections {
+                guard let songSection = model(for: sectionDraft.songSectionID, in: modelContext, as: SongSection.self) else {
+                    errorMessage = "Save failed: each section needs a song section."
+                    return false
+                }
+
+                let section = oldSections.first { $0.persistentModelID == sectionDraft.persistentID }
+                    ?? JamTrackSection(jamTrack: jamTrack, songSection: songSection, order: sectionDraft.order)
                 if section.modelContext == nil {
                     modelContext.insert(section)
                 }
-                
-                for sp in section.sectionParts where sp.modelContext == nil {
-                    modelContext.insert(sp)
+                section.songSection = songSection
+                section.order = sectionDraft.order
+                section.jamTrack = jamTrack
+                sectionsByDraftID[sectionDraft.id] = section
+
+                let existingSectionParts = section.sectionParts
+                for sectionPartDraft in sectionDraft.sectionParts {
+                    guard let part = partsByDraftID[sectionPartDraft.partID] else {
+                        errorMessage = "Save failed: a section references a deleted part."
+                        return false
+                    }
+                    let sectionPart = existingSectionParts.first {
+                        $0.persistentModelID == sectionPartDraft.persistentID
+                    } ?? SectionPart(section: section, part: part, patternName: sectionPartDraft.patternName)
+                    if sectionPart.modelContext == nil {
+                        modelContext.insert(sectionPart)
+                    }
+                    sectionPart.section = section
+                    sectionPart.part = part
+                    sectionPart.patternName = sectionPartDraft.patternName
+                }
+
+                let retainedSectionPartIDs = Set(sectionDraft.sectionParts.compactMap(\.persistentID))
+                for sectionPart in existingSectionParts where !retainedSectionPartIDs.contains(sectionPart.persistentModelID) {
+                    modelContext.delete(sectionPart)
                 }
             }
-            
-            commit()
+
+            let retainedSectionIDs = Set(draft.sections.compactMap(\.persistentID))
+            for section in oldSections where !retainedSectionIDs.contains(section.persistentModelID) {
+                modelContext.delete(section)
+            }
+            let retainedPartIDs = Set(draft.parts.compactMap(\.persistentID))
+            for part in oldParts where !retainedPartIDs.contains(part.persistentModelID) {
+                modelContext.delete(part)
+            }
+
+            jamTrack.name = draft.name
+            jamTrack.style = style
+            jamTrack.feel = feel
+            jamTrack.key = key
+            jamTrack.bpm = draft.bpm
+            jamTrack.includeCountIn = draft.includeCountIn
+            jamTrack.parts = draft.parts.compactMap { partsByDraftID[$0.id] }.sorted { $0.order < $1.order }
+            jamTrack.jamTrackSections = draft.sections
+                .compactMap { sectionsByDraftID[$0.id] }
+                .sorted { $0.order < $1.order }
+            return true
         }
 
-        func save(modelContext: ModelContext) {
-            prepareForSave(modelContext: modelContext)
-            
-            do {
-                try modelContext.save()
-                navManager?.isDirty = false
-                didSave = true
-            } catch {
-                errorMessage = "Save failed: \(error.localizedDescription)"
-                didSave = false
-            }
-        }
-        
-        func reset() {
-            let fresh = ViewModel(jamTrack: jamTrack)
-            self.name = fresh.name
-            self.key = fresh.key
-            self.style = fresh.style
-            self.feel = fresh.feel
-            self.bpm = fresh.bpm
-            self.includeCountIn = fresh.includeCountIn
-            self.parts = fresh.parts
-            self.jamTrackSections = fresh.jamTrackSections
-            self.didSave = false
-            self.errorMessage = nil
-        }
-        
-        func discardChanges() {
-            didSave = false
-            errorMessage = nil
-        }
-        
-        func dumpSectionParts() {
-            for section in sortedSections {
-                for sectionPart in section.sectionParts {
-                    print("\(section.songSection?.name ?? "<Unknown Section>") \(sectionPart.part?.instrument?.name ?? "<Unknown Instrument>") \(sectionPart.patternName)")
-                }
-            }
-        }
-        
-        func createURL() -> URL? {
-            guard let modelContext else { return nil }
-            save(modelContext: modelContext)
-            guard let exportRequest = createExportRequest() else { return nil }
-            return JamTrackExportService.createURL(for: exportRequest, modelContext: modelContext)
-        }
-        
-        private func createExportRequest() -> JamTrackExportRequest? {
-            guard let style, let feel, let key else { return nil }
-            return JamTrackExportRequest(
-                style: style,
-                feel: feel,
-                key: key,
-                bpm: bpm,
-                jamTrackSections: jamTrackSections
-            )
+        private func model<Model: PersistentModel>(
+            for id: PersistentIdentifier?,
+            in modelContext: ModelContext,
+            as type: Model.Type
+        ) -> Model? {
+            guard let id else { return nil }
+            return modelContext.model(for: id) as? Model
         }
     }
 }

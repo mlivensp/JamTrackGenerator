@@ -15,8 +15,8 @@ struct JamTrackMatrixView: View {
     @Query var harmonicPatterns: [HarmonicPattern]
     @Query var instrumentFamilies: [InstrumentFamily]
 
-    @State private var pendingPartDeletion: Part?
-    @State private var pendingSectionDeletion: JamTrackSection?
+    @State private var pendingPartDeletion: JamTrackDetailView.Draft.Part?
+    @State private var pendingSectionDeletion: JamTrackDetailView.Draft.Section?
     
 #if canImport(UIKit)
     let systemSeparator = Color(UIColor.separator)
@@ -52,20 +52,19 @@ struct JamTrackMatrixView: View {
                             
                             // Column headers (Parts)
                             ForEach(viewModel.sortedParts, id: \.id) { part in
-                                if let actualIndex = viewModel.parts.firstIndex(where: { $0.id == part.id }) {
-                                    HStack {
-                                        Picker("", selection: $viewModel.parts[actualIndex].instrument) {
-                                            ForEach(instruments.sorted(by: { $0.programNumber < $1.programNumber } )) { instrument in
-                                                Text(instrument.name).tag(instrument)
-                                            }
+                                HStack {
+                                    Picker("", selection: viewModel.instrumentBinding(for: part.id, instruments: instruments)) {
+                                        Text("Select Instrument").tag(nil as Instrument?)
+                                        ForEach(instruments.sorted(by: { $0.programNumber < $1.programNumber } )) { instrument in
+                                            Text(instrument.name).tag(instrument as Instrument?)
                                         }
-                                        .frame(width: 150)
-                                        
-                                        Button(role: .destructive) {
-                                            pendingPartDeletion = part
-                                        } label: {
-                                            Image(systemName: "trash")
-                                        }
+                                    }
+                                    .frame(width: 150)
+
+                                    Button(role: .destructive) {
+                                        pendingPartDeletion = part
+                                    } label: {
+                                        Image(systemName: "trash")
                                     }
                                 }
                             }
@@ -85,33 +84,32 @@ struct JamTrackMatrixView: View {
 
                             // Rows
                             ForEach(viewModel.sortedSections, id: \.id) { section in
-                                if let actualIndex = viewModel.jamTrackSections.firstIndex(where: { $0.id == section.id }) {
-                                    HStack {
-                                        Picker("", selection: $viewModel.jamTrackSections[actualIndex].songSection) {
-                                            ForEach(songSections) { section in
-                                                Text(section.name).tag(section)
-                                            }
-                                        }
-                                        
-                                        Button(role: .destructive) {
-                                            pendingSectionDeletion = section
-                                        } label: {
-                                            Image(systemName: "trash")
+                                HStack {
+                                    Picker("", selection: viewModel.songSectionBinding(for: section.id, songSections: songSections)) {
+                                        Text("Select Section").tag(nil as SongSection?)
+                                        ForEach(songSections) { songSection in
+                                            Text(songSection.name).tag(songSection as SongSection?)
                                         }
                                     }
-                                    .frame(height: 50)
-                                    
-                                    // Cells
-                                    ForEach(viewModel.sortedParts, id: \.id) { part in
-                                        let cellID = "\(section.uuid)-\(part.uuid)"
-                                        patternPicker(section: section, part: part)
-                                            .id(cellID)
-                                            .frame(width: 150, height: 50)
-                                            .border(Color.gray)
+
+                                    Button(role: .destructive) {
+                                        pendingSectionDeletion = section
+                                    } label: {
+                                        Image(systemName: "trash")
                                     }
-                                    
-                                    Text("")
                                 }
+                                .frame(height: 50)
+
+                                // Cells
+                                ForEach(viewModel.sortedParts, id: \.id) { part in
+                                    let cellID = "\(section.id)-\(part.id)"
+                                    patternPicker(section: section, part: part)
+                                        .id(cellID)
+                                        .frame(width: 150, height: 50)
+                                        .border(Color.gray)
+                                }
+
+                                Text("")
                             }
                             
                             HStack {
@@ -146,7 +144,7 @@ struct JamTrackMatrixView: View {
             )) {
                 Button("Delete", role: .destructive) {
                     if let part = pendingPartDeletion {
-                        viewModel.removePart(part)
+                        viewModel.removePart(id: part.id)
                         pendingPartDeletion = nil
                     }
                 }
@@ -163,7 +161,7 @@ struct JamTrackMatrixView: View {
             )) {
                 Button("Delete", role: .destructive) {
                     if let section = pendingSectionDeletion {
-                        viewModel.removeSection(section)
+                        viewModel.removeSection(id: section.id)
                         pendingSectionDeletion = nil
                     }
                 }
@@ -181,18 +179,18 @@ struct JamTrackMatrixView: View {
         
         for section in viewModel.sortedSections {
             for sectionPart in section.sectionParts {
-                guard let part = sectionPart.part,
-                      let section = sectionPart.section else { continue }
-                
-                let cellKey = "\(section.uuid)-\(part.uuid)"
-                let patternName = sectionPart.patternName
-                
-                if part.instrument?.isDrums == true {
-                    if let pattern = drumPatterns.first(where: { $0.name == patternName }) {
+                guard let part = viewModel.draft.parts.first(where: { $0.id == sectionPart.partID }),
+                      let instrument = instruments.first(where: { $0.persistentModelID == part.instrumentID }) else {
+                    continue
+                }
+
+                let cellKey = "\(section.id)-\(part.id)"
+                if instrument.isDrums {
+                    if let pattern = drumPatterns.first(where: { $0.name == sectionPart.patternName }) {
                         result[cellKey] = .drum(id: pattern.id)
                     }
                 } else {
-                    if let pattern = harmonicPatterns.first(where: { $0.name == patternName }) {
+                    if let pattern = harmonicPatterns.first(where: { $0.name == sectionPart.patternName }) {
                         result[cellKey] = .harmonic(id: pattern.id)
                     }
                 }
@@ -208,18 +206,24 @@ struct JamTrackMatrixView: View {
         return items
     }
     
-    func patternPicker(section: JamTrackSection, part: Part) -> some View {
-        let cellKey = "\(section.uuid)-\(part.uuid)"
+    func patternPicker(section: JamTrackDetailView.Draft.Section, part: JamTrackDetailView.Draft.Part) -> some View {
+        let cellKey = "\(section.id)-\(part.id)"
         let selected = cellSelections[cellKey]
-        
-        let isDrums = part.instrument?.isDrums == true
+
+        let isDrums = instruments.first { $0.persistentModelID == part.instrumentID }?.isDrums == true
         
         let filtered: [PatternSelection] = isDrums
         ? drumPatterns
-            .filter { ($0.style == nil || $0.style == viewModel.style) && ($0.feel == nil || $0.feel == viewModel.feel) }
+            .filter {
+                ($0.style == nil || $0.style?.persistentModelID == viewModel.draft.styleID)
+                    && ($0.feel == nil || $0.feel?.persistentModelID == viewModel.draft.feelID)
+            }
             .map { .drum(id: $0.id) }
         : harmonicPatterns
-            .filter { ($0.style == nil || $0.style == viewModel.style) && ($0.feel == nil || $0.feel == viewModel.feel) }
+            .filter {
+                ($0.style == nil || $0.style?.persistentModelID == viewModel.draft.styleID)
+                    && ($0.feel == nil || $0.feel?.persistentModelID == viewModel.draft.feelID)
+            }
             .map { .harmonic(id: $0.id) }
         
         let patterns: [PatternSelection] = {
@@ -246,17 +250,12 @@ struct JamTrackMatrixView: View {
                     patternName = pattern.name
                 }
                 
-                if let existing = section.sectionParts.first(where: { $0.part == part }) {
-                    existing.patternName = patternName
-                } else {
-                    let newSectionPart = SectionPart(section: section, part: part, patternName: patternName)
-                    section.sectionParts.append(newSectionPart)
-                }
+                viewModel.setPatternName(patternName, for: section.id, partID: part.id)
             }
         )
         
         return Group {
-            if part.instrument != nil {
+            if part.instrumentID != nil {
                 Picker("", selection: binding) {
                     Text("<Empty>").tag(nil as PatternSelection?)
                     ForEach(patterns, id: \.self) { pattern in

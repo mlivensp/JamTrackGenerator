@@ -126,7 +126,7 @@ struct JamTrackDetailView: View {
             }
             
             LabeledContent("Key") {
-                Picker("", selection: $viewModel.key) {
+                Picker("", selection: viewModel.keyBinding(keys)) {
                     Text("Select Key").tag(nil as Key?)
                     ForEach(keys) { key in
                         Text(key.noteName).tag(key as Key?)
@@ -139,7 +139,7 @@ struct JamTrackDetailView: View {
             }
             
             LabeledContent("Style") {
-                Picker("", selection: $viewModel.style) {
+                Picker("", selection: viewModel.styleBinding(styles)) {
                     Text("Select Style").tag(nil as Style?)
                     ForEach(styles, id: \.self) { style in
                         Text(style.name).tag(style as Style?)
@@ -152,7 +152,7 @@ struct JamTrackDetailView: View {
             }
             
             LabeledContent("Feel") {
-                Picker("", selection: $viewModel.feel) {
+                Picker("", selection: viewModel.feelBinding(feels)) {
                     Text("Select Feel").tag(nil as Feel?)
                     ForEach(feels, id: \.self) { feel in
                         Text(feel.name).tag(feel as Feel?)
