@@ -35,6 +35,31 @@ struct JamTrackDetailViewModelTests {
     }
 
     @Test
+    func catalogSettersMutateOnlyDraftAndMarkItDirty() throws {
+        let fixture = try Fixture()
+        let partID = fixture.viewModel.draft.parts[0].id
+        let sectionID = fixture.viewModel.draft.sections[0].id
+
+        fixture.viewModel.setStyle(nil)
+        fixture.viewModel.setFeel(nil)
+        fixture.viewModel.setKey(nil)
+        fixture.viewModel.setInstrument(fixture.drums.persistentModelID, for: partID)
+        fixture.viewModel.setSongSection(nil, for: sectionID)
+
+        #expect(fixture.viewModel.draft.styleID == nil)
+        #expect(fixture.viewModel.draft.feelID == nil)
+        #expect(fixture.viewModel.draft.keyID == nil)
+        #expect(fixture.viewModel.draft.parts[0].instrumentID == fixture.drums.persistentModelID)
+        #expect(fixture.viewModel.draft.sections[0].songSectionID == nil)
+        #expect(fixture.viewModel.hasUnsavedChanges)
+        #expect(fixture.jamTrack.style?.persistentModelID != nil)
+        #expect(fixture.jamTrack.feel?.persistentModelID != nil)
+        #expect(fixture.jamTrack.key?.persistentModelID != nil)
+        #expect(fixture.jamTrack.parts[0].instrument?.persistentModelID == fixture.guitar.persistentModelID)
+        #expect(fixture.jamTrack.jamTrackSections[0].songSection?.persistentModelID != nil)
+    }
+
+    @Test
     func saveAppliesDraftChanges() throws {
         let fixture = try Fixture()
         fixture.viewModel.name = "Saved Name"
@@ -124,7 +149,7 @@ struct JamTrackDetailViewModelTests {
         let invalidKeyID = try fixture.makeInvalidKeyID()
 
         fixture.viewModel.name = "Changed Name"
-        fixture.viewModel.draft.keyID = invalidKeyID
+        fixture.viewModel.setKey(invalidKeyID)
 
         #expect(!fixture.viewModel.save(modelContext: fixture.context))
         #expect(fixture.viewModel.errorMessage == "Save failed: select a key, style, and feel.")
@@ -144,7 +169,10 @@ struct JamTrackDetailViewModelTests {
 
         fixture.viewModel.name = "Changed Name"
         fixture.viewModel.addPart(instrument: fixture.drums)
-        fixture.viewModel.draft.sections[0].songSectionID = try fixture.makeInvalidSongSectionID()
+        fixture.viewModel.setSongSection(
+            try fixture.makeInvalidSongSectionID(),
+            for: fixture.viewModel.draft.sections[0].id
+        )
 
         #expect(!fixture.viewModel.save(modelContext: fixture.context))
         #expect(fixture.viewModel.errorMessage == "Save failed: each section needs a song section.")

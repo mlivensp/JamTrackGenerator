@@ -50,7 +50,7 @@ struct JamTrackMatrixView: View {
                             // Column headers (Parts)
                             ForEach(viewModel.sortedParts, id: \.id) { part in
                                 HStack {
-                                    Picker("", selection: viewModel.instrumentBinding(for: part.id, instruments: instruments)) {
+                                    Picker("", selection: instrumentBinding(for: part.id)) {
                                         Text("Select Instrument").tag(nil as Instrument?)
                                         ForEach(instruments.sorted(by: { $0.programNumber < $1.programNumber } )) { instrument in
                                             Text(instrument.name).tag(instrument as Instrument?)
@@ -82,7 +82,7 @@ struct JamTrackMatrixView: View {
                             // Rows
                             ForEach(viewModel.sortedSections, id: \.id) { section in
                                 HStack {
-                                    Picker("", selection: viewModel.songSectionBinding(for: section.id, songSections: songSections)) {
+                                    Picker("", selection: songSectionBinding(for: section.id)) {
                                         Text("Select Section").tag(nil as SongSection?)
                                         ForEach(songSections) { songSection in
                                             Text(songSection.name).tag(songSection as SongSection?)
@@ -190,6 +190,30 @@ struct JamTrackMatrixView: View {
         items += Array(repeating: GridItem(.fixed(180)), count: viewModel.sortedParts.count)
         items.append(GridItem(.flexible(minimum: 0, maximum: .infinity)))
         return items
+    }
+
+    private func instrumentBinding(for partID: UUID) -> Binding<Instrument?> {
+        Binding(
+            get: {
+                guard let part = viewModel.draft.parts.first(where: { $0.id == partID }) else {
+                    return nil
+                }
+                return instruments.first { $0.persistentModelID == part.instrumentID }
+            },
+            set: { viewModel.setInstrument($0?.persistentModelID, for: partID) }
+        )
+    }
+
+    private func songSectionBinding(for sectionID: UUID) -> Binding<SongSection?> {
+        Binding(
+            get: {
+                guard let section = viewModel.draft.sections.first(where: { $0.id == sectionID }) else {
+                    return nil
+                }
+                return songSections.first { $0.persistentModelID == section.songSectionID }
+            },
+            set: { viewModel.setSongSection($0?.persistentModelID, for: sectionID) }
+        )
     }
     
     func patternPicker(section: JamTrackDetailView.Draft.Section, part: JamTrackDetailView.Draft.Part) -> some View {
