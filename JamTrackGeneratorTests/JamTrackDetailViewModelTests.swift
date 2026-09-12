@@ -79,6 +79,19 @@ struct JamTrackDetailViewModelTests {
     }
 
     @Test
+    func addSectionBeyondUInt8MaximumSavesInAscendingOrder() throws {
+        let fixture = try Fixture()
+        fixture.viewModel.draft.sections[0].order = 255
+
+        fixture.viewModel.addSection(songSection: fixture.songSection)
+
+        #expect(fixture.viewModel.draft.sections.map(\.order) == [255, 256])
+        #expect(fixture.viewModel.sortedSections.map(\.order) == [255, 256])
+        #expect(fixture.viewModel.save(modelContext: fixture.context))
+        #expect(fixture.jamTrack.sortedSections.map(\.order) == [255, 256])
+    }
+
+    @Test
     func patternSelectionRetainsExactIdentityWhenNamesMatch() throws {
         let fixture = try Fixture()
         let section = fixture.viewModel.draft.sections[0]
@@ -230,6 +243,7 @@ struct JamTrackDetailViewModelTests {
         let jamTrack: JamTrack
         let guitar: Instrument
         let drums: Instrument
+        let songSection: SongSection
         let sectionPart: SectionPart
         let drumPattern: DrumPattern
         let newHarmonicPattern: HarmonicPattern
@@ -251,7 +265,7 @@ struct JamTrackDetailViewModelTests {
             let family = InstrumentFamily(name: "Band", sortOrder: 0)
             guitar = Instrument(name: "Guitar", programNumber: 1, instrumentFamily: family)
             drums = Instrument(name: "Drums", programNumber: 0, instrumentFamily: family)
-            let songSection = SongSection(name: "Verse", sortOrder: 0)
+            songSection = SongSection(name: "Verse", sortOrder: 0)
             jamTrack = JamTrack(name: "Original", style: style, key: key, feel: feel, bpm: 120)
             let part = Part(jamTrack: jamTrack, instrument: guitar)
             let section = JamTrackSection(jamTrack: jamTrack, songSection: songSection, order: 0)
