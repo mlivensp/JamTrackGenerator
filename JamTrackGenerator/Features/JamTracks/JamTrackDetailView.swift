@@ -15,6 +15,7 @@ struct JamTrackDetailView: View {
     
     /// Local editable draft
     @State private var viewModel: ViewModel
+    @State private var isShowingError = false
     
 #if canImport(UIKit)
     let systemSeparator = Color(UIColor.separator)
@@ -36,8 +37,11 @@ struct JamTrackDetailView: View {
                 .frame(maxHeight: .infinity)
                 .layoutPriority(1)
                 .border(systemSeparator, width: 1)
-            PlaybackControlsView(size: .large) {
-                viewModel.createURL(modelContext: modelContext)
+            PlaybackControlsView(
+                size: .large,
+                isPlayDisabled: viewModel.isSavingAndCreatingExportURL
+            ) {
+                viewModel.saveAndCreateExportURL(modelContext: modelContext)
             }
         }
 #if os(iOS)
@@ -72,13 +76,20 @@ struct JamTrackDetailView: View {
                 Button("Revert") {
                     viewModel.reset()
                 }
-                .disabled(!viewModel.hasUnsavedChanges)
+                .disabled(!viewModel.hasUnsavedChanges || viewModel.isSavingAndCreatingExportURL)
                 
                 Button("Save") {
                     viewModel.save(modelContext: self.modelContext)
                 }
-                .disabled(!viewModel.hasUnsavedChanges)
+                .disabled(!viewModel.hasUnsavedChanges || viewModel.isSavingAndCreatingExportURL)
             }
+        }
+        .alert("Save or Export Failed", isPresented: $isShowingError) {
+            Button("OK", role: .cancel) {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
         .onChange(of: jamTrack.id) {
             // If the persistent model instance changed underneath us, reset draft and clear dirty
@@ -87,6 +98,9 @@ struct JamTrackDetailView: View {
         }
         .onChange(of: viewModel.hasUnsavedChanges) { _, hasUnsavedChanges in
             navManager.isDirty = hasUnsavedChanges
+        }
+        .onChange(of: viewModel.errorMessage) { _, errorMessage in
+            isShowingError = errorMessage != nil
         }
         .onDisappear {
             // Ensure global dirty state is cleared when editor is removed
