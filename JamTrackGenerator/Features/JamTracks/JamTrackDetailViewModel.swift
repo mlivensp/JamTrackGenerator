@@ -1,5 +1,5 @@
+import Foundation
 import SwiftData
-import SwiftUI
 
 extension JamTrackDetailView {
     struct Draft: Equatable {
@@ -163,36 +163,26 @@ extension JamTrackDetailView {
             draft.sections.sorted { $0.order < $1.order }
         }
 
-        func styleBinding(_ styles: [Style]) -> Binding<Style?> {
-            catalogBinding(\.styleID, in: styles)
+        func setStyle(_ styleID: PersistentIdentifier?) {
+            draft.styleID = styleID
         }
 
-        func feelBinding(_ feels: [Feel]) -> Binding<Feel?> {
-            catalogBinding(\.feelID, in: feels)
+        func setFeel(_ feelID: PersistentIdentifier?) {
+            draft.feelID = feelID
         }
 
-        func keyBinding(_ keys: [Key]) -> Binding<Key?> {
-            catalogBinding(\.keyID, in: keys)
+        func setKey(_ keyID: PersistentIdentifier?) {
+            draft.keyID = keyID
         }
 
-        func instrumentBinding(for partID: UUID, instruments: [Instrument]) -> Binding<Instrument?> {
-            Binding(
-                get: {
-                    guard let part = self.draft.parts.first(where: { $0.id == partID }) else { return nil }
-                    return instruments.first { $0.persistentModelID == part.instrumentID }
-                },
-                set: { self.updateInstrument(for: partID, instrument: $0) }
-            )
+        func setInstrument(_ instrumentID: PersistentIdentifier?, for partID: UUID) {
+            guard let index = draft.parts.firstIndex(where: { $0.id == partID }) else { return }
+            draft.parts[index].instrumentID = instrumentID
         }
 
-        func songSectionBinding(for sectionID: UUID, songSections: [SongSection]) -> Binding<SongSection?> {
-            Binding(
-                get: {
-                    guard let section = self.draft.sections.first(where: { $0.id == sectionID }) else { return nil }
-                    return songSections.first { $0.persistentModelID == section.songSectionID }
-                },
-                set: { self.updateSongSection(for: sectionID, songSection: $0) }
-            )
+        func setSongSection(_ songSectionID: PersistentIdentifier?, for sectionID: UUID) {
+            guard let index = draft.sections.firstIndex(where: { $0.id == sectionID }) else { return }
+            draft.sections[index].songSectionID = songSectionID
         }
 
         func addPart(instrument: Instrument) {
@@ -258,26 +248,6 @@ extension JamTrackDetailView {
         func createURL(modelContext: ModelContext) -> URL? {
             guard save(modelContext: modelContext) else { return nil }
             return JamTrackExportService.createURL(for: jamTrack)
-        }
-
-        private func updateInstrument(for partID: UUID, instrument: Instrument?) {
-            guard let index = draft.parts.firstIndex(where: { $0.id == partID }) else { return }
-            draft.parts[index].instrumentID = instrument?.persistentModelID
-        }
-
-        private func updateSongSection(for sectionID: UUID, songSection: SongSection?) {
-            guard let index = draft.sections.firstIndex(where: { $0.id == sectionID }) else { return }
-            draft.sections[index].songSectionID = songSection?.persistentModelID
-        }
-
-        private func catalogBinding<Model: PersistentModel>(
-            _ keyPath: WritableKeyPath<Draft, PersistentIdentifier?>,
-            in models: [Model]
-        ) -> Binding<Model?> {
-            Binding(
-                get: { models.first { $0.persistentModelID == self.draft[keyPath: keyPath] } },
-                set: { self.draft[keyPath: keyPath] = $0?.persistentModelID }
-            )
         }
 
         private func reconcileDraft(into modelContext: ModelContext) -> Bool {

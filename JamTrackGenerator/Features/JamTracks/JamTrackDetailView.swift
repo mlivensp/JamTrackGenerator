@@ -101,7 +101,7 @@ struct JamTrackDetailView: View {
             }
             
             LabeledContent("Key") {
-                Picker("", selection: viewModel.keyBinding(keys)) {
+                Picker("", selection: keyBinding) {
                     Text("Select Key").tag(nil as Key?)
                     ForEach(keys) { key in
                         Text(key.noteName).tag(key as Key?)
@@ -114,7 +114,7 @@ struct JamTrackDetailView: View {
             }
             
             LabeledContent("Style") {
-                Picker("", selection: viewModel.styleBinding(styles)) {
+                Picker("", selection: styleBinding) {
                     Text("Select Style").tag(nil as Style?)
                     ForEach(styles, id: \.self) { style in
                         Text(style.name).tag(style as Style?)
@@ -127,7 +127,7 @@ struct JamTrackDetailView: View {
             }
             
             LabeledContent("Feel") {
-                Picker("", selection: viewModel.feelBinding(feels)) {
+                Picker("", selection: feelBinding) {
                     Text("Select Feel").tag(nil as Feel?)
                     ForEach(feels, id: \.self) { feel in
                         Text(feel.name).tag(feel as Feel?)
@@ -155,6 +155,25 @@ struct JamTrackDetailView: View {
         }
         .padding(.horizontal)
     }
-    
-    // MARK: - Helpers
+
+    private var keyBinding: Binding<Key?> {
+        Binding(
+            get: { keys.first { $0.persistentModelID == viewModel.draft.keyID } },
+            set: { viewModel.setKey($0?.persistentModelID) }
+        )
+    }
+
+    private var styleBinding: Binding<Style?> {
+        Binding(
+            get: { styles.first { $0.persistentModelID == viewModel.draft.styleID } },
+            set: { viewModel.setStyle($0?.persistentModelID) }
+        )
+    }
+
+    private var feelBinding: Binding<Feel?> {
+        Binding(
+            get: { feels.first { $0.persistentModelID == viewModel.draft.feelID } },
+            set: { viewModel.setFeel($0?.persistentModelID) }
+        )
+    }
 }
