@@ -243,10 +243,7 @@ extension JamTrackDetailView {
         }
 
         private func reconcileDraft(into modelContext: ModelContext) -> Bool {
-            guard let style = model(for: draft.styleID, in: modelContext, as: Style.self),
-                  let feel = model(for: draft.feelID, in: modelContext, as: Feel.self),
-                  let key = model(for: draft.keyID, in: modelContext, as: Key.self) else {
-                errorMessage = "Save failed: select a key, style, and feel."
+            guard let resolvedDraft = resolveDraft(in: modelContext) else {
                 return false
             }
 
@@ -256,11 +253,7 @@ extension JamTrackDetailView {
             var sectionsByDraftID: [UUID: JamTrackSection] = [:]
 
             for partDraft in draft.parts {
-                guard let instrument = model(for: partDraft.instrumentID, in: modelContext, as: Instrument.self) else {
-                    errorMessage = "Save failed: each part needs an instrument."
-                    return false
-                }
-
+                let instrument = resolvedDraft.instrumentsByPartID[partDraft.id]!
                 let part = oldParts.first { $0.persistentModelID == partDraft.persistentID }
                     ?? Part(jamTrack: jamTrack, instrument: instrument, order: partDraft.order)
                 if part.modelContext == nil {
@@ -273,11 +266,7 @@ extension JamTrackDetailView {
             }
 
             for sectionDraft in draft.sections {
-                guard let songSection = model(for: sectionDraft.songSectionID, in: modelContext, as: SongSection.self) else {
-                    errorMessage = "Save failed: each section needs a song section."
-                    return false
-                }
-
+                let songSection = resolvedDraft.songSectionsBySectionID[sectionDraft.id]!
                 let section = oldSections.first { $0.persistentModelID == sectionDraft.persistentID }
                     ?? JamTrackSection(jamTrack: jamTrack, songSection: songSection, order: sectionDraft.order)
                 if section.modelContext == nil {
@@ -290,10 +279,7 @@ extension JamTrackDetailView {
 
                 let existingSectionParts = section.sectionParts
                 for sectionPartDraft in sectionDraft.sectionParts {
-                    guard let part = partsByDraftID[sectionPartDraft.partID] else {
-                        errorMessage = "Save failed: a section references a deleted part."
-                        return false
-                    }
+                    let part = partsByDraftID[sectionPartDraft.partID]!
                     let sectionPart = existingSectionParts.first {
                         $0.persistentModelID == sectionPartDraft.persistentID
                     } ?? SectionPart(section: section, part: part, patternName: sectionPartDraft.patternName)
@@ -321,9 +307,9 @@ extension JamTrackDetailView {
             }
 
             jamTrack.name = draft.name
-            jamTrack.style = style
-            jamTrack.feel = feel
-            jamTrack.key = key
+            jamTrack.style = resolvedDraft.style
+            jamTrack.feel = resolvedDraft.feel
+            jamTrack.key = resolvedDraft.key
             jamTrack.bpm = draft.bpm
             jamTrack.includeCountIn = draft.includeCountIn
             jamTrack.parts = draft.parts.compactMap { partsByDraftID[$0.id] }.sorted { $0.order < $1.order }
@@ -333,6 +319,47 @@ extension JamTrackDetailView {
             return true
         }
 
+        private func resolveDraft(in modelContext: ModelContext) -> ResolvedDraft? {
+            guard let style = model(for: draft.styleID, in: modelContext, as: Style.self),
+                  let feel = model(for: draft.feelID, in: modelContext, as: Feel.self),
+                  let key = model(for: draft.keyID, in: modelContext, as: Key.self) else {
+                errorMessage = "Save failed: select a key, style, and feel."
+                return nil
+            }
+
+            var instrumentsByPartID: [UUID: Instrument] = [:]
+            for partDraft in draft.parts {
+                guard let instrument = model(for: partDraft.instrumentID, in: modelContext, as: Instrument.self) else {
+                    errorMessage = "Save failed: each part needs an instrument."
+                    return nil
+                }
+                instrumentsByPartID[partDraft.id] = instrument
+            }
+
+            var songSectionsBySectionID: [UUID: SongSection] = [:]
+            for sectionDraft in draft.sections {
+                guard let songSection = model(for: sectionDraft.songSectionID, in: modelContext, as: SongSection.self) else {
+                    errorMessage = "Save failed: each section needs a song section."
+                    return nil
+                }
+                for sectionPartDraft in sectionDraft.sectionParts {
+                    guard instrumentsByPartID[sectionPartDraft.partID] != nil else {
+                        errorMessage = "Save failed: a section references a deleted part."
+                        return nil
+                    }
+                }
+                songSectionsBySectionID[sectionDraft.id] = songSection
+            }
+
+            return ResolvedDraft(
+                style: style,
+                feel: feel,
+                key: key,
+                instrumentsByPartID: instrumentsByPartID,
+                songSectionsBySectionID: songSectionsBySectionID
+            )
+        }
+
         private func model<Model: PersistentModel>(
             for id: PersistentIdentifier?,
             in modelContext: ModelContext,
@@ -340,6 +367,14 @@ extension JamTrackDetailView {
         ) -> Model? {
             guard let id else { return nil }
             return modelContext.model(for: id) as? Model
+        }
+
+        private struct ResolvedDraft {
+            let style: Style
+            let feel: Feel
+            let key: Key
+            let instrumentsByPartID: [UUID: Instrument]
+            let songSectionsBySectionID: [UUID: SongSection]
         }
     }
 }
