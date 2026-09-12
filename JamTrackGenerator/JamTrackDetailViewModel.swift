@@ -18,12 +18,9 @@ extension JamTrackDetailView {
 
         var midiPlayer: MIDIPlayer?
 
-        
-        var sections: [Section] = []
         var selectedSection: Section? = nil
         var selectedSongSection: SongSection? = nil
         
-        var parts: [Part] = []
         var selectedPart: Part? = nil
         var selectedMidiInstrument: MidiInstrument? = nil
 
@@ -37,33 +34,36 @@ extension JamTrackDetailView {
             
             specification = JamTrackSpecification()
             specification.sections.append(Section(section: .chorus))
-            sections = specification.sections
             selectedSongSection = .intro
             
             specification.parts.append(Part(instrument: .drums))
             specification.parts.append(Part(instrument: .electricBassFinger))
-            parts = specification.parts
         }
         
         func addSection(section: SongSection) {
             specification.sections.append(Section(section: section))
-            sections = specification.sections
         }
         
         func deleteSection(section: Section) {
             if let sectionIndex = specification.sections.firstIndex(of: section) {
                 specification.sections.remove(at: sectionIndex)
+                if selectedSection == section {
+                    selectedSection = nil
+                }
             }
         }
         
         func addPart(part: MidiInstrument) {
-            let part = Part(instrument: part)
-            specification.parts.append(part)
-            parts = specification.parts
+            specification.parts.append(Part(instrument: part))
         }
         
         func deletePart(part: Part) {
-            
+            if let partIndex = specification.parts.firstIndex(of: part) {
+                specification.parts.remove(at: partIndex)
+                if selectedPart == part {
+                    selectedPart = nil
+                }
+            }
         }
         
         func play() {

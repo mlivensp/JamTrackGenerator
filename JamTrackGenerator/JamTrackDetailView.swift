@@ -83,7 +83,7 @@ struct JamTrackDetailView: View {
             SwiftUI.Section(header: Text("Song Sections")) {
                 HStack {
                     List(selection: $viewModel.selectedSection) {
-                        ForEach(viewModel.sections) { section in
+                        ForEach(viewModel.specification.sections) { section in
                             NavigationLink {
                                 EditSectionView(section: Binding(
                                     get: { section },
@@ -107,8 +107,11 @@ struct JamTrackDetailView: View {
                         .border(.red)
                         
                         Button("Add Section") {
-                            viewModel.addSection(section: viewModel.selectedSongSection!)
+                            if let selectedSongSection = viewModel.selectedSongSection {
+                                viewModel.addSection(section: selectedSongSection)
+                            }
                         }
+                        .disabled(viewModel.selectedSongSection == nil)
                     }
                 }
             }
@@ -122,7 +125,7 @@ struct JamTrackDetailView: View {
             SwiftUI.Section(header: Text("Parts")) {
                 HStack {
                     List(selection: $viewModel.selectedPart) {
-                        ForEach(viewModel.parts) { part in
+                        ForEach(viewModel.specification.parts) { part in
                             NavigationLink {
                                 EditPartView(part: Binding(
                                     get: { part },
@@ -146,8 +149,11 @@ struct JamTrackDetailView: View {
                         .border(.red)
                         
                         Button("Add Part") {
-                            viewModel.addPart(part: viewModel.selectedMidiInstrument!)
+                            if let selectedMidiInstrument = viewModel.selectedMidiInstrument {
+                                viewModel.addPart(part: selectedMidiInstrument)
+                            }
                         }
+                        .disabled(viewModel.selectedMidiInstrument == nil)
                     }
                 }
             }
