@@ -136,6 +136,25 @@ struct JamTrackDetailViewModelTests {
     }
 
     @Test
+    func saveAndCreateExportURLDoesNotExportWhenValidationFails() throws {
+        let fixture = try Fixture()
+        let section = fixture.viewModel.draft.sections[0]
+        let part = fixture.viewModel.draft.parts[0]
+
+        fixture.viewModel.setPatternReference(
+            .drum(fixture.drumPattern.persistentModelID),
+            for: section.id,
+            partID: part.id
+        )
+
+        #expect(fixture.viewModel.saveAndCreateExportURL(modelContext: fixture.context) == nil)
+        #expect(fixture.viewModel.errorMessage == "Save failed: a drum pattern is assigned to a non-drums part.")
+        #expect(!fixture.viewModel.isSavingAndCreatingExportURL)
+        #expect(fixture.jamTrack.name == "Original")
+        #expect(!fixture.context.hasChanges)
+    }
+
+    @Test
     func saveWithMissingPatternReferenceLeavesGraphUnchanged() throws {
         let fixture = try Fixture()
         let section = fixture.viewModel.draft.sections[0]

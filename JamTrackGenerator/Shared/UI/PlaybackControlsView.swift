@@ -58,6 +58,7 @@ enum ButtonSize {
 struct PlaybackControlsView: View {
     @State private var viewModel: ViewModel
     private let size: ButtonSize
+    private let isPlayDisabled: Bool
 
     @State private var playIsPressed = false
     @State private var stopIsPressed = false
@@ -66,9 +67,14 @@ struct PlaybackControlsView: View {
     @State private var showingError = false
     @State private var errorMessage = ""
 
-    init(size: ButtonSize, createURL: @escaping () -> URL?) {
+    init(
+        size: ButtonSize,
+        isPlayDisabled: Bool = false,
+        createURL: @escaping () -> URL?
+    ) {
         self._viewModel = .init(wrappedValue: ViewModel(createURL: createURL))
         self.size = size
+        self.isPlayDisabled = isPlayDisabled
     }
 
     var body: some View {
@@ -83,6 +89,7 @@ struct PlaybackControlsView: View {
                         .accessibilityLabel(viewModel.isPlaying ? "Pause" : "Play")
                         .clipShape(Circle())
                 }
+                .disabled(isPlayDisabled)
                 .buttonStyle(.plain)
                 .scaleEffect(playIsPressed ? 0.95 : 1.0)
                 .animation(.easeOut(duration: 0.2), value: playIsPressed)

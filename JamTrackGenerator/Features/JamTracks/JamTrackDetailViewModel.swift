@@ -127,10 +127,16 @@ extension JamTrackDetailView {
     @MainActor
     @Observable
     final class ViewModel {
+        enum ExportOperationState: Equatable {
+            case idle
+            case savingAndCreatingExportURL
+        }
+
         var draft: Draft
 
         private(set) var initialDraft: Draft
         var errorMessage: String?
+        private(set) var exportOperationState = ExportOperationState.idle
 
         let jamTrack: JamTrack
 
@@ -153,6 +159,10 @@ extension JamTrackDetailView {
 
         var hasUnsavedChanges: Bool {
             draft != initialDraft
+        }
+
+        var isSavingAndCreatingExportURL: Bool {
+            exportOperationState == .savingAndCreatingExportURL
         }
 
         var sortedParts: [Draft.Part] {
@@ -245,9 +255,18 @@ extension JamTrackDetailView {
             errorMessage = nil
         }
 
-        func createURL(modelContext: ModelContext) -> URL? {
+        func saveAndCreateExportURL(modelContext: ModelContext) -> URL? {
+            guard exportOperationState == .idle else { return nil }
+
+            exportOperationState = .savingAndCreatingExportURL
+            defer { exportOperationState = .idle }
+
             guard save(modelContext: modelContext) else { return nil }
-            return JamTrackExportService.createURL(for: jamTrack)
+            guard let exportURL = JamTrackExportService.createURL(for: jamTrack) else {
+                errorMessage = "Export failed: unable to create a MIDI file."
+                return nil
+            }
+            return exportURL
         }
 
         private func reconcileDraft(into modelContext: ModelContext) -> Bool {
