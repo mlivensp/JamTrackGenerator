@@ -69,6 +69,7 @@ struct JamTrackDetailViewModelTests {
         #expect(fixture.jamTrack.jamTrackSections.map(\.persistentModelID) == originalDraft.sections.compactMap(\.persistentID))
         #expect(fixture.sectionPart.patternName == "Original Pattern")
         #expect(fixture.viewModel.draft.name == "Changed Name")
+        #expect(!fixture.context.hasChanges)
     }
 
     @Test
@@ -88,6 +89,7 @@ struct JamTrackDetailViewModelTests {
         #expect(fixture.jamTrack.jamTrackSections.map(\.persistentModelID) == originalSectionIDs)
         #expect(fixture.sectionPart.patternName == "Original Pattern")
         #expect(fixture.viewModel.hasUnsavedChanges)
+        #expect(!fixture.context.hasChanges)
     }
 
     @Test
@@ -108,6 +110,7 @@ struct JamTrackDetailViewModelTests {
         #expect(fixture.jamTrack.jamTrackSections.map(\.persistentModelID) == originalSectionIDs)
         #expect(fixture.sectionPart.patternName == "Original Pattern")
         #expect(fixture.viewModel.hasUnsavedChanges)
+        #expect(!fixture.context.hasChanges)
     }
 
     @Test
