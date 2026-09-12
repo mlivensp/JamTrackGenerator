@@ -22,8 +22,8 @@ struct JamTrackDetailViewModelTests {
 
         fixture.viewModel.name = "Unsaved Name"
         fixture.viewModel.addPart(instrument: fixture.drums)
-        fixture.viewModel.setPatternName(
-            "Unsaved Pattern",
+        fixture.viewModel.setPatternReference(
+            .harmonic(fixture.sharedHarmonicPatternB.persistentModelID),
             for: fixture.viewModel.draft.sections[0].id,
             partID: fixture.viewModel.draft.parts[0].id
         )
@@ -39,8 +39,8 @@ struct JamTrackDetailViewModelTests {
         let fixture = try Fixture()
         fixture.viewModel.name = "Saved Name"
         fixture.viewModel.addPart(instrument: fixture.drums)
-        fixture.viewModel.setPatternName(
-            "New Pattern",
+        fixture.viewModel.setPatternReference(
+            .harmonic(fixture.newHarmonicPattern.persistentModelID),
             for: fixture.viewModel.draft.sections[0].id,
             partID: fixture.viewModel.draft.parts[0].id
         )
@@ -51,6 +51,70 @@ struct JamTrackDetailViewModelTests {
         #expect(fixture.jamTrack.parts.count == 2)
         #expect(fixture.jamTrack.jamTrackSections[0].sectionParts[0].patternName == "New Pattern")
         #expect(!fixture.viewModel.hasUnsavedChanges)
+    }
+
+    @Test
+    func patternSelectionRetainsExactIdentityWhenNamesMatch() throws {
+        let fixture = try Fixture()
+        let section = fixture.viewModel.draft.sections[0]
+        let part = fixture.viewModel.draft.parts[0]
+
+        fixture.viewModel.setPatternReference(
+            .harmonic(fixture.sharedHarmonicPatternB.persistentModelID),
+            for: section.id,
+            partID: part.id
+        )
+
+        #expect(
+            fixture.viewModel.patternReference(for: section.id, partID: part.id)
+                == .harmonic(fixture.sharedHarmonicPatternB.persistentModelID)
+        )
+        #expect(
+            fixture.viewModel.patternReference(for: section.id, partID: part.id)
+                != .harmonic(fixture.sharedHarmonicPatternA.persistentModelID)
+        )
+        #expect(fixture.viewModel.save(modelContext: fixture.context))
+        #expect(fixture.sectionPart.patternName == "Shared Pattern")
+    }
+
+    @Test
+    func saveWithMismatchedPatternReferenceLeavesGraphUnchanged() throws {
+        let fixture = try Fixture()
+        let section = fixture.viewModel.draft.sections[0]
+        let part = fixture.viewModel.draft.parts[0]
+
+        fixture.viewModel.name = "Changed Name"
+        fixture.viewModel.setPatternReference(
+            .drum(fixture.drumPattern.persistentModelID),
+            for: section.id,
+            partID: part.id
+        )
+
+        #expect(!fixture.viewModel.save(modelContext: fixture.context))
+        #expect(fixture.viewModel.errorMessage == "Save failed: a drum pattern is assigned to a non-drums part.")
+        #expect(fixture.jamTrack.name == "Original")
+        #expect(fixture.sectionPart.patternName == "Original Pattern")
+        #expect(!fixture.context.hasChanges)
+    }
+
+    @Test
+    func saveWithMissingPatternReferenceLeavesGraphUnchanged() throws {
+        let fixture = try Fixture()
+        let section = fixture.viewModel.draft.sections[0]
+        let part = fixture.viewModel.draft.parts[0]
+
+        fixture.viewModel.name = "Changed Name"
+        fixture.viewModel.setPatternReference(
+            .harmonic(try fixture.makeInvalidHarmonicPatternID()),
+            for: section.id,
+            partID: part.id
+        )
+
+        #expect(!fixture.viewModel.save(modelContext: fixture.context))
+        #expect(fixture.viewModel.errorMessage == "Save failed: the selected harmonic pattern is no longer available.")
+        #expect(fixture.jamTrack.name == "Original")
+        #expect(fixture.sectionPart.patternName == "Original Pattern")
+        #expect(!fixture.context.hasChanges)
     }
 
     @Test
@@ -101,7 +165,11 @@ struct JamTrackDetailViewModelTests {
 
         fixture.viewModel.name = "Changed Name"
         fixture.viewModel.addPart(instrument: fixture.drums)
-        fixture.viewModel.setPatternName("Changed Pattern", for: sectionID, partID: UUID())
+        fixture.viewModel.setPatternReference(
+            .harmonic(fixture.newHarmonicPattern.persistentModelID),
+            for: sectionID,
+            partID: UUID()
+        )
 
         #expect(!fixture.viewModel.save(modelContext: fixture.context))
         #expect(fixture.viewModel.errorMessage == "Save failed: a section references a deleted part.")
@@ -135,6 +203,10 @@ struct JamTrackDetailViewModelTests {
         let guitar: Instrument
         let drums: Instrument
         let sectionPart: SectionPart
+        let drumPattern: DrumPattern
+        let newHarmonicPattern: HarmonicPattern
+        let sharedHarmonicPatternA: HarmonicPattern
+        let sharedHarmonicPatternB: HarmonicPattern
         let viewModel: JamTrackDetailView.ViewModel
 
         init() throws {
@@ -156,6 +228,11 @@ struct JamTrackDetailViewModelTests {
             let part = Part(jamTrack: jamTrack, instrument: guitar)
             let section = JamTrackSection(jamTrack: jamTrack, songSection: songSection, order: 0)
             sectionPart = SectionPart(section: section, part: part, patternName: "Original Pattern")
+            let originalHarmonicPattern = HarmonicPattern(name: "Original Pattern", style: style, feel: feel)
+            newHarmonicPattern = HarmonicPattern(name: "New Pattern", style: style, feel: feel)
+            sharedHarmonicPatternA = HarmonicPattern(name: "Shared Pattern", style: style, feel: feel)
+            sharedHarmonicPatternB = HarmonicPattern(name: "Shared Pattern", style: style, feel: feel)
+            drumPattern = DrumPattern(name: "Drum Pattern", style: style, feel: feel)
 
             jamTrack.parts = [part]
             jamTrack.jamTrackSections = [section]
@@ -171,6 +248,11 @@ struct JamTrackDetailViewModelTests {
             context.insert(part)
             context.insert(section)
             context.insert(sectionPart)
+            context.insert(originalHarmonicPattern)
+            context.insert(newHarmonicPattern)
+            context.insert(sharedHarmonicPatternA)
+            context.insert(sharedHarmonicPatternB)
+            context.insert(drumPattern)
             try context.save()
 
             viewModel = JamTrackDetailView.ViewModel(jamTrack: jamTrack)
@@ -196,6 +278,17 @@ struct JamTrackDetailViewModelTests {
             container.mainContext.insert(songSection)
             try container.mainContext.save()
             return songSection.persistentModelID
+        }
+
+        func makeInvalidHarmonicPatternID() throws -> PersistentIdentifier {
+            let container = try ModelContainer(
+                for: SchemaV1.schema,
+                configurations: ModelConfiguration(schema: SchemaV1.schema, isStoredInMemoryOnly: true)
+            )
+            let pattern = HarmonicPattern(name: "Missing")
+            container.mainContext.insert(pattern)
+            try container.mainContext.save()
+            return pattern.persistentModelID
         }
     }
 }
