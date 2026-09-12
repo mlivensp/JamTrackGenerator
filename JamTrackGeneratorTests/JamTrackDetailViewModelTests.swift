@@ -54,6 +54,63 @@ struct JamTrackDetailViewModelTests {
     }
 
     @Test
+    func saveWithInvalidCatalogSelectionLeavesGraphUnchanged() throws {
+        let fixture = try Fixture()
+        let originalDraft = fixture.viewModel.draft
+        let invalidKeyID = try fixture.makeInvalidKeyID()
+
+        fixture.viewModel.name = "Changed Name"
+        fixture.viewModel.draft.keyID = invalidKeyID
+
+        #expect(!fixture.viewModel.save(modelContext: fixture.context))
+        #expect(fixture.viewModel.errorMessage == "Save failed: select a key, style, and feel.")
+        #expect(fixture.jamTrack.name == "Original")
+        #expect(fixture.jamTrack.parts.map(\.persistentModelID) == originalDraft.parts.compactMap(\.persistentID))
+        #expect(fixture.jamTrack.jamTrackSections.map(\.persistentModelID) == originalDraft.sections.compactMap(\.persistentID))
+        #expect(fixture.sectionPart.patternName == "Original Pattern")
+        #expect(fixture.viewModel.draft.name == "Changed Name")
+    }
+
+    @Test
+    func saveWithInvalidLaterSectionLeavesPartsAndGraphUnchanged() throws {
+        let fixture = try Fixture()
+        let originalPartIDs = fixture.jamTrack.parts.map(\.persistentModelID)
+        let originalSectionIDs = fixture.jamTrack.jamTrackSections.map(\.persistentModelID)
+
+        fixture.viewModel.name = "Changed Name"
+        fixture.viewModel.addPart(instrument: fixture.drums)
+        fixture.viewModel.draft.sections[0].songSectionID = try fixture.makeInvalidSongSectionID()
+
+        #expect(!fixture.viewModel.save(modelContext: fixture.context))
+        #expect(fixture.viewModel.errorMessage == "Save failed: each section needs a song section.")
+        #expect(fixture.jamTrack.name == "Original")
+        #expect(fixture.jamTrack.parts.map(\.persistentModelID) == originalPartIDs)
+        #expect(fixture.jamTrack.jamTrackSections.map(\.persistentModelID) == originalSectionIDs)
+        #expect(fixture.sectionPart.patternName == "Original Pattern")
+        #expect(fixture.viewModel.hasUnsavedChanges)
+    }
+
+    @Test
+    func saveWithDanglingSectionPartLeavesPartsAndGraphUnchanged() throws {
+        let fixture = try Fixture()
+        let originalPartIDs = fixture.jamTrack.parts.map(\.persistentModelID)
+        let originalSectionIDs = fixture.jamTrack.jamTrackSections.map(\.persistentModelID)
+        let sectionID = fixture.viewModel.draft.sections[0].id
+
+        fixture.viewModel.name = "Changed Name"
+        fixture.viewModel.addPart(instrument: fixture.drums)
+        fixture.viewModel.setPatternName("Changed Pattern", for: sectionID, partID: UUID())
+
+        #expect(!fixture.viewModel.save(modelContext: fixture.context))
+        #expect(fixture.viewModel.errorMessage == "Save failed: a section references a deleted part.")
+        #expect(fixture.jamTrack.name == "Original")
+        #expect(fixture.jamTrack.parts.map(\.persistentModelID) == originalPartIDs)
+        #expect(fixture.jamTrack.jamTrackSections.map(\.persistentModelID) == originalSectionIDs)
+        #expect(fixture.sectionPart.patternName == "Original Pattern")
+        #expect(fixture.viewModel.hasUnsavedChanges)
+    }
+
+    @Test
     func resetRestoresInitialCleanDraft() throws {
         let fixture = try Fixture()
         let initialDraft = fixture.viewModel.draft
@@ -114,6 +171,28 @@ struct JamTrackDetailViewModelTests {
             try context.save()
 
             viewModel = JamTrackDetailView.ViewModel(jamTrack: jamTrack)
+        }
+
+        func makeInvalidKeyID() throws -> PersistentIdentifier {
+            let container = try ModelContainer(
+                for: SchemaV1.schema,
+                configurations: ModelConfiguration(schema: SchemaV1.schema, isStoredInMemoryOnly: true)
+            )
+            let key = Key(noteName: "D", sharpsOrFlats: 2, isMajor: true)
+            container.mainContext.insert(key)
+            try container.mainContext.save()
+            return key.persistentModelID
+        }
+
+        func makeInvalidSongSectionID() throws -> PersistentIdentifier {
+            let container = try ModelContainer(
+                for: SchemaV1.schema,
+                configurations: ModelConfiguration(schema: SchemaV1.schema, isStoredInMemoryOnly: true)
+            )
+            let songSection = SongSection(name: "Chorus", sortOrder: 1)
+            container.mainContext.insert(songSection)
+            try container.mainContext.save()
+            return songSection.persistentModelID
         }
     }
 }
