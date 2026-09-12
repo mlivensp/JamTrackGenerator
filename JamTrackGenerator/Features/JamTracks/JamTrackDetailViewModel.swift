@@ -73,8 +73,9 @@ extension JamTrackDetailView {
         }
     }
 
+    @MainActor
     @Observable
-    class ViewModel {
+    final class ViewModel {
         var draft: Draft {
             didSet {
                 updateDirtyState()
