@@ -70,13 +70,8 @@ struct ContentView: View {
                 case .jamTracks:
                     if let id = selectedJamTrackID,
                        let index = jamTracks.firstIndex(where: { $0.id == id }) {
-                        // Pass a live property-proxy binding into the editor and use the ID as identity
-                        if let binding = jamTrackBinding(for: jamTracks[index]) {
-                            JamTrackDetailView(jamTrack: binding, navPath: $navPath)
-                                .id(id)
-                        } else {
-                            Text("Select a Jam Track")
-                        }
+                        JamTrackDetailView(jamTrack: jamTracks[index], navPath: $navPath)
+                            .id(id)
                     } else {
                         Text("Select a Jam Track")
                     }
@@ -171,9 +166,8 @@ struct ContentView: View {
             .navigationDestination(for: JamTrack.self) { track in
                 // NavigationStack pushes a model; resolve by id and provide same editor
                 let id = track.id
-                if let index = jamTracks.firstIndex(where: { $0.id == id }),
-                   let binding = jamTrackBinding(for: jamTracks[index]) {
-                    JamTrackDetailView(jamTrack: binding, navPath: $navPath)
+                if let index = jamTracks.firstIndex(where: { $0.id == id }) {
+                    JamTrackDetailView(jamTrack: jamTracks[index], navPath: $navPath)
                         .id(id)
                 } else {
                     Text("Track not found")
@@ -248,23 +242,6 @@ struct ContentView: View {
             }
         )
     }
-    // MARK: - Live property-proxy binding for JamTrack (mutate model fields, don't replace instance)
-    private func jamTrackBinding(for track: JamTrack) -> Binding<JamTrack>? {
-        guard let index = jamTracks.firstIndex(where: { $0.id == track.id }) else { return nil }
-        return Binding(
-            get: { jamTracks[index] },
-            set: { newValue in
-                let target = jamTracks[index]
-                target.name = newValue.name
-                target.bpm = newValue.bpm
-                target.includeCountIn = newValue.includeCountIn
-                target.parts = newValue.parts
-                target.jamTrackSections = newValue.jamTrackSections
-                try? modelContext.save()
-            }
-        )
-    }
-    
     private func styleBinding(for style: Style) -> Binding<Style>? {
         guard let index = styles.firstIndex(where: { $0.id == style.id }) else { return nil }
         return Binding(

@@ -41,13 +41,13 @@ extension JamTrackDetailView {
         var errorMessage: String?
         var didSave: Bool = false
         
-        var original: JamTrack
+        let jamTrack: JamTrack
         var modelContext: ModelContext?
         
         var navManager: NavigationStateManager?
         
         init(jamTrack: JamTrack) {
-            self.original = jamTrack
+            self.jamTrack = jamTrack
             
             self.name = jamTrack.name
             self.style = jamTrack.style
@@ -97,7 +97,7 @@ extension JamTrackDetailView {
 
         func addPart(instrument: Instrument) {
             let maxOrder = parts.map(\.order).max() ?? -1
-            let newPart = Part(jamTrack: original, instrument: instrument, order: maxOrder + 1)
+            let newPart = Part(jamTrack: jamTrack, instrument: instrument, order: maxOrder + 1)
             parts.append(newPart)
         }
 
@@ -110,7 +110,7 @@ extension JamTrackDetailView {
         
         func addSection(songSection: SongSection) {
             let maxOrder = jamTrackSections.map(\.order).max() ?? 0
-            let newSection = JamTrackSection(jamTrack: original, songSection: songSection, order: maxOrder + 1)
+            let newSection = JamTrackSection(jamTrack: jamTrack, songSection: songSection, order: maxOrder + 1)
             jamTrackSections.append(newSection)
         }
 
@@ -126,37 +126,37 @@ extension JamTrackDetailView {
         
         var hasUnsavedChanges: Bool {
             return !didSave &&
-                (name != original.name ||
-                 key != original.key ||
-                 style != original.style ||
-                 feel != original.feel ||
-                 bpm != original.bpm ||
-                 includeCountIn != original.includeCountIn ||
-                 parts != original.parts ||
-                 jamTrackSections != original.jamTrackSections)
+                (name != jamTrack.name ||
+                 key != jamTrack.key ||
+                 style != jamTrack.style ||
+                 feel != jamTrack.feel ||
+                 bpm != jamTrack.bpm ||
+                 includeCountIn != jamTrack.includeCountIn ||
+                 parts != jamTrack.parts ||
+                 jamTrackSections != jamTrack.jamTrackSections)
         }
         
         func commit() {
-            original.name = name
-            original.key = key
-            original.style = style
-            original.feel = feel
-            original.bpm = bpm
-            original.includeCountIn = includeCountIn
+            jamTrack.name = name
+            jamTrack.key = key
+            jamTrack.style = style
+            jamTrack.feel = feel
+            jamTrack.bpm = bpm
+            jamTrack.includeCountIn = includeCountIn
 
             for part in parts {
-                part.jamTrack = original
+                part.jamTrack = jamTrack
             }
 
             for section in jamTrackSections {
-                section.jamTrack = original
+                section.jamTrack = jamTrack
                 for sp in section.sectionParts {
                     sp.section = section
                 }
             }
 
-            original.parts = parts.sorted(by: { $0.order < $1.order })
-            original.jamTrackSections = jamTrackSections.sorted(by: { $0.order < $1.order })
+            jamTrack.parts = parts.sorted(by: { $0.order < $1.order })
+            jamTrack.jamTrackSections = jamTrackSections.sorted(by: { $0.order < $1.order })
         }
         
         func prepareForSave(modelContext: ModelContext) {
@@ -191,7 +191,7 @@ extension JamTrackDetailView {
         }
         
         func reset() {
-            let fresh = ViewModel(jamTrack: original)
+            let fresh = ViewModel(jamTrack: jamTrack)
             self.name = fresh.name
             self.key = fresh.key
             self.style = fresh.style

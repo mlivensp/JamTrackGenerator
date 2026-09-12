@@ -11,7 +11,7 @@ struct JamTrackDetailView: View {
     @Query var feels: [Feel]
     
     @Binding var navPath: NavigationPath
-    @Binding var jamTrack: JamTrack
+    let jamTrack: JamTrack
     
     /// Local editable draft
     @State private var viewModel: ViewModel
@@ -22,10 +22,10 @@ struct JamTrackDetailView: View {
     let systemSeparator = Color(NSColor.separatorColor)
 #endif
     
-    init(jamTrack: Binding<JamTrack>, navPath: Binding<NavigationPath>) {
-        self._jamTrack = jamTrack
+    init(jamTrack: JamTrack, navPath: Binding<NavigationPath>) {
+        self.jamTrack = jamTrack
         self._navPath = navPath
-        self.viewModel = .init(jamTrack: jamTrack.wrappedValue)
+        self.viewModel = .init(jamTrack: jamTrack)
     }
     
     var body: some View {
@@ -107,8 +107,8 @@ struct JamTrackDetailView: View {
                 .disabled(!viewModel.hasUnsavedChanges)
             }
         }
-        .onChange(of: jamTrack) {
-            // If the bound model instance changed underneath us, reset draft and clear dirty
+        .onChange(of: jamTrack.id) {
+            // If the persistent model instance changed underneath us, reset draft and clear dirty
             viewModel = .init(jamTrack: jamTrack)
             viewModel.navManager = self.navManager
             navManager.isDirty = false
