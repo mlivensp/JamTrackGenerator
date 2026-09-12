@@ -25,7 +25,7 @@ extension JamTrackDetailView {
             let id: UUID
             let persistentID: PersistentIdentifier?
             var songSectionID: PersistentIdentifier?
-            var order: UInt8
+            var order: Int
             var sectionParts: [SectionPart]
         }
 
