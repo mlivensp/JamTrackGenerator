@@ -1,0 +1,11 @@
+[
+    { "name": "Count In", "sortOrder": 0 },
+    { "name": "Intro", "sortOrder": 1 },
+    { "name": "Verse", "sortOrder": 2 },
+    { "name": "Prechorus", "sortOrder": 3 },
+    { "name": "Chorus", "sortOrder": 4 },
+    { "name": "Bridge", "sortOrder": 5 },
+    { "name": "Break", "sortOrder": 6 },
+    { "name": "Outro", "sortOrder": 7 },
+    { "name": "End", "sortOrder": 8 }
+]

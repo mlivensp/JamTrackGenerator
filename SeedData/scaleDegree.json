@@ -1,0 +1,14 @@
+[
+   { "name": "Root", "ordinal": 0 },
+   { "name": "Flat 2nd", "ordinal": 1 },
+   { "name": "2nd", "ordinal": 2 },
+   { "name": "Flat 3rd", "ordinal": 3 },
+   { "name": "3rd", "ordinal": 4 },
+   { "name": "4th", "ordinal": 5 },
+   { "name": "Flat 5th", "ordinal": 6 },
+   { "name": "5th", "ordinal": 7 },
+   { "name": "Flat 6th", "ordinal": 8 },
+   { "name": "6th", "ordinal": 9 },
+   { "name": "Flat 7th", "ordinal": 10 },
+   { "name": "7th", "ordinal": 11 }
+]

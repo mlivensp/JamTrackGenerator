@@ -1,0 +1,19 @@
+
+[
+  { "name": "Piano", "sortOrder": 0 },
+  { "name": "Chromatic Percussion", "sortOrder": 1 },
+  { "name": "Organ", "sortOrder": 2 },
+  { "name": "Guitar", "sortOrder": 3 },
+  { "name": "Bass", "sortOrder": 4 },
+  { "name": "Strings", "sortOrder": 5 },
+  { "name": "Ensemble", "sortOrder": 6 },
+  { "name": "Brass", "sortOrder": 7 },
+  { "name": "Reed", "sortOrder": 8 },
+  { "name": "Pipe", "sortOrder": 9 },
+  { "name": "Synth Lead", "sortOrder": 10 },
+  { "name": "Synth Pad", "sortOrder": 11 },
+  { "name": "Synth Effects", "sortOrder": 12 },
+  { "name": "Ethnic", "sortOrder": 13 },
+  { "name": "Percussive", "sortOrder": 14 },
+  { "name": "Sound Effects", "sortOrder": 15 }
+]

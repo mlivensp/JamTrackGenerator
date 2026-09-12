@@ -1,0 +1,397 @@
+//
+//  SeedImporter.swift
+//  JamTrackGenerator
+//
+//  Created by Michael Livenspargar on 9/5/25.
+//
+
+import Foundation
+import SwiftData
+
+@MainActor
+struct SeedImporter {
+    func importSeedData(container: ModelContainer) {
+//        if let resourcePath = Bundle.main.resourcePath {
+//            let contents = try? FileManager.default.contentsOfDirectory(atPath: resourcePath)
+//            print("Bundle contents: \(contents ?? [])")
+//        }
+
+        let context = container.mainContext
+        let styleMap = importStyleData(context: context)
+        let feelMap = importFeelData(context: context)
+        
+        let scaleDegreeMap = importScaleDegreeData(context: context)
+        let noteMap = importNoteData(context: context)
+        importKeyData(context: context, scaleDegreeMap: scaleDegreeMap, noteMap: noteMap)
+        
+        importSongSectionData(context: context)
+        importInstrumentData(context: context)
+        
+        let drumNoteMap = importDrumNoteData(context: context)
+        importDrumPatternData(context: context, styleMap: styleMap, feelMap: feelMap, drumNoteMap: drumNoteMap)
+        importHarmonicPatternData(context: context, styleMap: styleMap, feelMap: feelMap, scaleDegreeMap: scaleDegreeMap)
+        
+        checkResult(context: context)
+    }
+    
+    func importStyleData(context: ModelContext) -> [String: Style] {
+        guard let styleURL = Bundle.main.url(forResource: "style", withExtension: "json")
+        else {
+            print("Failed to load style JSON file")
+            return [:]
+        }
+        guard let styleData = try? Data(contentsOf: styleURL)
+        else {
+            print("Failed to read style JSON file")
+            return [:]
+        }
+
+        guard let styleSeeds = try? JSONDecoder().decode([StyleSeed].self, from: styleData)
+        else {
+            print("Failed to decode style data")
+            return [:]
+        }
+        
+        var styleMap: [String: Style] = [:]
+        for seed in styleSeeds {
+            let style = Style(name: seed.name)
+            styleMap[seed.name] = style
+            context.insert(style)
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            fatalError("Failed to save styles: \(error.localizedDescription)")
+        }
+
+        return styleMap
+    }
+    
+    func importFeelData(context: ModelContext) -> [String: Feel] {
+        guard let feelURL = Bundle.main.url(forResource: "feel", withExtension: "json")
+        else {
+            print("Failed to load feel JSON file")
+            return [:]
+        }
+        
+        guard let feelData = try? Data(contentsOf: feelURL)
+        else {
+            print("Failed to read feel JSON file")
+                  return [:]
+        }
+        
+        guard let feelSeeds = try? JSONDecoder().decode([FeelSeed].self, from: feelData)
+        else {
+            print("Failed to decode feel JSON file")
+            return [:]
+        }
+        
+        var feelMap: [String: Feel] = [:]
+        for feelSeed in feelSeeds {
+            let feel = Feel(name: feelSeed.name)
+            context.insert(feel)
+            feelMap[feelSeed.name] = feel
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            fatalError("Failed to save feels: \(error.localizedDescription)")
+        }
+        
+        return feelMap
+    }
+    
+    func importNoteData(context: ModelContext) -> [String:RawNote] {
+        guard let noteURL = Bundle.main.url(forResource: "note", withExtension: "json")
+        else {
+            print("Failed to load note JSON file")
+            return [:]
+        }
+              guard let noteData = try? Data(contentsOf: noteURL)
+        else {
+            print("Failed to read note JSON file")
+            return [:]
+        }
+              guard let noteSeeds = try? JSONDecoder().decode([NoteSeed].self, from: noteData)
+        else {
+            print("Failed to decode note JSON file")
+            return [:]
+        }
+        
+        var noteMap: [String:RawNote] = [:]
+        for seed in noteSeeds {
+            let note = RawNote(name: seed.name, distanceFromC: seed.value)
+            context.insert(note)
+            noteMap[note.name] = note
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            fatalError("Failed to save notes: \(error.localizedDescription)")
+        }
+        return noteMap
+    }
+    
+    func importScaleDegreeData(context: ModelContext) -> [String:ScaleDegree] {
+        guard let scaleDegreeURL = Bundle.main.url(forResource: "scaleDegree", withExtension: "json"),
+              let scaleDegreeData = try? Data(contentsOf: scaleDegreeURL),
+              let scaleDegreeSeeds = try? JSONDecoder().decode([ScaleDegreeSeed].self, from: scaleDegreeData)
+        else {
+            print("Failed to load scale degree JSON file")
+            return [:]
+        }
+        
+        var scaleDegreeMap: [String:ScaleDegree] = [:]
+        for seed in scaleDegreeSeeds {
+            let scaleDegree = ScaleDegree(name: seed.name, ordinal: seed.ordinal)
+            context.insert(scaleDegree)
+            scaleDegreeMap[seed.name] = scaleDegree
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            fatalError("Failed to save scaleDegrees: \(error.localizedDescription)")
+        }
+
+        return scaleDegreeMap
+    }
+
+    func importKeyData(context: ModelContext, scaleDegreeMap: [String:ScaleDegree], noteMap: [String:RawNote]) {
+        guard let keyURL = Bundle.main.url(forResource: "key", withExtension: "json")
+        else {
+            print("Failed to load key JSON file")
+            return
+        }
+              guard let keyData = try? Data(contentsOf: keyURL)
+        else {
+            print("Failed to read key JSON file")
+            return
+        }
+              guard let keySeeds = try? JSONDecoder().decode([KeySeed].self, from: keyData)
+        else {
+            print("Failed to decode key JSON file")
+            return
+        }
+        
+        var count = 0
+        for seed in keySeeds {
+            let key = Key(noteName: seed.key, sharpsOrFlats: seed.sharpsOrFlats, isMajor: seed.isMajor)
+            context.insert(key)
+            count += 1
+            
+            for noteInKeySeed in seed.notes {
+                guard let note = noteMap[noteInKeySeed.note] else {
+                    fatalError("Missing note: \(noteInKeySeed.note)")
+                }
+                guard let degree = scaleDegreeMap[noteInKeySeed.scaleDegreeName] else {
+                    fatalError("Missing scale degree: \(noteInKeySeed.scaleDegreeName)")
+                }
+                let noteInKey = NoteInKey(key: key, rawNote: note, scaleDegree: degree)
+                key.addNoteInKey(noteInKey)
+            }
+        }
+        
+        do {
+            try context.save()
+            print("counted \(count) inserts")
+            checkResult(context: context)
+        } catch {
+            fatalError("Failed to save keys: \(error.localizedDescription)")
+        }
+        
+        do {
+            let keys = try context.fetch(FetchDescriptor<Key>())
+            print("Fetched \(keys.count) keys")
+        } catch {
+            print("Fetch failed: \(error)")
+        }    }
+    
+    func importSongSectionData(context: ModelContext) {
+        guard let songSectionURL = Bundle.main.url(forResource: "songSection", withExtension: "json")
+        else {
+            print("Failed to load song section JSON file")
+            return
+        }
+              guard let songSectionData = try? Data(contentsOf: songSectionURL)
+        else {
+            print("Failed to read song section JSON file")
+            return
+        }
+              guard let songSectionSeeds = try? JSONDecoder().decode([SongSectionSeed].self, from: songSectionData)
+        else {
+            print("Failed to decode song section JSON file")
+            return
+        }
+        
+        for songSectionSeed in songSectionSeeds {
+            let songSection = SongSection(name: songSectionSeed.name, sortOrder: songSectionSeed.sortOrder)
+            context.insert(songSection)
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            fatalError("Failed to save songSections: \(error.localizedDescription)")
+        }
+    }
+    
+    func importInstrumentData(context: ModelContext) {
+        guard let familyURL = Bundle.main.url(forResource: "instrumentFamilies", withExtension: "json")
+        else {
+            print("Failed to load familyURL")
+            return
+        }
+        guard let instrumentURL = Bundle.main.url(forResource: "instrument", withExtension: "json")
+        else {
+            print("Failed to load instrument URL")
+            return
+        }
+        guard let familyData = try? Data(contentsOf: familyURL)
+        else {
+            print("Failed to load family data")
+            return
+        }
+        guard let instrumentData = try? Data(contentsOf: instrumentURL)
+        else {
+            print("Failed to load instrument data")
+            return
+        }
+        guard let familySeeds = try? JSONDecoder().decode([InstrumentFamilySeed].self, from: familyData)
+        else {
+            print("Failed to decode family data")
+            return
+        }
+        guard let instrumentSeeds = try? JSONDecoder().decode([InstrumentSeed].self, from: instrumentData)
+        else {
+            print("Failed to decode instrument data")
+            return
+        }
+        
+        // Insert families
+        var familyMap: [String: InstrumentFamily] = [:]
+        for seed in familySeeds {
+            let family = InstrumentFamily(name: seed.name, sortOrder: seed.sortOrder)
+            context.insert(family)
+            familyMap[seed.name] = family
+        }
+
+        // Insert instruments
+        for seed in instrumentSeeds {
+            guard let instrumentFamily = familyMap[seed.family] else {
+                fatalError("Unknown instrument family: \(seed.family)")
+            }
+            let instrument = Instrument(name: seed.name, programNumber: seed.programNumber - 1, instrumentFamily: instrumentFamily)
+            context.insert(instrument)
+        }
+
+        do {
+            try context.save()
+        } catch {
+            fatalError("Failed to save instruments: \(error.localizedDescription)")
+        }
+    }
+    
+    func importDrumNoteData(context: ModelContext) -> [String: DrumNote] {
+        guard let drumNoteURL = Bundle.main.url(forResource: "drumNote", withExtension: "json"),
+              let drumNoteData = try? Data(contentsOf: drumNoteURL),
+              let drumNoteSeeds = try? JSONDecoder().decode([DrumNoteSeed].self, from: drumNoteData)
+        else {
+            print("Failed to load drum note JSON file")
+            return [:]
+        }
+        
+        var drumNoteMap: [String: DrumNote] = [:]
+        for drumNoteSeed in drumNoteSeeds {
+            let drumNote = DrumNote(name: drumNoteSeed.name, midiValue: drumNoteSeed.value)
+            drumNoteMap[drumNoteSeed.name] = drumNote
+            context.insert(drumNote)
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            fatalError("Failed to save drumNotes: \(error.localizedDescription)")
+        }
+        return drumNoteMap
+    }
+    
+    func importDrumPatternData(context: ModelContext, styleMap: [String: Style], feelMap: [String: Feel], drumNoteMap: [String: DrumNote]) {
+        guard let drumPatternURL = Bundle.main.url(forResource: "drumPattern", withExtension: "json"),
+              let drumPatternData = try? Data(contentsOf: drumPatternURL),
+              let drumPatternSeeds = try? JSONDecoder().decode([DrumPatternSeed].self, from: drumPatternData)
+        else {
+            print("Failed to load drum pattern JSON file")
+            return
+        }
+        
+        for drumPatternSeed in drumPatternSeeds {
+            let style = styleMap[drumPatternSeed.style]
+            let feel = feelMap[drumPatternSeed.feel]
+            let drumPattern = DrumPattern(name: drumPatternSeed.name, style: style, feel: feel)
+            context.insert(drumPattern)
+            
+            for drumNoteInPatternSeed in drumPatternSeed.notes {
+                guard let drumNote = drumNoteMap[drumNoteInPatternSeed.drumNote] else {
+                    fatalError("Missing drum note \(drumNoteInPatternSeed.drumNote)")
+                }
+                let drumNoteInPattern = DrumNoteInPattern(pattern: drumPattern, drumNote: drumNote, timestampOn: drumNoteInPatternSeed.timestampOn, timestampOff: drumNoteInPatternSeed.timestampOff)
+                drumPattern.drumNotesInPattern.append(drumNoteInPattern)
+            }
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            fatalError("Failed to save drumPatterns: \(error.localizedDescription)")
+        }
+    }
+    
+    func importHarmonicPatternData(context: ModelContext, styleMap: [String: Style], feelMap: [String: Feel], scaleDegreeMap: [String: ScaleDegree]) {
+        guard let patternURL = Bundle.main.url(forResource: "harmonicPattern", withExtension: "json"),
+              let patternData = try? Data(contentsOf: patternURL),
+              let patternSeeds = try? JSONDecoder().decode([HarmonicPatternSeed].self, from: patternData)
+        else {
+            print("Failed to load pattern JSON file")
+            return
+        }
+        
+        for patternSeed in patternSeeds {
+            guard let style = styleMap[patternSeed.style] else {
+                fatalError("Missing style \(patternSeed.style)")
+            }
+            
+            guard let feel = feelMap[patternSeed.feel] else {
+                fatalError("Missing feel \(patternSeed.feel)")
+            }
+            
+            let pattern = HarmonicPattern(name: patternSeed.name, style: style, feel: feel, baseOctave: patternSeed.baseOctave)
+            context.insert(pattern)
+            
+            for harmonicNoteInPatternSeed in patternSeed.notes {
+                let harmonicNoteInPattern = HarmonicNoteInPattern(pattern: pattern, halfSteps: harmonicNoteInPatternSeed.halfSteps, timestampOn: harmonicNoteInPatternSeed.timestampOn, timestampOff: harmonicNoteInPatternSeed.timestampOff)
+                pattern.harmonicNotesInPattern.append(harmonicNoteInPattern)
+            }
+        }
+        
+        do {
+            try context.save()
+        } catch {
+            fatalError("Failed to save harmonicPatterns: \(error.localizedDescription)")
+        }
+    }
+    
+    func checkResult(context: ModelContext) {
+        let keysFetchDescriptor = FetchDescriptor<Key>()
+        
+        do {
+            let keys = try context.fetch(keysFetchDescriptor)
+            print("Found \(keys.count) keys")
+        } catch {
+            print("keys fetch failed: \(error.localizedDescription)")
+        }
+    }
+}
