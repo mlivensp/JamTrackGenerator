@@ -437,17 +437,17 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "27A7137E-9C09-4EEB-83D9-D32BF2131A17"
+            uuid = "F9948BB6-DE0C-4023-A517-EB864C12DA10"
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "JamTrackGenerator/Features/JamTracks/JamTrackDetailView.swift"
+            filePath = "JamTrackGenerator/MIDI/Render/MidiDocument.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "112"
-            endingLineNumber = "112"
-            landmarkName = "body"
-            landmarkType = "24">
+            startingLineNumber = "50"
+            endingLineNumber = "50"
+            landmarkName = "init(song:sharpsOrFlats:isMajor:bpm:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

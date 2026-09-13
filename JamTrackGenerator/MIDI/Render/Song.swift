@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import OSLog
 
 struct Song {
     var tracks: [Track] = []
@@ -24,8 +25,11 @@ struct Song {
         var partMap: [PersistentIdentifier: [EventDescriptor]] = [:]
         var programMap: [PersistentIdentifier: (program: UInt8, name: String)] = [:]
         
+        Logger.midi.info("building tracks for style \(style.name), feel \(feel.name), key \(key.noteName)")
         for section in jamTrackSections.sorted(by: { $0.order < $1.order } ) {
+            Logger.midi.info("building tracks for section \(section.songSection?.name ?? "<no section>")")
             for sectionPart in section.sectionParts.filter( { $0.patternName != "" } ) {
+                Logger.midi.info("building track for part \(sectionPart.part?.instrument?.name ?? "<no instrument>")")
                 guard let part = sectionPart.part else {
                     fatalError("missing part in setionPart")
                 }
@@ -59,7 +63,7 @@ struct Song {
             }
             let maxOff = partMap.values.flatMap { $0.map(\.offsetOff) }.max() ?? 0
             currentPulse = maxOff
-            print("End of section maxOff: \(maxOff)")
+            Logger.midi.debug("End of section maxOff: \(maxOff)")
         }
         
         for (partId, events) in partMap {
